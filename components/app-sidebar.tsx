@@ -23,6 +23,7 @@ import {
   Target,
   Building2,
   Briefcase,
+  FlaskConical,
 } from "lucide-react";
 
 const menuItems = [
@@ -37,6 +38,12 @@ const menuItems = [
     url: "/work",
     icon: Briefcase,
     shortcut: "W",
+  },
+  {
+    title: "Experiments",
+    url: "/experiments",
+    icon: FlaskConical,
+    shortcut: "X",
   },
   {
     title: "Metrics",
