@@ -5,6 +5,8 @@ const isPublicRoute = createRouteMatcher([
   "/.well-known/oauth-protected-resource(.*)",
   "/.well-known/openid-configuration(.*)",
   "/mcp(.*)", // MCP endpoint must be publicly accessible for OAuth flow
+  "/sign-in(.*)",
+  "/sign-up(.*)",
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
