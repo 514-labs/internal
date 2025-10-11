@@ -85,7 +85,6 @@ const handler = createMcpHandler(async (server) => {
       _meta: widgetMeta(contentWidget),
     },
     async ({ name }, { authInfo }) => {
-      // Access authenticated user ID if needed
       const userId = authInfo?.extra?.userId as string | undefined;
 
       return {
@@ -105,7 +104,6 @@ const handler = createMcpHandler(async (server) => {
     }
   );
 
-  // Add Clerk user data tool
   server.tool(
     "get-clerk-user-data",
     "Gets data about the Clerk user that authorized this request",
