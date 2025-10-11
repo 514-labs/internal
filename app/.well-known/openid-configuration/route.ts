@@ -1,36 +1,43 @@
+import { baseURL } from "@/baseUrl";
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
-
+// OpenID Connect Discovery
+// Alternative discovery endpoint (OpenID Connect standard)
 export async function GET() {
-  // This proxies to Clerk's OIDC discovery endpoint
-  // Clerk provides authorization_endpoint, token_endpoint, jwks_uri, and registration_endpoint
-  const clerkDomain = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.match(
-    /pk_(test|live)_([^.]+)/
-  )?.[2];
+  // Extract Clerk domain from publishable key
+  const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
-  if (!clerkDomain) {
+  if (!publishableKey) {
     return NextResponse.json(
-      { error: "Clerk domain not configured" },
+      { error: "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY not configured" },
       { status: 500 }
     );
   }
 
+  // Parse Clerk domain from key format: pk_test_XXXXX or pk_live_XXXXX
+  const clerkDomain = publishableKey.includes("_test_")
+    ? "clerk.accounts.dev"
+    : "clerk.com";
+
   try {
     // Fetch Clerk's OpenID configuration
-    const clerkConfigUrl = `https://${clerkDomain}.clerk.accounts.dev/.well-known/openid-configuration`;
+    const clerkConfigUrl = `https://${clerkDomain}/.well-known/openid-configuration`;
     const response = await fetch(clerkConfigUrl);
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch Clerk OIDC config: ${response.status}`);
+    }
+
     const clerkConfig = await response.json();
 
-    // Return the Clerk configuration, optionally augmented with your own issuer
+    // Return Clerk's configuration with our issuer
     return NextResponse.json({
       ...clerkConfig,
-      // Ensure these required fields are present
-      authorization_endpoint: clerkConfig.authorization_endpoint,
-      token_endpoint: clerkConfig.token_endpoint,
-      jwks_uri: clerkConfig.jwks_uri,
-      registration_endpoint: clerkConfig.registration_endpoint,
-      issuer: clerkConfig.issuer || `https://${clerkDomain}.clerk.accounts.dev`,
+      issuer: baseURL,
+      // Ensure OAuth 2.1 compliance
+      response_types_supported: ["code"],
+      grant_types_supported: ["authorization_code", "refresh_token"],
+      code_challenge_methods_supported: ["S256"],
     });
   } catch (error) {
     console.error("Error fetching Clerk OIDC config:", error);
@@ -41,6 +48,7 @@ export async function GET() {
   }
 }
 
+// Allow CORS preflight requests
 export async function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
