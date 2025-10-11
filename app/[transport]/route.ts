@@ -119,7 +119,7 @@ const handler = createMcpHandler(async (server) => {
   );
 });
 
-const authHandler = withMcpAuth(
+const baseAuthHandler = withMcpAuth(
   handler,
   async (_, token) => {
     const clerkAuth = await auth({ acceptsToken: "oauth_token" });
@@ -130,5 +130,36 @@ const authHandler = withMcpAuth(
     resourceMetadataPath: "/.well-known/oauth-protected-resource",
   }
 );
+
+// Add CORS headers to all responses
+function addCorsHeaders(handler: Function) {
+  return async (req: Request) => {
+    const response = await handler(req);
+    const headers = new Headers(response.headers);
+    headers.set("Access-Control-Allow-Origin", "*");
+    headers.set("Access-Control-Allow-Methods", "GET, POST, HEAD, OPTIONS");
+    headers.set("Access-Control-Allow-Headers", "Authorization, Content-Type");
+    return new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers,
+    });
+  };
+}
+
+const authHandler = addCorsHeaders(baseAuthHandler);
+
+// Handle CORS preflight requests
+export async function OPTIONS() {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, HEAD, OPTIONS",
+      "Access-Control-Allow-Headers": "Authorization, Content-Type",
+      "Access-Control-Max-Age": "86400",
+    },
+  });
+}
 
 export { authHandler as GET, authHandler as POST, authHandler as HEAD };
