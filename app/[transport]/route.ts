@@ -129,7 +129,7 @@ const authHandler = withMcpAuth(
   },
   {
     required: true,
-    resourceMetadataPath: "/.well-known/oauth-protected-resource",
+    resourceMetadataPath: "/.well-known/oauth-protected-resource/mcp",
   }
 );
 
