@@ -96,7 +96,27 @@ export async function getLinearTokens(): Promise<LinearTokens | null> {
         // No rows returned - no token stored yet
         return null;
       }
-      throw new Error(`Database error: ${error.message}`);
+      // Handle table not existing (migration not run yet)
+      if (
+        error.message?.includes("Could not find the table") ||
+        error.code === "42P01" // PostgreSQL table not found error
+      ) {
+        throw new Error(
+          `Database migration required: The 'integration_tokens' table does not exist in the database.\n\n` +
+            `To fix this error, run the database migrations:\n` +
+            `  1. Ensure local Supabase is running: pnpm db:start\n` +
+            `  2. Run migrations: pnpm db:migrate\n` +
+            `  3. Restart your Next.js dev server\n\n` +
+            `Original error: ${error.message}\n` +
+            `Error code: ${error.code || "N/A"}`
+        );
+      }
+      throw new Error(
+        `Failed to retrieve Linear OAuth tokens from database.\n` +
+          `Error: ${error.message}\n` +
+          `Code: ${error.code || "N/A"}\n` +
+          `Details: ${JSON.stringify(error, null, 2)}`
+      );
     }
 
     if (!data) {

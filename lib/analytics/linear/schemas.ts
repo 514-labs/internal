@@ -133,9 +133,11 @@ export const InitiativeSchema = z.object({
   icon: z.string().optional(),
   color: z.string().optional(),
   sortOrder: z.number(),
+  status: z.string().optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
   targetDate: z.string().optional(),
+  url: z.string().optional(),
   projects: z.array(ProjectSchema).optional(),
 });
 
@@ -155,6 +157,9 @@ export const LinearQueryOptionsSchema = z.object({
   stateId: z.string().optional(),
   labelId: z.string().optional(),
   search: z.string().optional(),
+  state: z.string().optional(),
+  status: z.string().optional(),
+  completed: z.boolean().optional(),
 });
 
 export type LinearQueryOptions = z.infer<typeof LinearQueryOptionsSchema>;
