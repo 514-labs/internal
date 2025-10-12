@@ -4,6 +4,7 @@ const isPublicRoute = createRouteMatcher([
   "/.well-known/oauth-authorization-server(.*)",
   "/.well-known/oauth-protected-resource(.*)",
   "/mcp(.*)", // MCP endpoint must be publicly accessible for OAuth flow
+  "/api/analytics(.*)", // Analytics API endpoints handle their own auth via API keys
   "/sign-in(.*)",
   "/sign-up(.*)",
 ]);

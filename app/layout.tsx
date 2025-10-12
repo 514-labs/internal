@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Separator } from "@/components/ui/separator";
+import { QueryProvider } from "@/components/query-provider";
 
 declare global {
   interface Window {
@@ -61,45 +62,47 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
-          <SignedOut>
-            <div className="min-h-screen flex flex-col">
-              <header className="w-full p-4 border-b border-gray-200 dark:border-gray-800">
-                <div className="max-w-7xl mx-auto flex justify-between items-center">
-                  <div className="text-sm font-medium">Internal 514</div>
-                  <div className="flex gap-4 items-center">
-                    <Link
-                      href="/sign-in"
-                      className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white"
-                    >
-                      Sign In
-                    </Link>
-                    <Link
-                      href="/sign-up"
-                      className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                    >
-                      Sign Up
-                    </Link>
+          <QueryProvider>
+            <SignedOut>
+              <div className="min-h-screen flex flex-col">
+                <header className="w-full p-4 border-b border-gray-200 dark:border-gray-800">
+                  <div className="max-w-7xl mx-auto flex justify-between items-center">
+                    <div className="text-sm font-medium">Internal 514</div>
+                    <div className="flex gap-4 items-center">
+                      <Link
+                        href="/sign-in"
+                        className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white"
+                      >
+                        Sign In
+                      </Link>
+                      <Link
+                        href="/sign-up"
+                        className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                      >
+                        Sign Up
+                      </Link>
+                    </div>
                   </div>
-                </div>
-              </header>
-              <div className="flex-1">{children}</div>
-            </div>
-          </SignedOut>
-          <SignedIn>
-            <SidebarProvider>
-              <AppSidebar />
-              <SidebarInset>
-                <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-                  <SidebarTrigger className="-ml-1" />
-                  <Separator orientation="vertical" className="mr-2 h-4" />
-                  <div className="text-sm font-medium">Internal 514</div>
                 </header>
-                {children}
-              </SidebarInset>
-            </SidebarProvider>
-          </SignedIn>
-          <SpeedInsights />
-          <Analytics />
+                <div className="flex-1">{children}</div>
+              </div>
+            </SignedOut>
+            <SignedIn>
+              <SidebarProvider>
+                <AppSidebar />
+                <SidebarInset>
+                  <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+                    <SidebarTrigger className="-ml-1" />
+                    <Separator orientation="vertical" className="mr-2 h-4" />
+                    <div className="text-sm font-medium">Internal 514</div>
+                  </header>
+                  {children}
+                </SidebarInset>
+              </SidebarProvider>
+            </SignedIn>
+            <SpeedInsights />
+            <Analytics />
+          </QueryProvider>
         </body>
       </html>
     </ClerkProvider>

@@ -1,0 +1,32 @@
+[
+  {
+    "event": "page_view",
+    "distinct_id": "user_123",
+    "properties": {
+      "pathname": "/dashboard",
+      "referrer": "https://google.com"
+    },
+    "timestamp": "2024-01-01T10:00:00Z",
+    "uuid": "event_001"
+  },
+  {
+    "event": "signup_completed",
+    "distinct_id": "user_456",
+    "properties": {
+      "plan": "pro",
+      "source": "landing_page"
+    },
+    "timestamp": "2024-01-01T10:05:00Z",
+    "uuid": "event_002"
+  },
+  {
+    "event": "button_click",
+    "distinct_id": "user_789",
+    "properties": {
+      "button_id": "cta_primary",
+      "page": "/pricing"
+    },
+    "timestamp": "2024-01-01T10:10:00Z",
+    "uuid": "event_003"
+  }
+]
