@@ -1,6 +1,6 @@
 # Analytics Integration Layer
 
-A comprehensive, type-safe analytics integration system for PostHog, Linear, Rippling, and HubSpot (via PostHog Data Warehouse).
+A comprehensive, type-safe analytics integration system for PostHog, Linear, and HubSpot (via PostHog Data Warehouse).
 
 ## Architecture Overview
 
@@ -27,10 +27,6 @@ lib/analytics/
 ├── linear/
 │   ├── client.ts         # Linear SDK wrapper
 │   ├── schemas.ts        # Zod schemas for Linear data
-│   └── queries.ts        # Query functions
-├── rippling/
-│   ├── client.ts         # Rippling REST API client
-│   ├── schemas.ts        # Zod schemas for Rippling data
 │   └── queries.ts        # Query functions
 └── supabase/
     └── client.ts         # Supabase DB client (placeholder)
@@ -63,10 +59,6 @@ LINEAR_OAUTH_REDIRECT_URI=http://localhost:3000/api/integrations/linear/callback
 
 # OR use API key (Legacy)
 # LINEAR_API_KEY=your_api_key
-
-# Rippling
-RIPPLING_API_KEY=your_api_key
-RIPPLING_API_URL=https://api.rippling.com
 
 # Supabase (optional - for future persistence)
 SUPABASE_URL=http://localhost:54321
@@ -180,32 +172,6 @@ const projects = await getProjects({
 const initiatives = await getInitiatives();
 ```
 
-### Rippling
-
-```typescript
-import {
-  getCompany,
-  getEmployees,
-  getEmployee,
-  getDepartments,
-} from '@/lib/analytics/rippling/queries';
-
-// Get company details
-const company = await getCompany();
-
-// Get all employees
-const employees = await getEmployees({
-  limit: 100,
-  status: 'ACTIVE',
-});
-
-// Get specific employee
-const employee = await getEmployee('emp_123');
-
-// Get departments
-const departments = await getDepartments();
-```
-
 ## API Endpoints
 
 All analytics data is accessible via token-protected API endpoints.
@@ -239,11 +205,6 @@ const response = await fetch('/api/analytics/posthog/events');
 - `GET /api/analytics/linear/projects` - Get projects
 - `GET /api/analytics/linear/initiatives` - Get initiatives
 - `GET /api/analytics/linear/users` - Get users
-
-### Rippling Endpoints
-
-- `GET /api/analytics/rippling/company` - Get company details
-- `GET /api/analytics/rippling/employees` - Get employees
 
 ## API Key Management
 
@@ -304,9 +265,6 @@ pnpm tsx scripts/analytics/sample-data.ts --source hubspot --table contacts --li
 
 # Sample Linear issues
 pnpm tsx scripts/analytics/sample-data.ts --source linear --type issues --limit 20
-
-# Sample Rippling employees
-pnpm tsx scripts/analytics/sample-data.ts --source rippling --type employees
 ```
 
 ## Error Handling
@@ -405,10 +363,6 @@ app/api/analytics/new-service/
 - **OAuth (Recommended)**: Visit `/settings/integrations` to connect Linear
 - **API Key (Legacy)**: Regenerate API key from Linear settings
 - See `QUICK_START.md` for detailed OAuth setup instructions
-
-### Rippling API errors
-- Verify API endpoint URL is correct
-- Check API key permissions in Rippling admin
 
 ### Supabase local setup
 - Run `supabase start` to start local instance

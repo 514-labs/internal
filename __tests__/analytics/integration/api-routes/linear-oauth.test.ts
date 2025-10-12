@@ -10,7 +10,11 @@ import { GET as callbackGET } from "@/app/api/integrations/linear/callback/route
 import { POST as disconnectPOST } from "@/app/api/integrations/linear/disconnect/route";
 import { GET as statusGET } from "@/app/api/integrations/linear/status/route";
 import { NextRequest } from "next/server";
-import { storeLinearTokens } from "@/lib/integrations/linear-oauth";
+import {
+  storeLinearTokens,
+  getValidLinearToken,
+  revokeLinearToken,
+} from "@/lib/integrations/linear-oauth";
 import {
   setupTestDatabase,
   cleanupTestDatabase,
@@ -18,12 +22,26 @@ import {
 
 jest.mock("@supabase/supabase-js");
 jest.mock("@clerk/nextjs/server");
-jest.mock("@/lib/integrations/linear-oauth");
+
+// Mock Next.js cookies
+jest.mock("next/headers", () => ({
+  cookies: jest.fn(() => ({
+    set: jest.fn(),
+    get: jest.fn((name: string) => ({
+      value: name === "linear_oauth_state" ? "test_state" : "test_verifier",
+    })),
+    delete: jest.fn(),
+  })),
+}));
 
 describe("Linear OAuth API Routes", () => {
   beforeAll(async () => {
     // Setup database for OAuth token storage
     await setupTestDatabase();
+
+    // Mock auth to return admin user for these tests
+    const { auth } = require("@clerk/nextjs/server");
+    auth.mockResolvedValue({ userId: "test_admin_user" });
   });
 
   afterAll(async () => {
@@ -38,8 +56,8 @@ describe("Linear OAuth API Routes", () => {
 
       const response = await authorizeGET(request);
 
-      // Should redirect to Linear
-      expect(response.status).toBe(302);
+      // Should redirect to Linear (307 is Next.js default)
+      expect([302, 307]).toContain(response.status);
 
       const location = response.headers.get("Location");
       expect(location).toContain("linear.app/oauth/authorize");
@@ -94,8 +112,8 @@ describe("Linear OAuth API Routes", () => {
 
       const response = await callbackGET(request);
 
-      // Should redirect to settings after success
-      expect(response.status).toBe(302);
+      // Should redirect to settings after success (307 is Next.js default for redirects)
+      expect([302, 307]).toContain(response.status);
       expect(response.headers.get("Location")).toContain("/settings");
     });
 
@@ -106,8 +124,8 @@ describe("Linear OAuth API Routes", () => {
 
       const response = await callbackGET(request);
 
-      // Should return error or redirect with error
-      expect([302, 400]).toContain(response.status);
+      // Should return error or redirect with error (307 is Next.js default)
+      expect([302, 307, 400]).toContain(response.status);
     });
 
     it("should validate state parameter (CSRF protection)", async () => {

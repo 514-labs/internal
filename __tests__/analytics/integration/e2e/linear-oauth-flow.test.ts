@@ -30,16 +30,48 @@ jest.mock("@linear/sdk");
 jest.mock("@supabase/supabase-js");
 
 describe("E2E: Linear OAuth 2.0 Flow", () => {
+  let originalFetch: typeof global.fetch;
+
   beforeAll(async () => {
     await setupTestDatabase();
+    originalFetch = global.fetch;
   });
 
   afterAll(async () => {
     await cleanupTestDatabase();
+    global.fetch = originalFetch;
   });
 
   beforeEach(() => {
     resetLinearClient();
+
+    // Mock fetch for Linear OAuth token endpoints
+    global.fetch = jest.fn((url: string) => {
+      const urlStr = typeof url === "string" ? url : url.toString();
+
+      // Mock token refresh
+      if (urlStr.includes("linear.app/oauth/token")) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            access_token: "lin_refreshed_token_" + Date.now(),
+            refresh_token: "lin_new_refresh_" + Date.now(),
+            token_type: "Bearer",
+            expires_in: 86400,
+            scope: "read,write",
+          }),
+        } as Response);
+      }
+
+      // Mock token revocation
+      if (urlStr.includes("linear.app/oauth/revoke")) {
+        return Promise.resolve({
+          ok: true,
+        } as Response);
+      }
+
+      return originalFetch(url);
+    }) as jest.Mock;
   });
 
   it("should complete OAuth flow: Store → Retrieve → Refresh → Revoke", async () => {

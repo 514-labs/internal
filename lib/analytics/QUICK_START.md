@@ -19,10 +19,6 @@ LINEAR_OAUTH_REDIRECT_URI=http://localhost:3000/api/integrations/linear/callback
 
 # OR use API key (Legacy)
 # LINEAR_API_KEY=lin_api_your_key_here
-
-# Required for Rippling
-RIPPLING_API_KEY=your_rippling_key
-RIPPLING_API_URL=https://api.rippling.com
 ```
 
 ### Step 2: Setup Supabase (Required)
@@ -87,10 +83,6 @@ curl -H "Authorization: Bearer $API_KEY" \
 # Test Linear
 curl -H "Authorization: Bearer $API_KEY" \
   http://localhost:3000/api/analytics/linear/issues?limit=5
-
-# Test Rippling
-curl -H "Authorization: Bearer $API_KEY" \
-  http://localhost:3000/api/analytics/rippling/company
 ```
 
 ## 🔐 Linear OAuth Setup (Recommended)
@@ -250,35 +242,7 @@ export default async function IssuesPage() {
 }
 ```
 
-### 3. Employee Directory from Rippling
-
-```typescript
-// app/team/employees/page.tsx
-import { getEmployees } from '@/lib/analytics/rippling/queries';
-
-export default async function EmployeesPage() {
-  const employees = await getEmployees({
-    status: 'ACTIVE',
-    limit: 100,
-  });
-
-  return (
-    <div>
-      <h1>Employee Directory</h1>
-      {employees.map((employee) => (
-        <div key={employee.id}>
-          <h3>{employee.firstName} {employee.lastName}</h3>
-          <p>{employee.title}</p>
-          <p>Department: {employee.department?.name}</p>
-          <p>Email: {employee.email}</p>
-        </div>
-      ))}
-    </div>
-  );
-}
-```
-
-### 4. HubSpot Contacts Dashboard
+### 3. HubSpot Contacts Dashboard
 
 ```typescript
 // app/crm/contacts/page.tsx
@@ -445,8 +409,6 @@ See the full documentation in `lib/analytics/README.md` for:
 | Linear | `getIssues()` | Fetch issues |
 | Linear | `getProjects()` | Fetch projects |
 | Linear | `getInitiatives()` | Fetch initiatives |
-| Rippling | `getCompany()` | Company details |
-| Rippling | `getEmployees()` | Employee list |
 
 ### API Endpoints
 
@@ -458,8 +420,6 @@ See the full documentation in `lib/analytics/README.md` for:
 | GET | `/api/analytics/posthog/hubspot` | HubSpot data |
 | GET | `/api/analytics/linear/issues` | Linear issues |
 | GET | `/api/analytics/linear/projects` | Linear projects |
-| GET | `/api/analytics/rippling/company` | Company info |
-| GET | `/api/analytics/rippling/employees` | Employees |
 
 ## 💡 Tips
 

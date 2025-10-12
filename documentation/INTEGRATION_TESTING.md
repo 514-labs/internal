@@ -19,10 +19,10 @@ This document explains the integration testing approach for the analytics API, w
 
 2. **Integration Tests** (`__tests__/analytics/integration/`)
    - Test full integration between components
-   - Test API routes with authentication
-   - Test database operations (create, read, update, delete)
-   - Use mocks for external APIs (PostHog, Linear, Rippling)
-   - **Require real Supabase database** (can use test instance)
+  - Test API routes with authentication
+  - Test database operations (create, read, update, delete)
+  - Use mocks for external APIs (PostHog, Linear)
+  - **Require real Supabase database** (can use test instance)
 
 3. **E2E Tests** (`__tests__/analytics/integration/e2e/`)
    - Test complete user flows
@@ -224,7 +224,6 @@ Integration tests require:
    ```bash
    POSTHOG_API_KEY=phc_test_key
    LINEAR_CLIENT_ID=test_client_id
-   RIPPLING_API_KEY=test_rippling_key
    ```
 
 ### Running Tests
@@ -251,7 +250,6 @@ SKIP_MOCKS=true pnpm test __tests__/analytics/integration
 | Clerk Auth | ✅ Mocked users/sessions | ✅ Real Clerk API |
 | PostHog API | ✅ Mocked responses | ✅ Real PostHog data |
 | Linear API | ✅ Mocked responses | ✅ Real Linear data |
-| Rippling API | ✅ Mocked responses | ✅ Real Rippling data |
 
 **Recommendation**: Use real Supabase test database for integration tests, mock external APIs.
 
@@ -261,7 +259,6 @@ SKIP_MOCKS=true pnpm test __tests__/analytics/integration
 
 - **`api-routes/linear.test.ts`** - Linear API routes with full DB lifecycle
 - **`api-routes/posthog.test.ts`** - PostHog API routes with full DB lifecycle
-- **`api-routes/rippling.test.ts`** - Rippling API routes with full DB lifecycle
 - **`api-routes/linear-oauth.test.ts`** - OAuth flow with token storage in DB
 
 ### E2E Tests

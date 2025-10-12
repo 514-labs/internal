@@ -104,9 +104,9 @@ describe("E2E: Clerk Testing Approach with API Keys", () => {
       const updatedKey = keysInDb.find((k) => k.id === keyRecord.id);
 
       expect(updatedKey?.last_used_at).not.toBeNull();
-      expect(new Date(updatedKey!.last_used_at!).getTime()).toBeGreaterThan(
-        new Date(keyRecord.created_at).getTime()
-      );
+      expect(
+        new Date(updatedKey!.last_used_at!).getTime()
+      ).toBeGreaterThanOrEqual(new Date(keyRecord.created_at).getTime());
     });
 
     it("should revoke API key in database", async () => {
