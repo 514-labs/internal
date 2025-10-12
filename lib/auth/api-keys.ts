@@ -90,24 +90,40 @@ export async function validateApiKey(apiKey: string): Promise<string> {
 
     const supabase = supabaseAnalyticsClient.getClient();
 
-    // Hash the provided API key
-    const hashedKey = crypto.createHash("sha256").update(apiKey).digest("hex");
-
-    // Use the database function to validate and update last_used_at atomically
-    const { data, error } = await supabase.rpc("validate_and_update_api_key", {
-      p_key_hash: hashedKey,
-    });
+    // Fetch all non-revoked API keys
+    // Note: With bcrypt, we can't do a direct hash lookup since each hash is unique
+    // We need to use bcrypt.compare() which requires checking against stored hashes
+    const { data: apiKeys, error } = await supabase
+      .from("api_keys")
+      .select("id, user_id, key_hash, last_used_at")
+      .eq("revoked", false);
 
     if (error) {
       throw new Error(`Database error: ${error.message}`);
     }
 
-    // Check if we got a valid result
-    if (!data || data.length === 0 || !data[0].is_valid || !data[0].user_id) {
+    if (!apiKeys || apiKeys.length === 0) {
       throw new AuthenticationError("Invalid or expired API key");
     }
 
-    return data[0].user_id;
+    // Check each key hash using bcrypt.compare()
+    // This is necessary because bcrypt includes a salt in each hash
+    for (const keyRecord of apiKeys) {
+      const isMatch = await bcrypt.compare(apiKey, keyRecord.key_hash);
+
+      if (isMatch) {
+        // Update last_used_at for the matched key
+        await supabase
+          .from("api_keys")
+          .update({ last_used_at: new Date().toISOString() })
+          .eq("id", keyRecord.id);
+
+        return keyRecord.user_id;
+      }
+    }
+
+    // No matching key found
+    throw new AuthenticationError("Invalid or expired API key");
   } catch (error) {
     if (error instanceof AuthenticationError) {
       throw error;

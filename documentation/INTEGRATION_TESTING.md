@@ -198,7 +198,7 @@ await revokeApiKey(userBId, userAKeyId);
 
 // Key hashes are stored, not plaintext
 const keys = await listApiKeys(userId);
-expect(keys[0].key_hash).toMatch(/^[a-f0-9]{64}$/); // SHA-256
+expect(keys[0].key_hash).toMatch(/^\$2[aby]\$\d{2}\$/); // bcrypt format
 expect(keys[0].key_hash).not.toBe(apiKey); // Not plaintext
 ```
 

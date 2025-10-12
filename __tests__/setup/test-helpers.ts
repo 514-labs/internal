@@ -137,9 +137,10 @@ export function wait(ms: number): Promise<void> {
 }
 
 /**
- * Generate a test API key hash
+ * Generate a test API key hash using bcrypt
  */
 export function generateTestKeyHash(seed: string = "test"): string {
-  const crypto = require("crypto");
-  return crypto.createHash("sha256").update(seed).digest("hex");
+  const bcrypt = require("bcrypt");
+  const salt = bcrypt.genSaltSync(12);
+  return bcrypt.hashSync(seed, salt);
 }

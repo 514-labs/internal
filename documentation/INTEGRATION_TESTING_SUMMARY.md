@@ -171,7 +171,7 @@ describe("My Test", () => {
 
 ### Database Constraints
 1. ✅ User isolation (User A can't revoke User B's keys)
-2. ✅ Key hash storage (SHA-256, not plaintext)
+2. ✅ Key hash storage (bcrypt, not plaintext)
 3. ✅ Revoked keys rejected
 4. ✅ Invalid keys rejected
 
