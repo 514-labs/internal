@@ -6,7 +6,7 @@
  */
 
 import { useEffect, useState } from "react";
-import { useAuth, useUser } from "@clerk/nextjs";
+import { useAuth, useOrganizationList } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 
 interface LinearStatus {
@@ -19,15 +19,22 @@ interface LinearStatus {
 
 export default function IntegrationsPage() {
   const { userId } = useAuth();
-  const { user } = useUser();
+  const { userMemberships } = useOrganizationList({
+    userMemberships: {
+      infinite: true,
+    },
+  });
   const [linearStatus, setLinearStatus] = useState<LinearStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [disconnecting, setDisconnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Check if user is admin
-  const isAdmin = user?.publicMetadata?.role === "admin";
+  // Check if user is admin in any organization
+  const isAdmin =
+    userMemberships?.data?.some(
+      (membership) => membership.role === "org:admin"
+    ) ?? false;
 
   useEffect(() => {
     // Check for success/error messages in URL
@@ -130,10 +137,70 @@ export default function IntegrationsPage() {
       <div className="container mx-auto p-8">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-3xl font-bold mb-6">Integrations</h1>
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <p className="text-yellow-800">
-              Admin access required to manage integrations.
-            </p>
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+            <div className="flex items-start gap-3 mb-4">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6 text-yellow-600 flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-yellow-900 mb-2">
+                  Admin Access Required
+                </h3>
+                <p className="text-yellow-800 mb-4">
+                  You need administrator permissions to manage integrations.
+                </p>
+
+                <div className="bg-white rounded-md p-4 mb-4">
+                  <p className="text-sm font-medium text-gray-900 mb-2">
+                    To get admin access:
+                  </p>
+                  <ol className="list-decimal list-inside space-y-2 text-sm text-gray-700">
+                    <li>
+                      Go to{" "}
+                      <a
+                        href="https://dashboard.clerk.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline"
+                      >
+                        Clerk Dashboard
+                      </a>
+                    </li>
+                    <li>Navigate to Organizations</li>
+                    <li>Create an organization if you don't have one</li>
+                    <li>Add yourself as a member with the "Admin" role</li>
+                  </ol>
+                </div>
+
+                <details className="text-sm">
+                  <summary className="cursor-pointer text-yellow-800 hover:text-yellow-900 font-medium">
+                    Or: Join your organization
+                  </summary>
+                  <div className="mt-2 p-3 bg-white rounded">
+                    <p className="text-gray-700 mb-2">
+                      If your organization already exists, you need to be
+                      invited by an existing admin or create your own
+                      organization.
+                    </p>
+                    <p className="text-xs text-gray-600 mt-2">
+                      Your user ID:{" "}
+                      <code className="bg-gray-100 px-1 rounded">{userId}</code>
+                    </p>
+                  </div>
+                </details>
+              </div>
+            </div>
           </div>
         </div>
       </div>

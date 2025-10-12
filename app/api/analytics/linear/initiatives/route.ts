@@ -26,6 +26,7 @@ export async function GET(request: NextRequest) {
       offset: searchParams.get("offset")
         ? parseInt(searchParams.get("offset")!)
         : undefined,
+      status: searchParams.get("status") || undefined,
     });
 
     // Fetch initiatives

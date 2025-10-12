@@ -26,11 +26,30 @@ export async function getLinearClient(): Promise<LinearClient> {
   lastTokenCheck = now;
 
   // Try to get OAuth token first
-  const accessToken = await getValidLinearToken();
+  try {
+    const accessToken = await getValidLinearToken();
 
-  if (accessToken) {
-    linearClient = new LinearClient({ accessToken });
-    return linearClient;
+    if (accessToken) {
+      linearClient = new LinearClient({ accessToken });
+      return linearClient;
+    }
+  } catch (error) {
+    // Re-throw database/migration errors with more context
+    if (
+      error instanceof Error &&
+      error.message.includes("Database migration required")
+    ) {
+      throw new ConfigurationError(
+        `Linear OAuth setup is incomplete:\n\n${error.message}\n\n` +
+          `Alternatively, you can use a Linear API key:\n` +
+          `  1. Get your API key from: https://linear.app/settings/api\n` +
+          `  2. Add to .env.local: LINEAR_API_KEY=your_api_key_here\n` +
+          `  3. Restart your dev server`
+      );
+    }
+
+    // For other errors, log and continue to API key fallback
+    console.error("Error checking Linear OAuth tokens:", error);
   }
 
   // Fallback to API key for backward compatibility
@@ -38,7 +57,19 @@ export async function getLinearClient(): Promise<LinearClient> {
 
   if (!apiKey) {
     throw new ConfigurationError(
-      "Linear is not configured. Either connect via OAuth or set LINEAR_API_KEY environment variable."
+      "Linear is not configured.\n\n" +
+        "You need to set up Linear authentication using ONE of these methods:\n\n" +
+        "Option 1 - Linear API Key (Recommended for development):\n" +
+        "  1. Get your API key from: https://linear.app/settings/api\n" +
+        "  2. Add to .env.local: LINEAR_API_KEY=your_api_key_here\n" +
+        "  3. Restart your dev server\n\n" +
+        "Option 2 - Linear OAuth (For production):\n" +
+        "  1. Ensure Supabase is running: pnpm db:start\n" +
+        "  2. Run migrations: pnpm db:migrate\n" +
+        "  3. Visit /settings/integrations to connect Linear\n\n" +
+        "Current environment:\n" +
+        `  - LINEAR_API_KEY: ${apiKey ? "✓ Set" : "✗ Not set"}\n` +
+        `  - SUPABASE_URL: ${process.env.SUPABASE_URL || "✗ Not set"}`
     );
   }
 

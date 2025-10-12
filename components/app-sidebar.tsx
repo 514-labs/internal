@@ -12,7 +12,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { SignedIn, UserButton, useUser } from "@clerk/nextjs";
+import { SignedIn, UserButton, useOrganizationList } from "@clerk/nextjs";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -76,9 +76,17 @@ const menuItems = [
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { user } = useUser();
+  const { userMemberships } = useOrganizationList({
+    userMemberships: {
+      infinite: true,
+    },
+  });
 
-  const isAdmin = user?.publicMetadata?.role === "admin";
+  // Check if user is admin in any organization
+  const isAdmin =
+    userMemberships?.data?.some(
+      (membership) => membership.role === "org:admin"
+    ) ?? false;
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

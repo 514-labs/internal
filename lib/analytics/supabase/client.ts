@@ -35,7 +35,19 @@ export function getSupabaseClient(): SupabaseClient {
 
   if (!url || !serviceRoleKey) {
     throw new ConfigurationError(
-      "Supabase is not configured. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY environment variables."
+      "Supabase database is not configured.\n\n" +
+        "To use the local Supabase database:\n" +
+        "  1. Start local Supabase: pnpm db:start\n" +
+        "  2. Add to .env.local:\n" +
+        "     SUPABASE_URL=http://localhost:54321\n" +
+        "     SUPABASE_SERVICE_ROLE_KEY=<service_role_key>\n" +
+        "  3. Get service role key: pnpm db:status\n" +
+        "  4. Restart your dev server\n\n" +
+        "Current configuration:\n" +
+        `  - SUPABASE_URL: ${url || "✗ Not set"}\n` +
+        `  - SUPABASE_SERVICE_ROLE_KEY: ${
+          serviceRoleKey ? "✓ Set" : "✗ Not set"
+        }`
     );
   }
 

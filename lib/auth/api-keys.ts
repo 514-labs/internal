@@ -213,16 +213,25 @@ export async function withApiKeyAuth(request: NextRequest): Promise<string> {
 }
 
 /**
- * Check if user has admin permissions
+ * Check if user has admin permissions via organization membership
  */
 export async function requireAdmin(userId: string): Promise<void> {
   const client = await clerkClient();
-  const user = await client.users.getUser(userId);
 
-  // Check if user has admin role in public metadata
-  const isAdmin = (user.publicMetadata.role as string) === "admin";
+  // Get user's organization memberships
+  const { data: memberships } =
+    await client.users.getOrganizationMembershipList({
+      userId,
+    });
+
+  // Check if user is an admin in any organization
+  const isAdmin = memberships.some(
+    (membership) => membership.role === "org:admin"
+  );
 
   if (!isAdmin) {
-    throw new AuthorizationError("Admin access required");
+    throw new AuthorizationError(
+      "Admin access required. You must be an admin in an organization to manage integrations."
+    );
   }
 }

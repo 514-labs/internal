@@ -70,7 +70,8 @@ export async function GET(request: NextRequest) {
     authUrl.searchParams.set("client_id", clientId);
     authUrl.searchParams.set("redirect_uri", redirectUri);
     authUrl.searchParams.set("response_type", "code");
-    authUrl.searchParams.set("scope", "read,write");
+    // Include initiative scopes for accessing roadmap data
+    authUrl.searchParams.set("scope", "read,write,initiative:read");
     authUrl.searchParams.set("actor", "app"); // Critical: app-level authentication
     authUrl.searchParams.set("code_challenge", challenge);
     authUrl.searchParams.set("code_challenge_method", "S256");

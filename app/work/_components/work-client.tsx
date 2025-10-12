@@ -1,0 +1,95 @@
+"use client";
+
+import { useQuery } from "@tanstack/react-query";
+import type {
+  Project,
+  Initiative,
+  Issue,
+} from "@/lib/analytics/linear/schemas";
+import { ActiveProjectsCard } from "./active-projects-card";
+import { ActiveInitiativesCard } from "./active-initiatives-card";
+import { RecentlyCompletedFeed } from "./recently-completed-feed";
+
+interface WorkClientProps {
+  initialProjects: Project[];
+  initialInitiatives: Initiative[];
+  initialIssues: Issue[];
+}
+
+async function fetchProjects(): Promise<Project[]> {
+  const res = await fetch("/api/analytics/linear/projects?state=started");
+  if (!res.ok) throw new Error("Failed to fetch projects");
+  const data = await res.json();
+  return data.data;
+}
+
+async function fetchInitiatives(): Promise<Initiative[]> {
+  // Fetch all initiatives (Linear uses various status names)
+  const res = await fetch("/api/analytics/linear/initiatives");
+  if (!res.ok) throw new Error("Failed to fetch initiatives");
+  const data = await res.json();
+  return data.data;
+}
+
+async function fetchCompletedIssues(): Promise<Issue[]> {
+  const res = await fetch(
+    "/api/analytics/linear/issues?completed=true&limit=10"
+  );
+  if (!res.ok) throw new Error("Failed to fetch issues");
+  const data = await res.json();
+  return data.data;
+}
+
+export function WorkClient({
+  initialProjects,
+  initialInitiatives,
+  initialIssues,
+}: WorkClientProps) {
+  const { data: projects, isLoading: projectsLoading } = useQuery({
+    queryKey: ["projects", "started"],
+    queryFn: fetchProjects,
+    initialData: initialProjects,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+  });
+
+  const { data: initiatives, isLoading: initiativesLoading } = useQuery({
+    queryKey: ["initiatives", "active"],
+    queryFn: fetchInitiatives,
+    initialData: initialInitiatives,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+  });
+
+  const { data: issues, isLoading: issuesLoading } = useQuery({
+    queryKey: ["issues", "completed"],
+    queryFn: fetchCompletedIssues,
+    initialData: initialIssues,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+  });
+
+  return (
+    <div className="flex-1 space-y-6 p-8 pt-6">
+      {/* Initiatives section */}
+      <div className="space-y-4">
+        <ActiveInitiativesCard
+          initiatives={initiatives || []}
+          isLoading={initiativesLoading}
+        />
+      </div>
+
+      {/* Projects and Recently Completed section */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <ActiveProjectsCard
+          projects={projects || []}
+          isLoading={projectsLoading}
+        />
+        <RecentlyCompletedFeed
+          issues={issues || []}
+          isLoading={issuesLoading}
+        />
+      </div>
+    </div>
+  );
+}

@@ -33,6 +33,7 @@ export async function GET(request: NextRequest) {
       labelId: searchParams.get("labelId") || undefined,
       search: searchParams.get("search") || undefined,
       includeArchived: searchParams.get("includeArchived") === "true",
+      completed: searchParams.get("completed") === "true",
     });
 
     // Fetch issues

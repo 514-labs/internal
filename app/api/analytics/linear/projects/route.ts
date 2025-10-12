@@ -28,6 +28,7 @@ export async function GET(request: NextRequest) {
         : undefined,
       search: searchParams.get("search") || undefined,
       includeArchived: searchParams.get("includeArchived") === "true",
+      state: searchParams.get("state") || undefined,
     });
 
     // Fetch projects
