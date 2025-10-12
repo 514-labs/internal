@@ -4,7 +4,10 @@ import {
   getIssues,
 } from "@/lib/analytics/linear/queries";
 import { WorkClient } from "./_components/work-client";
-import { ConfigurationError as ConfigError } from "@/lib/analytics/shared/errors";
+import {
+  ConfigurationError as ConfigError,
+  AnalyticsError,
+} from "@/lib/analytics/shared/errors";
 import { ConfigurationError } from "./_components/configuration-error";
 
 export default async function WorkPage() {
@@ -31,7 +34,44 @@ export default async function WorkPage() {
       return <ConfigurationError message={error.message} />;
     }
 
-    // For other errors, rethrow to trigger error boundary
-    throw error;
+    // Handle any analytics errors (including wrapped configuration errors)
+    if (error instanceof AnalyticsError) {
+      // Check if the underlying error is a configuration issue
+      const isConfigError =
+        error.message.includes("Linear is not configured") ||
+        error.message.includes("Database migration required") ||
+        error.message.includes("SUPABASE_URL") ||
+        error.message.includes("LINEAR_API_KEY");
+
+      if (isConfigError) {
+        return <ConfigurationError message={error.message} />;
+      }
+    }
+
+    // Handle generic errors that might contain configuration messages
+    if (error instanceof Error) {
+      const isConfigError =
+        error.message.includes("Linear is not configured") ||
+        error.message.includes("Database migration required") ||
+        error.message.includes("SUPABASE_URL") ||
+        error.message.includes("LINEAR_API_KEY") ||
+        error.message.includes("CLERK_SECRET_KEY");
+
+      if (isConfigError) {
+        return <ConfigurationError message={error.message} />;
+      }
+    }
+
+    // Log unexpected errors for debugging
+    console.error("Unexpected error in WorkPage:", error);
+
+    // Display a generic error UI instead of crashing
+    return (
+      <ConfigurationError
+        message={`An unexpected error occurred: ${
+          error instanceof Error ? error.message : String(error)
+        }`}
+      />
+    );
   }
 }
