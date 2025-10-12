@@ -5,7 +5,10 @@
 describe("Environment Variable Loading", () => {
   it("should show what API keys are loaded", () => {
     console.log("\n=== PostHog ===");
-    console.log("POSTHOG_API_KEY:", process.env.POSTHOG_API_KEY);
+    console.log(
+      "POSTHOG_API_KEY:",
+      process.env.POSTHOG_API_KEY ? "[REDACTED]" : "NOT SET"
+    );
     console.log("POSTHOG_PROJECT_ID:", process.env.POSTHOG_PROJECT_ID);
 
     console.log("\n=== Linear OAuth ===");
