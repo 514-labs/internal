@@ -1,0 +1,33 @@
+[
+  {
+    "id": "contact_001",
+    "email": "customer1@example.com",
+    "firstname": "Sarah",
+    "lastname": "Connor",
+    "company": "Cyberdyne Systems",
+    "website": "https://cyberdyne.com",
+    "phone": "+1-555-0100",
+    "lifecyclestage": "customer",
+    "hs_lead_status": "OPEN",
+    "createdate": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": "contact_002",
+    "email": "lead1@example.com",
+    "firstname": "John",
+    "lastname": "Connor",
+    "company": "Resistance HQ",
+    "lifecyclestage": "lead",
+    "hs_lead_status": "IN_PROGRESS",
+    "createdate": "2024-01-02T00:00:00Z"
+  },
+  {
+    "id": "contact_003",
+    "email": "prospect@example.com",
+    "firstname": "Kyle",
+    "lastname": "Reese",
+    "lifecyclestage": "subscriber",
+    "hs_lead_status": "NEW",
+    "createdate": "2024-01-03T00:00:00Z"
+  }
+]

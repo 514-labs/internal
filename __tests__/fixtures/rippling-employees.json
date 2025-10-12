@@ -1,0 +1,50 @@
+[
+  {
+    "id": "emp_001",
+    "firstName": "Jane",
+    "lastName": "Smith",
+    "email": "jane.smith@example.com",
+    "status": "ACTIVE",
+    "title": "Software Engineer",
+    "department": {
+      "id": "dept_001",
+      "name": "Engineering"
+    },
+    "manager": {
+      "id": "emp_002",
+      "firstName": "Bob",
+      "lastName": "Johnson",
+      "email": "bob@example.com"
+    },
+    "startDate": "2023-01-15T00:00:00Z",
+    "employmentType": "FULL_TIME"
+  },
+  {
+    "id": "emp_002",
+    "firstName": "Bob",
+    "lastName": "Johnson",
+    "email": "bob@example.com",
+    "status": "ACTIVE",
+    "title": "Engineering Manager",
+    "department": {
+      "id": "dept_001",
+      "name": "Engineering"
+    },
+    "startDate": "2020-03-01T00:00:00Z",
+    "employmentType": "FULL_TIME"
+  },
+  {
+    "id": "emp_003",
+    "firstName": "Alice",
+    "lastName": "Williams",
+    "email": "alice@example.com",
+    "status": "ACTIVE",
+    "title": "Product Designer",
+    "department": {
+      "id": "dept_002",
+      "name": "Design"
+    },
+    "startDate": "2022-06-01T00:00:00Z",
+    "employmentType": "FULL_TIME"
+  }
+]
