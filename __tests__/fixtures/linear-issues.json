@@ -1,0 +1,52 @@
+[
+  {
+    "id": "issue_001",
+    "identifier": "ENG-1",
+    "title": "Fix login bug",
+    "description": "Users cannot log in with email",
+    "priority": 1,
+    "estimate": 3,
+    "state": {
+      "id": "state_001",
+      "name": "In Progress",
+      "color": "#f2c94c",
+      "type": "started"
+    },
+    "assignee": {
+      "id": "user_001",
+      "name": "John Doe",
+      "email": "john@example.com",
+      "active": true
+    },
+    "team": {
+      "id": "team_001",
+      "name": "Engineering",
+      "key": "ENG"
+    },
+    "createdAt": "2024-01-01T00:00:00Z",
+    "updatedAt": "2024-01-02T00:00:00Z",
+    "url": "https://linear.app/test/issue/ENG-1"
+  },
+  {
+    "id": "issue_002",
+    "identifier": "ENG-2",
+    "title": "Add dark mode",
+    "description": "Implement dark mode theme",
+    "priority": 2,
+    "estimate": 5,
+    "state": {
+      "id": "state_002",
+      "name": "Todo",
+      "color": "#95a2b3",
+      "type": "unstarted"
+    },
+    "team": {
+      "id": "team_001",
+      "name": "Engineering",
+      "key": "ENG"
+    },
+    "createdAt": "2024-01-02T00:00:00Z",
+    "updatedAt": "2024-01-02T00:00:00Z",
+    "url": "https://linear.app/test/issue/ENG-2"
+  }
+]
