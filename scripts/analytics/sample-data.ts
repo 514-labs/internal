@@ -17,6 +17,7 @@ interface SampleOptions {
   table?: string;
   type?: string;
   limit?: number;
+  database?: string;
 }
 
 async function sampleData(options: SampleOptions) {

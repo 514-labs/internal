@@ -43,9 +43,7 @@ export async function getIssues(
       first: options.limit || 50,
       filter: Object.keys(filter).length > 0 ? filter : undefined,
       includeArchived: options.includeArchived,
-      // Linear API only supports ordering by createdAt or updatedAt
-      // For completed issues, we'll use updatedAt as a proxy (issues are updated when completed)
-      orderBy: options.orderBy || (options.completed ? "updatedAt" : undefined),
+      // Note: We sort client-side below for completed issues
     });
 
     const issues = await Promise.all(
@@ -267,7 +265,7 @@ export async function getInitiatives(
           icon: initiative.icon || undefined,
           color: initiative.color || undefined,
           sortOrder: initiative.sortOrder,
-          status: status?.name || status || undefined,
+          status: status || undefined,
           createdAt: initiative.createdAt.toISOString(),
           updatedAt: initiative.updatedAt.toISOString(),
           targetDate: initiative.targetDate
