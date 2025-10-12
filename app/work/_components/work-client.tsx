@@ -18,26 +18,43 @@ interface WorkClientProps {
 
 async function fetchProjects(): Promise<Project[]> {
   const res = await fetch("/api/analytics/linear/projects?state=started");
-  if (!res.ok) throw new Error("Failed to fetch projects");
+  if (!res.ok) {
+    const data = await res
+      .json()
+      .catch(() => ({ error: "Failed to fetch projects" }));
+    throw new Error(data.message || data.error || "Failed to fetch projects");
+  }
   const data = await res.json();
-  return data.data;
+  return data.data || [];
 }
 
 async function fetchInitiatives(): Promise<Initiative[]> {
   // Fetch all initiatives (Linear uses various status names)
   const res = await fetch("/api/analytics/linear/initiatives");
-  if (!res.ok) throw new Error("Failed to fetch initiatives");
+  if (!res.ok) {
+    const data = await res
+      .json()
+      .catch(() => ({ error: "Failed to fetch initiatives" }));
+    throw new Error(
+      data.message || data.error || "Failed to fetch initiatives"
+    );
+  }
   const data = await res.json();
-  return data.data;
+  return data.data || [];
 }
 
 async function fetchCompletedIssues(): Promise<Issue[]> {
   const res = await fetch(
     "/api/analytics/linear/issues?completed=true&limit=10"
   );
-  if (!res.ok) throw new Error("Failed to fetch issues");
+  if (!res.ok) {
+    const data = await res
+      .json()
+      .catch(() => ({ error: "Failed to fetch issues" }));
+    throw new Error(data.message || data.error || "Failed to fetch issues");
+  }
   const data = await res.json();
-  return data.data;
+  return data.data || [];
 }
 
 export function WorkClient({
@@ -51,6 +68,8 @@ export function WorkClient({
     initialData: initialProjects,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
+    retry: false, // Don't retry on configuration errors
+    throwOnError: false, // Don't throw errors, handle them gracefully
   });
 
   const { data: initiatives, isLoading: initiativesLoading } = useQuery({
@@ -59,6 +78,8 @@ export function WorkClient({
     initialData: initialInitiatives,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
+    retry: false,
+    throwOnError: false,
   });
 
   const { data: issues, isLoading: issuesLoading } = useQuery({
@@ -67,6 +88,8 @@ export function WorkClient({
     initialData: initialIssues,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
+    retry: false,
+    throwOnError: false,
   });
 
   return (
