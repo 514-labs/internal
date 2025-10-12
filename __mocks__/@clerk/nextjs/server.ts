@@ -2,6 +2,8 @@
  * Mock Clerk Next.js server for testing
  */
 
+// Default to null (unauthenticated)
+// Tests can override this with mockResolvedValue or mockResolvedValueOnce
 export const auth = jest.fn().mockResolvedValue({
   userId: null,
 });

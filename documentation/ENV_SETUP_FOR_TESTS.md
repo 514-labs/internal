@@ -15,10 +15,6 @@ POSTHOG_PROJECT_ID=12345
 
 # Linear (get from https://linear.app/settings/api)
 LINEAR_API_KEY=lin_api_your_real_key_here
-
-# Rippling (get from Rippling admin panel)
-RIPPLING_API_KEY=your_real_rippling_key
-RIPPLING_API_URL=https://api.rippling.com
 ```
 
 ## Test Validation
@@ -40,8 +36,6 @@ Output will show:
       Missing: POSTHOG_API_KEY, POSTHOG_PROJECT_ID
   ❌ Linear (required)
       Missing: LINEAR_API_KEY
-  ❌ Rippling (required)
-      Missing: RIPPLING_API_KEY
 ```
 
 ### Invalid Key Patterns
@@ -72,16 +66,6 @@ POSTHOG_PROJECT_ID=12345
 # 3. Copy the key (starts with lin_api_)
 
 LINEAR_API_KEY=lin_api_abc123yourkeyhere
-```
-
-### Rippling
-```bash
-# 1. Log in to Rippling admin panel
-# 2. Navigate to API settings
-# 3. Generate or copy API key
-
-RIPPLING_API_KEY=your_rippling_key_here
-RIPPLING_API_URL=https://api.rippling.com
 ```
 
 ### Supabase (Local)
@@ -138,9 +122,8 @@ pnpm run test:analytics:integration
 # Tests will make real API calls to:
 # - PostHog API
 # - Linear GraphQL API
-# - Rippling REST API
 
-Test Suites: 6 passed
+Test Suites: 5 passed
 Tests: 38 passed (real API calls)
 ```
 
@@ -268,8 +251,6 @@ pnpm run test:analytics:integration
   ✅ PostHog (required)
   ❌ Linear (required)
       Missing: LINEAR_API_KEY
-  ❌ Rippling (required)
-      Missing: RIPPLING_API_KEY
 
 # 6. Add remaining keys as needed
 ```

@@ -46,8 +46,6 @@ You'll see output like:
       Missing: POSTHOG_API_KEY, POSTHOG_PROJECT_ID
   ❌ Linear (required)
       Missing: LINEAR_API_KEY
-  ❌ Rippling (required)
-      Missing: RIPPLING_API_KEY
 
 
 ❌ INTEGRATION TESTS REQUIRE REAL API KEYS
@@ -61,9 +59,6 @@ The following API keys are missing or set to test values:
   Linear:
     ⚠️  LINEAR_API_KEY - Using test value (need real key)
 
-  Rippling:
-    ⚠️  RIPPLING_API_KEY - Using test value (need real key)
-
 To run integration tests with real APIs, add these to .env.local:
 
 # PostHog
@@ -72,9 +67,6 @@ POSTHOG_PROJECT_ID=your_real_key_here
 
 # Linear
 LINEAR_API_KEY=your_real_key_here
-
-# Rippling
-RIPPLING_API_KEY=your_real_key_here
 ```
 
 ### Step 2: Add Real API Keys
@@ -88,9 +80,6 @@ POSTHOG_PROJECT_ID=12345
 
 # Linear - Get from https://linear.app/settings/api  
 LINEAR_API_KEY=lin_api_your_real_key  # NOT test_linear_key
-
-# Rippling - Get from Rippling admin panel
-RIPPLING_API_KEY=your_real_key  # NOT test_rippling_key
 ```
 
 ### Step 3: Run Integration Tests
@@ -107,7 +96,6 @@ Now you'll see:
   ✅ Supabase (required)
   ✅ PostHog (required)
   ✅ Linear (required)
-  ✅ Rippling (required)
 
 ✅ All required API keys are configured for integration tests
 ```
@@ -158,15 +146,13 @@ Auto-runs tests on file changes.
 
   ✅ PostHog (required)
   ✅ Linear (required)
-  ✅ Rippling (required)
 
 ✅ All required API keys are configured for integration tests
 
 PASS __tests__/analytics/integration/api-routes/posthog.test.ts
 PASS __tests__/analytics/integration/api-routes/linear.test.ts
-PASS __tests__/analytics/integration/api-routes/rippling.test.ts
 
-Test Suites: 6 passed
+Test Suites: 5 passed
 Tests: 38 passed
 ```
 
@@ -197,7 +183,6 @@ Tests will still run but use mocks instead of real APIs.
 |---------|----------------|--------|
 | PostHog | [Project Settings](https://app.posthog.com/project/settings) | `phc_...` |
 | Linear | [API Settings](https://linear.app/settings/api) | `lin_api_...` |
-| Rippling | Rippling Admin Panel → API | Various |
 | Supabase | `pnpm run db:start` (local) | `eyJ...` (JWT) |
 
 ## Test Validation Logic

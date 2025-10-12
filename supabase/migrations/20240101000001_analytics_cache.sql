@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS analytics_query_cache (
   query_key TEXT NOT NULL UNIQUE,
   query_params JSONB,
   result_data JSONB NOT NULL,
-  source TEXT NOT NULL, -- 'posthog', 'linear', 'rippling'
+  source TEXT NOT NULL, -- 'posthog', 'linear'
   cached_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   expires_at TIMESTAMPTZ NOT NULL,
   hit_count INTEGER DEFAULT 0,

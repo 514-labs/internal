@@ -17,7 +17,6 @@ import {
 import { AuthenticationError } from "@/lib/analytics/shared/errors";
 import { GET as eventsGET } from "@/app/api/analytics/posthog/events/route";
 import { GET as issuesGET } from "@/app/api/analytics/linear/issues/route";
-import { GET as companyGET } from "@/app/api/analytics/rippling/company/route";
 import { NextRequest } from "next/server";
 import {
   setupTestDatabase,
@@ -117,38 +116,20 @@ describe("E2E: Complete API Key Flow", () => {
 
     expect(linearResponse.status).toBe(200);
 
-    // Step 7: Use API key to access Rippling endpoint
-    const ripplingRequest = new NextRequest(
-      "http://localhost:3000/api/analytics/rippling/company"
-    );
-    ripplingRequest.headers.set("Authorization", `Bearer ${apiKey}`);
-
-    // Mock Rippling API
-    global.fetch = jest.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        data: { id: "company_123", name: "Test Corp" },
-      }),
-    });
-
-    const ripplingResponse = await companyGET(ripplingRequest);
-
-    expect(ripplingResponse.status).toBe(200);
-
-    // Step 8: Revoke API key (updates DB)
+    // Step 7: Revoke API key (updates DB)
     await revokeApiKey(testUserId, ourKey.id);
 
-    // Step 9: Verify key shows as revoked in DB
+    // Step 8: Verify key shows as revoked in DB
     const keysAfterRevoke = await listApiKeys(testUserId);
     const revokedKey = keysAfterRevoke.find((k) => k.id === ourKey.id);
 
     expect(revokedKey?.revoked).toBe(true);
     expect(revokedKey?.revoked_at).not.toBeNull();
 
-    // Step 10: Verify revoked key doesn't work
+    // Step 9: Verify revoked key doesn't work
     await expect(validateApiKey(apiKey)).rejects.toThrow(AuthenticationError);
 
-    // Step 11: Verify revoked key can't access APIs
+    // Step 10: Verify revoked key can't access APIs
     const revokedRequest = new NextRequest(
       "http://localhost:3000/api/analytics/posthog/events"
     );
@@ -158,7 +139,7 @@ describe("E2E: Complete API Key Flow", () => {
 
     expect(revokedResponse.status).toBe(401);
 
-    // Step 12: Delete key from DB (cleanup validates DB deletion)
+    // Step 11: Delete key from DB (cleanup validates DB deletion)
     await cleanupUserApiKeys(testUserId);
 
     const keysAfterDelete = await listApiKeys(testUserId);

@@ -31,11 +31,6 @@ const SERVICES: ServiceConfig[] = [
     ],
     required: true, // OAuth is required, no API key fallback
   },
-  {
-    name: "Rippling",
-    envVars: ["RIPPLING_API_KEY"],
-    required: true,
-  },
 ];
 
 interface ValidationResult {

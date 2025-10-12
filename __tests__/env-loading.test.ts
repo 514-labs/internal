@@ -19,12 +19,6 @@ describe("Environment Variable Loading", () => {
       process.env.LINEAR_OAUTH_REDIRECT_URI
     );
 
-    console.log("\n=== Rippling ===");
-    console.log(
-      "RIPPLING_API_KEY:",
-      process.env.RIPPLING_API_KEY ? "[REDACTED]" : "NOT SET"
-    );
-
     console.log("\n=== Supabase ===");
     console.log("SUPABASE_URL:", process.env.SUPABASE_URL);
 
@@ -45,15 +39,6 @@ describe("Environment Variable Loading", () => {
       console.log("✅ Real Linear OAuth credentials detected!");
     } else {
       console.log("⚠️  Test Linear OAuth credentials");
-    }
-
-    if (
-      process.env.RIPPLING_API_KEY &&
-      !process.env.RIPPLING_API_KEY.startsWith("test_")
-    ) {
-      console.log("✅ Real Rippling key detected!");
-    } else {
-      console.log("⚠️  Test Rippling key");
     }
   });
 });

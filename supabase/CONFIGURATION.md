@@ -45,7 +45,7 @@ All other Supabase services are disabled since they're not needed:
 - **Alternative**: Use production email service if needed
 
 ### ❌ Analytics (Supabase)
-- **Reason**: Using PostHog, Linear, Rippling for analytics
+- **Reason**: Using PostHog and Linear for analytics
 - **Alternative**: Custom analytics integration layer
 
 ## Configuration File
@@ -93,7 +93,6 @@ This minimal configuration:
   - Supabase → Database (API keys)
   - PostHog → Product analytics
   - Linear → Project management data
-  - Rippling → Employee data
 
 ## What You Get
 

@@ -50,11 +50,11 @@ if (!process.env.LINEAR_OAUTH_REDIRECT_URI) {
 if (!process.env.LINEAR_API_KEY) {
   process.env.LINEAR_API_KEY = "test_linear_key";
 }
-if (!process.env.RIPPLING_API_KEY) {
-  process.env.RIPPLING_API_KEY = "test_rippling_key";
-}
-if (!process.env.RIPPLING_API_URL) {
-  process.env.RIPPLING_API_URL = "https://api.rippling.com";
-}
 
 // NOTE: NODE_ENV is set by Jest automatically and cannot be overridden
+
+// Reset in-memory database before each test
+beforeEach(() => {
+  const { resetInMemoryDb } = require("./__mocks__/@supabase/supabase-js");
+  resetInMemoryDb();
+});

@@ -7,15 +7,13 @@
  * Usage:
  *   pnpm tsx scripts/analytics/sample-data.ts --source hubspot --table contacts --limit 5
  *   pnpm tsx scripts/analytics/sample-data.ts --source linear --type issues --limit 20
- *   pnpm tsx scripts/analytics/sample-data.ts --source rippling --type employees
  */
 
 import { queryHubspotData } from "../../lib/analytics/posthog/queries";
 import { getIssues } from "../../lib/analytics/linear/queries";
-import { getEmployees } from "../../lib/analytics/rippling/queries";
 
 interface SampleOptions {
-  source: "hubspot" | "linear" | "rippling";
+  source: "hubspot" | "linear";
   table?: string;
   type?: string;
   limit?: number;
@@ -53,22 +51,9 @@ async function sampleData(options: SampleOptions) {
         }
         break;
 
-      case "rippling":
-        const ripplingType = options.type || "employees";
-        if (ripplingType === "employees") {
-          data = await getEmployees({
-            limit: options.limit || 10,
-          });
-        } else {
-          console.error(`❌ Unknown Rippling type: ${ripplingType}`);
-          console.error("Available types: employees");
-          process.exit(1);
-        }
-        break;
-
       default:
         console.error(`❌ Unknown source: ${options.source}`);
-        console.error("Available sources: hubspot, linear, rippling");
+        console.error("Available sources: hubspot, linear");
         process.exit(1);
     }
 
@@ -122,7 +107,7 @@ function parseArgs(): SampleOptions {
 
   if (!options.source) {
     console.error("❌ --source is required");
-    console.error("Available sources: hubspot, linear, rippling");
+    console.error("Available sources: hubspot, linear");
     process.exit(1);
   }
 

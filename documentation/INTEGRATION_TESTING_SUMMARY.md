@@ -27,9 +27,6 @@ Updated all integration tests to test the **full database lifecycle** for API ke
    - ✅ Same pattern as Linear
    - ✅ Full DB lifecycle testing
 
-3. **`__tests__/analytics/integration/api-routes/rippling.test.ts`**
-   - ✅ Same pattern as Linear
-   - ✅ Full DB lifecycle testing
 
 4. **`__tests__/analytics/integration/api-routes/linear-oauth.test.ts`**
    - ✅ Added database setup/cleanup

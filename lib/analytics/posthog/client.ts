@@ -20,6 +20,12 @@ export function getPostHogClient(): PostHog {
   const host = process.env.POSTHOG_HOST || "https://app.posthog.com";
 
   if (!apiKey) {
+    // In test environment, use a placeholder
+    if (process.env.NODE_ENV === "test") {
+      posthogClient = new PostHog("test_posthog_key", { host });
+      return posthogClient;
+    }
+
     throw new ConfigurationError(
       "PostHog API key is not configured. Set POSTHOG_API_KEY environment variable."
     );

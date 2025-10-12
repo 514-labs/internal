@@ -60,7 +60,7 @@ describe("API Key Management", () => {
       // Validate it
       const userId = await validateApiKey(apiKey);
 
-      expect(userId).toBe("user_123"); // From mock
+      expect(userId).toBe("user_validate");
     });
 
     it("should reject key that doesn't exist in database", async () => {
@@ -109,7 +109,7 @@ describe("API Key Management", () => {
 
       const userId = await withApiKeyAuth(request);
 
-      expect(userId).toBe("user_123"); // From mock
+      expect(userId).toBe("user_auth");
     });
 
     it("should reject request without Authorization header and no session", async () => {
