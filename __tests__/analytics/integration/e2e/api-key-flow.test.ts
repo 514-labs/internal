@@ -219,7 +219,7 @@ describe("E2E: Complete API Key Flow", () => {
     // Step 4: Verify DB record structure
     expect(keyRecord.user_id).toBe(testUserId);
     expect(keyRecord.key_hash).toBeDefined();
-    expect(keyRecord.key_hash.length).toBe(64); // SHA-256 hex
+    expect(keyRecord.key_hash.length).toBe(60); // bcrypt hash
     expect(keyRecord.created_at).toBeDefined();
     expect(keyRecord.revoked).toBe(false);
     expect(keyRecord.revoked_at).toBeNull();

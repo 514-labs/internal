@@ -254,10 +254,10 @@ describe("E2E: Clerk Testing Approach with API Keys", () => {
       const keyRecord = keysInDb[0];
       createdKeys.push(keyRecord.id);
 
-      // The key_hash should be a SHA-256 hex string (64 chars)
+      // The key_hash should be a bcrypt hash (60 chars)
       expect(keyRecord.key_hash).toBeDefined();
-      expect(keyRecord.key_hash.length).toBe(64);
-      expect(keyRecord.key_hash).toMatch(/^[a-f0-9]{64}$/);
+      expect(keyRecord.key_hash.length).toBe(60);
+      expect(keyRecord.key_hash).toMatch(/^\$2[aby]\$\d{2}\$/); // bcrypt format
 
       // The hash should NOT equal the plaintext key
       expect(keyRecord.key_hash).not.toBe(apiKey);

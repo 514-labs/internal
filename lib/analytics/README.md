@@ -210,7 +210,7 @@ const response = await fetch('/api/analytics/posthog/events');
 
 ### Security Note
 
-API keys are securely stored in Supabase with Row Level Security (RLS). They are **never** stored in Clerk metadata or exposed to the client. Only SHA-256 hashes are persisted.
+API keys are securely stored in Supabase with Row Level Security (RLS). They are **never** stored in Clerk metadata or exposed to the client. Only bcrypt hashes are persisted.
 
 ### Generate an API Key
 

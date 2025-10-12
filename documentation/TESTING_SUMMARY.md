@@ -139,7 +139,7 @@ Following [Clerk's testing documentation](https://clerk.com/docs/guides/developm
 - ✅ Fixed OTP support (infrastructure ready)
 
 ### 2. API Key Security Testing
-- ✅ Keys are hashed with SHA-256
+- ✅ Keys are hashed with bcrypt
 - ✅ Plain text keys never stored
 - ✅ Validation updates last_used_at atomically
 - ✅ Revoked keys cannot be reused
