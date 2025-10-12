@@ -22,11 +22,22 @@ const config: Config = {
   ],
   collectCoverageFrom: [
     "app/**/*.{ts,tsx}",
+    "lib/**/*.{ts,tsx}",
     "!app/**/*.d.ts",
     "!app/**/layout.tsx",
     "!app/**/page.tsx",
+    "!lib/**/*.d.ts",
   ],
+  coverageThreshold: {
+    global: {
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80,
+    },
+  },
   setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
+  testTimeout: 70000, // Increased for Clerk session token tests (60s token lifetime)
   transformIgnorePatterns: [
     "node_modules/(?!(@clerk|@vercel|@modelcontextprotocol)/)",
   ],
