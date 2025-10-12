@@ -39,11 +39,11 @@ export class PostHog {
 }
 
 // Mock fetch for HogQL queries
-global.fetch = jest.fn((url: string, options?: any) => {
+global.fetch = jest.fn((url: string | URL, options?: any) => {
   const urlStr = typeof url === "string" ? url : url.toString();
 
   // Mock HogQL query responses
-  if (urlStr.includes("/query/")) {
+  if (urlStr.includes("/query/") || urlStr.includes("/api/projects/")) {
     // Parse the body to determine the query
     let body: any = {};
     try {

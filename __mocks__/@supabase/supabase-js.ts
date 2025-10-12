@@ -228,6 +228,21 @@ class IntegrationQueryBuilder {
         };
       }
 
+      // Handle DELETE
+      if (this.shouldDelete) {
+        const beforeCount = inMemoryDb.integration_tokens.length;
+        inMemoryDb.integration_tokens = inMemoryDb.integration_tokens.filter(
+          (record) => !this.matchesFilters(record)
+        );
+        const deleted = beforeCount - inMemoryDb.integration_tokens.length;
+
+        return {
+          data: null,
+          error: null,
+          count: deleted,
+        };
+      }
+
       // Handle SELECT
       let results = inMemoryDb.integration_tokens.filter((record) =>
         this.matchesFilters(record)

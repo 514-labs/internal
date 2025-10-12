@@ -30,6 +30,7 @@ export async function GET(request: NextRequest) {
       throw new ValidationError("table query parameter is required");
     }
 
+    const sortOrderParam = searchParams.get("sortOrder");
     const options = QueryOptionsSchema.parse({
       limit: searchParams.get("limit")
         ? parseInt(searchParams.get("limit")!)
@@ -40,7 +41,9 @@ export async function GET(request: NextRequest) {
       startDate: searchParams.get("startDate") || undefined,
       endDate: searchParams.get("endDate") || undefined,
       sortBy: searchParams.get("sortBy") || undefined,
-      sortOrder: searchParams.get("sortOrder") as "asc" | "desc" | undefined,
+      sortOrder: sortOrderParam
+        ? (sortOrderParam as "asc" | "desc")
+        : undefined,
     });
 
     // Fetch data based on table type
