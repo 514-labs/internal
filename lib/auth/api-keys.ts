@@ -13,7 +13,7 @@ import {
 } from "../analytics/shared/errors";
 import { supabaseAnalyticsClient } from "../analytics/supabase/client";
 import * as crypto from "crypto";
-
+import * as bcrypt from "bcrypt";
 const API_KEY_PREFIX = "sk_analytics_";
 
 interface ApiKeyRecord {
@@ -50,8 +50,9 @@ export async function generateApiKey(
     const randomBytes = crypto.randomBytes(32);
     const apiKey = `${API_KEY_PREFIX}${randomBytes.toString("base64url")}`;
 
-    // Hash the API key for storage
-    const hashedKey = crypto.createHash("sha256").update(apiKey).digest("hex");
+    // Hash the API key for storage using bcrypt
+    const salt = bcrypt.genSaltSync(12);
+    const hashedKey = bcrypt.hashSync(apiKey, salt);
 
     // Store hashed key in Supabase
     const { error } = await supabase.from("api_keys").insert({
