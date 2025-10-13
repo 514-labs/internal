@@ -1,5 +1,6 @@
 /**
  * PostHog query functions
+ * Re-exports from specialized modules + legacy functions
  */
 
 import { posthogAnalyticsClient } from "./client";
@@ -16,6 +17,33 @@ import type {
   HubspotCompany,
   HogQLQueryResult,
 } from "./schemas";
+
+// Re-export new product metrics
+export {
+  getMoosestackInstallMetrics,
+  getMoosestackCommandMetrics,
+  getBorealDeploymentMetrics,
+  getBorealProjectMetrics,
+  getGitHubStarMetrics,
+} from "./product-metrics";
+
+// Re-export HubSpot GTM metrics
+export {
+  getLeadGenerationMetrics,
+  getSalesPipelineMetrics,
+  getCustomerLifecycleMetrics,
+} from "./hubspot-metrics";
+
+// Re-export web analytics metrics
+export {
+  getWebTrafficMetrics,
+  getTrafficSourceMetrics,
+  getConversionFunnelMetrics,
+} from "./web-metrics";
+
+// Re-export helpers and filters
+export * from "./helpers";
+export * from "./filters";
 
 /**
  * Get events from PostHog
@@ -276,4 +304,379 @@ export async function getHubspotCompanies(
   options: QueryOptions
 ): Promise<HubspotCompany[]> {
   return queryHubspotData<HubspotCompany>("hubspot_companies", options);
+}
+
+/**
+ * Format ISO date string to HogQL-compatible format
+ */
+function formatDateForHogQL(isoDate: string): string {
+  // Convert ISO 8601 to HogQL format: YYYY-MM-DD HH:MM:SS
+  const date = new Date(isoDate);
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  const hours = String(date.getUTCHours()).padStart(2, "0");
+  const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+  const seconds = String(date.getUTCSeconds()).padStart(2, "0");
+
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
+/**
+ * Get product metrics (DAU/MAU, conversion rates, engagement)
+ */
+export async function getProductMetrics(
+  product: "boreal" | "moosestack",
+  timeWindow: { startDate: string; endDate: string }
+): Promise<{
+  dau: number;
+  mau: number;
+  conversionRate: number;
+  engagementScore: number;
+  specificMetrics: Record<string, number>;
+  chartData: Array<{ date: string; users: number }>;
+}> {
+  try {
+    const startDate = formatDateForHogQL(timeWindow.startDate);
+    const endDate = formatDateForHogQL(timeWindow.endDate);
+
+    // Calculate DAU (distinct users per day, averaged over the period)
+    const dauQuery = `
+      SELECT 
+        toDate(timestamp) as date,
+        count(DISTINCT distinct_id) as users
+      FROM events
+      WHERE timestamp >= '${startDate}'
+        AND timestamp <= '${endDate}'
+        AND (
+          properties.product = '${product}'
+          OR event LIKE '${product}_%'
+        )
+      GROUP BY date
+      ORDER BY date DESC
+    `;
+
+    const dauResult = await posthogAnalyticsClient.executeHogQL(dauQuery);
+    const dauData = dauResult as { results?: unknown[][] };
+    const chartData = (dauData.results || []).map((row: unknown[]) => ({
+      date: String(row[0]),
+      users: Number(row[1]),
+    }));
+
+    const dau =
+      chartData.length > 0
+        ? chartData.reduce((sum, d) => sum + d.users, 0) / chartData.length
+        : 0;
+
+    // Calculate MAU (distinct users in last 30 days)
+    const mauQuery = `
+      SELECT count(DISTINCT distinct_id) as mau
+      FROM events
+      WHERE timestamp >= '${startDate}'
+        AND timestamp <= '${endDate}'
+        AND (
+          properties.product = '${product}'
+          OR event LIKE '${product}_%'
+        )
+    `;
+
+    const mauResult = await posthogAnalyticsClient.executeHogQL(mauQuery);
+    const mauData = mauResult as { results?: unknown[][] };
+    const mau = mauData.results?.[0]?.[0] ? Number(mauData.results[0][0]) : 0;
+
+    // Calculate engagement score (avg events per user)
+    const engagementQuery = `
+      SELECT 
+        count(*) as total_events,
+        count(DISTINCT distinct_id) as total_users
+      FROM events
+      WHERE timestamp >= '${startDate}'
+        AND timestamp <= '${endDate}'
+        AND (
+          properties.product = '${product}'
+          OR event LIKE '${product}_%'
+        )
+    `;
+
+    const engagementResult = await posthogAnalyticsClient.executeHogQL(
+      engagementQuery
+    );
+    const engagementData = engagementResult as { results?: unknown[][] };
+    const totalEvents = engagementData.results?.[0]?.[0]
+      ? Number(engagementData.results[0][0])
+      : 0;
+    const totalUsers = engagementData.results?.[0]?.[1]
+      ? Number(engagementData.results[0][1])
+      : 0;
+    const engagementScore = totalUsers > 0 ? totalEvents / totalUsers : 0;
+
+    // Calculate conversion rate (simplified - users who completed key event)
+    // Split into two simpler queries to avoid HogQL CASE WHEN issues
+    const convertedQuery = `
+      SELECT count(DISTINCT distinct_id) as converted
+      FROM events
+      WHERE timestamp >= '${startDate}'
+        AND timestamp <= '${endDate}'
+        AND (event LIKE '${product}_production%' OR event LIKE '${product}_active%')
+    `;
+
+    const totalQuery = `
+      SELECT count(DISTINCT distinct_id) as total
+      FROM events
+      WHERE timestamp >= '${startDate}'
+        AND timestamp <= '${endDate}'
+        AND (
+          properties.product = '${product}'
+          OR event LIKE '${product}_%'
+        )
+    `;
+
+    const [convertedResult, totalResult] = await Promise.all([
+      posthogAnalyticsClient.executeHogQL(convertedQuery),
+      posthogAnalyticsClient.executeHogQL(totalQuery),
+    ]);
+
+    const convertedData = convertedResult as { results?: unknown[][] };
+    const totalData = totalResult as { results?: unknown[][] };
+    const converted = convertedData.results?.[0]?.[0]
+      ? Number(convertedData.results[0][0])
+      : 0;
+    const total = totalData.results?.[0]?.[0]
+      ? Number(totalData.results[0][0])
+      : 0;
+    const conversionRate = total > 0 ? (converted / total) * 100 : 0;
+
+    // Product-specific metrics
+    const specificMetrics: Record<string, number> = {};
+
+    if (product === "boreal") {
+      // Boreal-specific: deployment count, active projects
+      const borealMetricsQuery = `
+        SELECT 
+          countIf(event = 'boreal_deployment') as deployments,
+          count(DISTINCT properties.project_id) as active_projects
+        FROM events
+        WHERE timestamp >= '${startDate}'
+          AND timestamp <= '${endDate}'
+          AND event LIKE 'boreal_%'
+      `;
+
+      const borealResult = await posthogAnalyticsClient.executeHogQL(
+        borealMetricsQuery
+      );
+      const borealData = borealResult as { results?: unknown[][] };
+      specificMetrics.deployments = borealData.results?.[0]?.[0]
+        ? Number(borealData.results[0][0])
+        : 0;
+      specificMetrics.activeProjects = borealData.results?.[0]?.[1]
+        ? Number(borealData.results[0][1])
+        : 0;
+    } else if (product === "moosestack") {
+      // Moosestack-specific: installs, doc views, builds
+      const moosestackMetricsQuery = `
+        SELECT 
+          countIf(event = 'moosestack_installed') as installs,
+          countIf(event = 'moosestack_docs_read') as doc_views,
+          countIf(event LIKE '%build%') as builds
+        FROM events
+        WHERE timestamp >= '${startDate}'
+          AND timestamp <= '${endDate}'
+          AND event LIKE 'moosestack_%'
+      `;
+
+      const moosestackResult = await posthogAnalyticsClient.executeHogQL(
+        moosestackMetricsQuery
+      );
+      const moosestackData = moosestackResult as { results?: unknown[][] };
+      specificMetrics.installs = moosestackData.results?.[0]?.[0]
+        ? Number(moosestackData.results[0][0])
+        : 0;
+      specificMetrics.docViews = moosestackData.results?.[0]?.[1]
+        ? Number(moosestackData.results[0][1])
+        : 0;
+      specificMetrics.builds = moosestackData.results?.[0]?.[2]
+        ? Number(moosestackData.results[0][2])
+        : 0;
+    }
+
+    return {
+      dau,
+      mau,
+      conversionRate,
+      engagementScore,
+      specificMetrics,
+      chartData,
+    };
+  } catch (error) {
+    throw new ExternalAPIError(
+      "PostHog",
+      `Error fetching product metrics: ${(error as Error).message}`
+    );
+  }
+}
+
+/**
+ * Get journey metrics for a specific journey
+ */
+export async function getJourneyMetrics(
+  journeyId: string,
+  events: string[],
+  timeWindow: { startDate: string; endDate: string }
+): Promise<{
+  totalStarted: number;
+  totalCompleted: number;
+  completionRate: number;
+  steps: Array<{
+    eventName: string;
+    userCount: number;
+    completionRate: number;
+    dropOffRate: number;
+  }>;
+}> {
+  try {
+    const startDate = formatDateForHogQL(timeWindow.startDate);
+    const endDate = formatDateForHogQL(timeWindow.endDate);
+
+    // Build funnel query for the journey
+    const eventsList = events.map((e) => `'${e}'`).join(", ");
+
+    // Get funnel data
+    const funnelQuery = `
+      SELECT 
+        step,
+        count(DISTINCT person_id) as user_count
+      FROM (
+        SELECT 
+          distinct_id as person_id,
+          arrayJoin(range(1, ${events.length + 1})) as step
+        FROM events
+        WHERE timestamp >= '${startDate}'
+          AND timestamp <= '${endDate}'
+          AND event IN (${eventsList})
+        GROUP BY person_id
+        HAVING step <= length(groupArray(event))
+      )
+      GROUP BY step
+      ORDER BY step
+    `;
+
+    const funnelResult = await posthogAnalyticsClient.executeHogQL(funnelQuery);
+    const funnelData = funnelResult as { results?: unknown[][] };
+
+    // Process results
+    const totalStarted = funnelData.results?.[0]?.[1]
+      ? Number(funnelData.results[0][1])
+      : 0;
+    const totalCompleted = funnelData.results?.[events.length - 1]?.[1]
+      ? Number(funnelData.results[events.length - 1][1])
+      : 0;
+    const completionRate =
+      totalStarted > 0 ? (totalCompleted / totalStarted) * 100 : 0;
+
+    // Calculate per-step metrics
+    const steps = events.map((eventName, index) => {
+      const userCount = funnelData.results?.[index]?.[1]
+        ? Number(funnelData.results[index][1])
+        : 0;
+      const stepCompletionRate =
+        totalStarted > 0 ? (userCount / totalStarted) * 100 : 0;
+      const previousUserCount =
+        index > 0 && funnelData.results?.[index - 1]?.[1]
+          ? Number(funnelData.results[index - 1][1])
+          : totalStarted;
+      const dropOffRate =
+        previousUserCount > 0
+          ? ((previousUserCount - userCount) / previousUserCount) * 100
+          : 0;
+
+      return {
+        eventName,
+        userCount,
+        completionRate: stepCompletionRate,
+        dropOffRate,
+      };
+    });
+
+    return {
+      totalStarted,
+      totalCompleted,
+      completionRate,
+      steps,
+    };
+  } catch (error) {
+    throw new ExternalAPIError(
+      "PostHog",
+      `Error fetching journey metrics: ${(error as Error).message}`
+    );
+  }
+}
+
+/**
+ * Get overview metrics across all products
+ */
+export async function getOverviewMetrics(timeWindow: {
+  startDate: string;
+  endDate: string;
+}): Promise<{
+  totalUsers: number;
+  totalActiveUsers: number;
+  totalEvents: number;
+  productsMetrics: {
+    boreal: { dau: number; mau: number };
+    moosestack: { dau: number; mau: number };
+  };
+}> {
+  try {
+    const startDate = formatDateForHogQL(timeWindow.startDate);
+    const endDate = formatDateForHogQL(timeWindow.endDate);
+
+    // Get overall metrics
+    const overallQuery = `
+      SELECT 
+        count(DISTINCT distinct_id) as total_users,
+        count(*) as total_events
+      FROM events
+      WHERE timestamp >= '${startDate}'
+        AND timestamp <= '${endDate}'
+    `;
+
+    const overallResult = await posthogAnalyticsClient.executeHogQL(
+      overallQuery
+    );
+    const overallData = overallResult as { results?: unknown[][] };
+    const totalUsers = overallData.results?.[0]?.[0]
+      ? Number(overallData.results[0][0])
+      : 0;
+    const totalEvents = overallData.results?.[0]?.[1]
+      ? Number(overallData.results[0][1])
+      : 0;
+
+    // Get active users (users with events in the period)
+    const totalActiveUsers = totalUsers;
+
+    // Get per-product metrics
+    const borealMetrics = await getProductMetrics("boreal", timeWindow);
+    const moosestackMetrics = await getProductMetrics("moosestack", timeWindow);
+
+    return {
+      totalUsers,
+      totalActiveUsers,
+      totalEvents,
+      productsMetrics: {
+        boreal: {
+          dau: borealMetrics.dau,
+          mau: borealMetrics.mau,
+        },
+        moosestack: {
+          dau: moosestackMetrics.dau,
+          mau: moosestackMetrics.mau,
+        },
+      },
+    };
+  } catch (error) {
+    throw new ExternalAPIError(
+      "PostHog",
+      `Error fetching overview metrics: ${(error as Error).message}`
+    );
+  }
 }
