@@ -74,34 +74,11 @@ export class PostHogAnalyticsClient implements AnalyticsClient {
     const apiKey = process.env.POSTHOG_API_KEY;
     const host = process.env.POSTHOG_HOST || "https://app.posthog.com";
 
-    console.log("[PostHog Client] executeHogQL called");
-    console.log("[PostHog Client] Config:", {
-      projectId: projectId ? "SET" : "NOT SET",
-      apiKey: apiKey ? `${apiKey.substring(0, 10)}...` : "NOT SET",
-      host,
-    });
-
     if (!projectId) {
       throw new ConfigurationError(
         "PostHog project ID is not configured. Set POSTHOG_PROJECT_ID environment variable."
       );
     }
-
-    const requestBody = {
-      query: {
-        kind: "HogQLQuery",
-        query,
-      },
-    };
-
-    console.log(
-      "[PostHog Client] Request URL:",
-      `${host}/api/projects/${projectId}/query/`
-    );
-    console.log(
-      "[PostHog Client] Request body:",
-      JSON.stringify(requestBody, null, 2)
-    );
 
     // Execute HogQL query via API
     const response = await fetch(`${host}/api/projects/${projectId}/query/`, {
@@ -110,24 +87,20 @@ export class PostHogAnalyticsClient implements AnalyticsClient {
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,
       },
-      body: JSON.stringify(requestBody),
+      body: JSON.stringify({
+        query: {
+          kind: "HogQLQuery",
+          query,
+        },
+      }),
     });
-
-    console.log("[PostHog Client] Response status:", response.status);
-    console.log("[PostHog Client] Response ok:", response.ok);
 
     if (!response.ok) {
       const error = await response.text();
-      console.error("[PostHog Client] Error response:", error);
       throw new Error(`PostHog HogQL query failed: ${error}`);
     }
 
-    const result = await response.json();
-    console.log(
-      "[PostHog Client] Response data:",
-      JSON.stringify(result, null, 2)
-    );
-    return result;
+    return response.json();
   }
 
   /**
