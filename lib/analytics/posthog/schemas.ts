@@ -300,305 +300,113 @@ export const OverviewMetricsSchema = z.object({
 export type OverviewMetrics = z.infer<typeof OverviewMetricsSchema>;
 
 /**
- * Moosestack Install Metrics Schema
+ * Cumulative Install Data Point Schema
  */
-export const MoosestackInstallMetricsSchema = z.object({
+export const CumulativeInstallDataPointSchema = z.object({
+  date: z.string(),
+  total: z.number(),
+  breakdown: z.string(), // cli_name or breakdown value
+});
+
+export type CumulativeInstallDataPoint = z.infer<
+  typeof CumulativeInstallDataPointSchema
+>;
+
+/**
+ * Cumulative OSS Install Metrics Schema
+ */
+export const CumulativeOSSInstallMetricsSchema = z.object({
+  timeWindow: TimeWindowSchema,
   totalInstalls: z.number(),
-  uniqueInstalls: z.number(),
-  installsByProduct: z.array(
+  dataPoints: z.array(CumulativeInstallDataPointSchema),
+  breakdownSeries: z.array(
     z.object({
-      product: z.string(), // moose, aurora, sloan
-      installs: z.number(),
-      timeSeries: z.array(
+      breakdown: z.string(),
+      dataPoints: z.array(
         z.object({
           date: z.string(),
-          installs: z.number(),
+          cumulativeTotal: z.number(),
         })
       ),
+      total: z.number(),
     })
   ),
-  timeWindow: z.object({
-    startDate: z.string(),
-    endDate: z.string(),
-  }),
 });
 
-export type MoosestackInstallMetrics = z.infer<
-  typeof MoosestackInstallMetricsSchema
+export type CumulativeOSSInstallMetrics = z.infer<
+  typeof CumulativeOSSInstallMetricsSchema
 >;
 
 /**
- * Moosestack CLI Command Usage Schema
+ * Project Data Point Schema
  */
-export const MoosestackCommandMetricsSchema = z.object({
-  totalCommands: z.number(),
-  topCommands: z.array(
-    z.object({
-      command: z.string(),
-      count: z.number(),
-      timeSeries: z.array(
-        z.object({
-          date: z.string(),
-          count: z.number(),
-        })
-      ),
-    })
-  ),
-  timeWindow: z.object({
-    startDate: z.string(),
-    endDate: z.string(),
-  }),
+export const ProjectDataPointSchema = z.object({
+  date: z.string(),
+  total: z.number(),
+  breakdown: z.string(), // org_id or breakdown value
 });
 
-export type MoosestackCommandMetrics = z.infer<
-  typeof MoosestackCommandMetricsSchema
->;
+export type ProjectDataPoint = z.infer<typeof ProjectDataPointSchema>;
 
 /**
- * Boreal Deployment Metrics Schema
+ * Cumulative Projects Per Organization Metrics Schema
  */
-export const BorealDeploymentMetricsSchema = z.object({
-  totalDeployments: z.number(),
-  deploymentsByOrg: z.array(
-    z.object({
-      orgId: z.string(),
-      deployments: z.number(),
-      timeSeries: z.array(
-        z.object({
-          date: z.string(),
-          deployments: z.number(),
-        })
-      ),
-    })
-  ),
-  recentDeployments: z.array(
-    z.object({
-      deployId: z.string(),
-      projectName: z.string(),
-      repoUrl: z.string().optional(),
-      status: z.string(),
-      createdAt: z.string(),
-      orgId: z.string(),
-    })
-  ),
-  timeWindow: z.object({
-    startDate: z.string(),
-    endDate: z.string(),
-  }),
-});
-
-export type BorealDeploymentMetrics = z.infer<
-  typeof BorealDeploymentMetricsSchema
->;
-
-/**
- * Boreal Projects Metrics Schema
- */
-export const BorealProjectMetricsSchema = z.object({
+export const CumulativeProjectsMetricsSchema = z.object({
+  timeWindow: TimeWindowSchema,
   totalProjects: z.number(),
-  projectsByOrg: z.array(
+  totalOrganizations: z.number(),
+  dataPoints: z.array(ProjectDataPointSchema),
+  breakdownSeries: z.array(
     z.object({
-      orgId: z.string(),
-      projects: z.number(),
-      timeSeries: z.array(
+      breakdown: z.string(),
+      dataPoints: z.array(
         z.object({
           date: z.string(),
-          projects: z.number(),
+          cumulativeTotal: z.number(),
         })
       ),
+      total: z.number(),
     })
   ),
-  timeWindow: z.object({
-    startDate: z.string(),
-    endDate: z.string(),
-  }),
 });
 
-export type BorealProjectMetrics = z.infer<typeof BorealProjectMetricsSchema>;
-
-/**
- * GitHub Star Metrics Schema
- */
-export const GitHubStarMetricsSchema = z.object({
-  totalStars: z.number(),
-  starsAdded: z.number(),
-  starsRemoved: z.number(),
-  netStars: z.number(),
-  timeSeries: z.array(
-    z.object({
-      date: z.string(),
-      stars: z.number(),
-    })
-  ),
-  timeWindow: z.object({
-    startDate: z.string(),
-    endDate: z.string(),
-  }),
-});
-
-export type GitHubStarMetrics = z.infer<typeof GitHubStarMetricsSchema>;
-
-/**
- * Lead Generation Metrics Schema (HubSpot)
- */
-export const LeadGenerationMetricsSchema = z.object({
-  totalContacts: z.number(),
-  newContacts: z.number(),
-  mqls: z.number(),
-  sqls: z.number(),
-  contactToLeadRate: z.number(),
-  leadVelocity: z.number(), // rate of change
-  byLifecycleStage: z.array(
-    z.object({
-      stage: z.string(),
-      count: z.number(),
-    })
-  ),
-  timeSeries: z.array(
-    z.object({
-      date: z.string(),
-      contacts: z.number(),
-      mqls: z.number(),
-      sqls: z.number(),
-    })
-  ),
-  timeWindow: z.object({
-    startDate: z.string(),
-    endDate: z.string(),
-  }),
-});
-
-export type LeadGenerationMetrics = z.infer<
-  typeof LeadGenerationMetricsSchema
+export type CumulativeProjectsMetrics = z.infer<
+  typeof CumulativeProjectsMetricsSchema
 >;
 
 /**
- * Sales Pipeline Metrics Schema (HubSpot)
+ * Deployment Data Point Schema
  */
-export const SalesPipelineMetricsSchema = z.object({
-  totalDeals: z.number(),
-  pipelineValue: z.number(),
-  averageDealSize: z.number(),
-  winRate: z.number(),
-  averageSalesCycle: z.number(), // in days
-  dealsByStage: z.array(
-    z.object({
-      stage: z.string(),
-      count: z.number(),
-      value: z.number(),
-    })
-  ),
-  conversionRates: z.array(
-    z.object({
-      fromStage: z.string(),
-      toStage: z.string(),
-      rate: z.number(),
-    })
-  ),
-  timeWindow: z.object({
-    startDate: z.string(),
-    endDate: z.string(),
-  }),
+export const DeploymentDataPointSchema = z.object({
+  date: z.string(),
+  total: z.number(),
+  breakdown: z.string(), // org_id or breakdown value
 });
 
-export type SalesPipelineMetrics = z.infer<typeof SalesPipelineMetricsSchema>;
+export type DeploymentDataPoint = z.infer<typeof DeploymentDataPointSchema>;
 
 /**
- * Web Traffic Metrics Schema
+ * Cumulative Deployments Per Organization Metrics Schema
  */
-export const WebTrafficMetricsSchema = z.object({
-  totalPageViews: z.number(),
-  uniqueVisitors: z.number(),
-  totalSessions: z.number(),
-  bounceRate: z.number(),
-  topPages: z.array(
+export const CumulativeDeploymentsMetricsSchema = z.object({
+  timeWindow: TimeWindowSchema,
+  totalDeployments: z.number(),
+  totalOrganizations: z.number(),
+  dataPoints: z.array(DeploymentDataPointSchema),
+  breakdownSeries: z.array(
     z.object({
-      pathname: z.string(),
-      views: z.number(),
-      uniqueVisitors: z.number(),
+      breakdown: z.string(),
+      dataPoints: z.array(
+        z.object({
+          date: z.string(),
+          cumulativeTotal: z.number(),
+        })
+      ),
+      total: z.number(),
     })
   ),
-  timeSeries: z.array(
-    z.object({
-      date: z.string(),
-      pageViews: z.number(),
-      visitors: z.number(),
-      sessions: z.number(),
-    })
-  ),
-  timeWindow: z.object({
-    startDate: z.string(),
-    endDate: z.string(),
-  }),
 });
 
-export type WebTrafficMetrics = z.infer<typeof WebTrafficMetricsSchema>;
-
-/**
- * Traffic Source Metrics Schema
- */
-export const TrafficSourceMetricsSchema = z.object({
-  byReferrer: z.array(
-    z.object({
-      referrer: z.string(),
-      visitors: z.number(),
-      conversions: z.number(),
-      conversionRate: z.number(),
-    })
-  ),
-  byUtmSource: z.array(
-    z.object({
-      source: z.string(),
-      medium: z.string().optional(),
-      campaign: z.string().optional(),
-      visitors: z.number(),
-      conversions: z.number(),
-    })
-  ),
-  directTraffic: z.number(),
-  organicTraffic: z.number(),
-  paidTraffic: z.number(),
-  timeWindow: z.object({
-    startDate: z.string(),
-    endDate: z.string(),
-  }),
-});
-
-export type TrafficSourceMetrics = z.infer<typeof TrafficSourceMetricsSchema>;
-
-/**
- * Conversion Funnel Metrics Schema
- */
-export const ConversionFunnelMetricsSchema = z.object({
-  funnelName: z.string(),
-  totalEntered: z.number(),
-  totalCompleted: z.number(),
-  overallConversionRate: z.number(),
-  averageTimeToConvert: z.number(), // in seconds
-  steps: z.array(
-    z.object({
-      stepName: z.string(),
-      eventName: z.string(),
-      userCount: z.number(),
-      conversionRate: z.number(),
-      dropOffRate: z.number(),
-      averageTimeFromPrevious: z.number().optional(),
-    })
-  ),
-  bySource: z.array(
-    z.object({
-      source: z.string(),
-      entered: z.number(),
-      completed: z.number(),
-      conversionRate: z.number(),
-    })
-  ),
-  timeWindow: z.object({
-    startDate: z.string(),
-    endDate: z.string(),
-  }),
-});
-
-export type ConversionFunnelMetrics = z.infer<
-  typeof ConversionFunnelMetricsSchema
+export type CumulativeDeploymentsMetrics = z.infer<
+  typeof CumulativeDeploymentsMetricsSchema
 >;

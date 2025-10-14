@@ -35,55 +35,24 @@ export function MoosestackMetricsCard({
   startDate,
   endDate,
 }: MoosestackMetricsCardProps) {
-  // Fetch install metrics
-  const { data: installData, isLoading: installLoading } = useQuery({
-    queryKey: ["moosestack-installs", startDate, endDate],
-    queryFn: async () => {
-      console.log("[Frontend] Fetching Moosestack installs...", {
-        startDate,
-        endDate,
-      });
-      const params = new URLSearchParams({
-        type: "moosestack-installs",
-        startDate,
-        endDate,
-      });
-      const url = `/api/analytics/posthog/product-metrics?${params}`;
-      console.log("[Frontend] Request URL:", url);
-
-      const response = await fetch(url);
-      console.log("[Frontend] Response status:", response.status);
-
-      if (!response.ok) throw new Error("Failed to fetch install metrics");
-
-      const data = await response.json();
-      console.log("[Frontend] Install data received:", data);
-      return data;
-    },
-    staleTime: 0, // Disable cache for debugging
-    gcTime: 0,
-  });
-
-  // Fetch command metrics
-  const { data: commandData, isLoading: commandLoading } = useQuery({
-    queryKey: ["moosestack-commands", startDate, endDate],
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["moosestack-metrics", startDate, endDate],
     queryFn: async () => {
       const params = new URLSearchParams({
-        type: "moosestack-commands",
+        product: "moosestack",
         startDate,
         endDate,
       });
       const response = await fetch(
-        `/api/analytics/posthog/product-metrics?${params}`
+        `/api/analytics/posthog/metrics/product?${params}`
       );
-      if (!response.ok) throw new Error("Failed to fetch command metrics");
+      if (!response.ok) {
+        throw new Error("Failed to fetch Moosestack metrics");
+      }
       return response.json();
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
-
-  const isLoading = installLoading || commandLoading;
-  const error = null; // Simplified error handling
 
   if (isLoading) {
     return (
@@ -114,17 +83,16 @@ export function MoosestackMetricsCard({
     );
   }
 
-  const installs = installData || { totalInstalls: 0, installsByProduct: [] };
-  const commands = commandData || { totalCommands: 0, topCommands: [] };
-
-  // Extract chart data from installs
-  const chartData =
-    installs.installsByProduct?.[0]?.timeSeries?.map(
-      (ts: { date: string; installs: number }) => ({
-        date: ts.date,
-        users: ts.installs,
-      })
-    ) || [];
+  const metrics = data || {};
+  const {
+    dau = 0,
+    mau = 0,
+    conversionRate = 0,
+    engagementScore = 0,
+    specificMetrics = {},
+    chartData = [],
+    githubStars,
+  } = metrics;
 
   return (
     <Card>
@@ -138,51 +106,66 @@ export function MoosestackMetricsCard({
         {/* Key metrics grid */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <MetricCard
-            title="Total Installs"
-            value={installs.totalInstalls || 0}
-            description="Unique CLI installs"
-            trend={installs.totalInstalls > 0 ? "up" : "neutral"}
+            title="DAU"
+            value={Math.round(dau)}
+            description="Daily Active Users"
+            trend={dau > 0 ? "up" : "neutral"}
           />
           <MetricCard
-            title="Total Commands"
-            value={commands.totalCommands || 0}
-            description="CLI commands executed"
-            trend={commands.totalCommands > 0 ? "up" : "neutral"}
+            title="MAU"
+            value={Math.round(mau)}
+            description="Monthly Active Users"
+            trend={mau > 0 ? "up" : "neutral"}
           />
           <MetricCard
-            title="Products"
-            value={installs.installsByProduct?.length || 0}
-            description="Active products"
+            title="Conversion Rate"
+            value={conversionRate.toFixed(1)}
+            unit="%"
+            description="To production builds"
+            trend={conversionRate > 50 ? "up" : "neutral"}
+          />
+          <MetricCard
+            title="Engagement"
+            value={engagementScore.toFixed(1)}
+            description="Events per user"
+            trend={engagementScore > 5 ? "up" : "neutral"}
+          />
+        </div>
+
+        {/* Product-specific metrics */}
+        <div className="grid gap-4 md:grid-cols-4">
+          {githubStars && (
+            <MetricCard
+              title="GitHub Stars"
+              value={githubStars.current || 0}
+              description="Repository stars"
+              trend={githubStars.current > 0 ? "up" : "neutral"}
+            />
+          )}
+          <MetricCard
+            title="Installs"
+            value={specificMetrics.installs || 0}
+            description="Framework installations"
             trend="neutral"
           />
           <MetricCard
-            title="Top Command"
-            value={commands.topCommands?.[0]?.command || "N/A"}
-            description="Most used command"
+            title="Doc Views"
+            value={specificMetrics.docViews || 0}
+            description="Documentation reads"
+            trend="neutral"
+          />
+          <MetricCard
+            title="Builds"
+            value={specificMetrics.builds || 0}
+            description="Total builds executed"
             trend="neutral"
           />
         </div>
 
-        {/* Product breakdown */}
-        {installs.installsByProduct &&
-          installs.installsByProduct.length > 0 && (
-            <div className="grid gap-4 md:grid-cols-3">
-              {installs.installsByProduct.slice(0, 3).map((product: any) => (
-                <MetricCard
-                  key={product.product}
-                  title={product.product}
-                  value={product.installs}
-                  description="Installs"
-                  trend="neutral"
-                />
-              ))}
-            </div>
-          )}
-
         {/* Chart */}
         {chartData.length > 0 && (
           <div className="space-y-2">
-            <h4 className="text-sm font-medium">Install Trend (Cumulative)</h4>
+            <h4 className="text-sm font-medium">Daily Active Users Trend</h4>
             <ChartContainer config={chartConfig} className="h-[200px] w-full">
               <LineChart data={chartData} accessibilityLayer>
                 <CartesianGrid vertical={false} />
