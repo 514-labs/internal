@@ -1,6 +1,5 @@
 /**
  * PostHog query functions
- * Re-exports from specialized modules + legacy functions
  */
 
 import { posthogAnalyticsClient } from "./client";
@@ -16,34 +15,10 @@ import type {
   HubspotDeal,
   HubspotCompany,
   HogQLQueryResult,
+  CumulativeOSSInstallMetrics,
+  CumulativeProjectsMetrics,
+  CumulativeDeploymentsMetrics,
 } from "./schemas";
-
-// Re-export new product metrics
-export {
-  getMoosestackInstallMetrics,
-  getMoosestackCommandMetrics,
-  getBorealDeploymentMetrics,
-  getBorealProjectMetrics,
-  getGitHubStarMetrics,
-} from "./product-metrics";
-
-// Re-export HubSpot GTM metrics
-export {
-  getLeadGenerationMetrics,
-  getSalesPipelineMetrics,
-  getCustomerLifecycleMetrics,
-} from "./hubspot-metrics";
-
-// Re-export web analytics metrics
-export {
-  getWebTrafficMetrics,
-  getTrafficSourceMetrics,
-  getConversionFunnelMetrics,
-} from "./web-metrics";
-
-// Re-export helpers and filters
-export * from "./helpers";
-export * from "./filters";
 
 /**
  * Get events from PostHog
@@ -335,6 +310,10 @@ export async function getProductMetrics(
   engagementScore: number;
   specificMetrics: Record<string, number>;
   chartData: Array<{ date: string; users: number }>;
+  githubStars?: {
+    current: number;
+    chartData: Array<{ date: string; stars: number }>;
+  };
 }> {
   try {
     const startDate = formatDateForHogQL(timeWindow.startDate);
@@ -499,6 +478,22 @@ export async function getProductMetrics(
         : 0;
     }
 
+    // Fetch GitHub stars for moosestack
+    let githubStars;
+    if (product === "moosestack") {
+      try {
+        const starsData = await getGitHubStars(timeWindow);
+        githubStars = {
+          current: starsData.currentStars,
+          chartData: starsData.chartData,
+        };
+      } catch (starsError) {
+        console.error("Error fetching GitHub stars:", starsError);
+        // GitHub stars is optional, don't fail the entire request
+        githubStars = undefined;
+      }
+    }
+
     return {
       dau,
       mau,
@@ -506,6 +501,7 @@ export async function getProductMetrics(
       engagementScore,
       specificMetrics,
       chartData,
+      githubStars,
     };
   } catch (error) {
     throw new ExternalAPIError(
@@ -677,6 +673,672 @@ export async function getOverviewMetrics(timeWindow: {
     throw new ExternalAPIError(
       "PostHog",
       `Error fetching overview metrics: ${(error as Error).message}`
+    );
+  }
+}
+
+/**
+ * Get cumulative OSS install metrics
+ * Tracks fiveonefour_cli_install_script_run events over time
+ * with breakdown by CLI name (moose, aurora, sloan)
+ */
+export async function getCumulativeOSSInstalls(
+  timeWindow: { startDate: string; endDate: string },
+  options?: {
+    breakdownProperty?: string;
+    products?: string[];
+    excludeDevelopers?: boolean;
+  }
+): Promise<CumulativeOSSInstallMetrics> {
+  try {
+    const startDate = formatDateForHogQL(timeWindow.startDate);
+    const endDate = formatDateForHogQL(timeWindow.endDate);
+
+    const breakdownProperty = options?.breakdownProperty || "cli_name";
+    const products = options?.products || ["moose", "aurora", "sloan"];
+    const excludeDevelopers = options?.excludeDevelopers !== false;
+
+    // Build the main query for cumulative installs with breakdown
+    // This is a simplified version of the PostHog cumulative query
+    const query = `
+      SELECT
+        toDate(day_start) AS date,
+        breakdown_value,
+        cumulative_total
+      FROM (
+        SELECT
+          day_start,
+          breakdown_value,
+          sum(count) OVER (
+            PARTITION BY breakdown_value 
+            ORDER BY day_start ASC
+            ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+          ) AS cumulative_total
+        FROM (
+          SELECT
+            toStartOfDay(timestamp) AS day_start,
+            ifNull(nullIf(toString(properties.${breakdownProperty}), ''), 'other') AS breakdown_value,
+            count(DISTINCT person_id) AS count
+          FROM events
+          WHERE timestamp >= '${startDate}'
+            AND timestamp <= '${endDate}'
+            AND event = 'fiveonefour_cli_install_script_run'
+            ${
+              excludeDevelopers
+                ? `
+            AND ifNull(not(match(toString(properties.$host), '^(localhost|127\\\\.0\\\\.0\\\\.1)($|:)')), 1)
+            AND notEquals(properties.is_moose_developer, true)
+            AND notEquals(properties.is_developer, true)
+            AND notILike(toString(person.properties.email), '%fiveonefour.com%')
+            `
+                : ""
+            }
+            AND properties.${breakdownProperty} IN (${products
+      .map((p) => `'${p}'`)
+      .join(", ")})
+          GROUP BY day_start, breakdown_value
+          ORDER BY day_start ASC
+        )
+      )
+      ORDER BY date ASC, breakdown_value ASC
+    `;
+
+    const result = await posthogAnalyticsClient.executeHogQL(query);
+    const data = result as { results?: unknown[][] };
+
+    if (!data.results || data.results.length === 0) {
+      return {
+        timeWindow: {
+          ...timeWindow,
+          comparisonPeriods: [],
+        },
+        totalInstalls: 0,
+        dataPoints: [],
+        breakdownSeries: [],
+      };
+    }
+
+    // Process results into breakdown series
+    const breakdownMap = new Map<
+      string,
+      Array<{ date: string; cumulativeTotal: number }>
+    >();
+
+    for (const row of data.results) {
+      const date = String(row[0]);
+      const breakdown = String(row[1]);
+      const cumulativeTotal = Number(row[2]);
+
+      if (!breakdownMap.has(breakdown)) {
+        breakdownMap.set(breakdown, []);
+      }
+
+      breakdownMap.get(breakdown)!.push({ date, cumulativeTotal });
+    }
+
+    // Build breakdown series
+    const breakdownSeries = Array.from(breakdownMap.entries())
+      .map(([breakdown, dataPoints]) => ({
+        breakdown,
+        dataPoints,
+        total: dataPoints[dataPoints.length - 1]?.cumulativeTotal || 0,
+      }))
+      .sort((a, b) => b.total - a.total);
+
+    // Calculate total installs (sum of latest values from each breakdown)
+    const totalInstalls = breakdownSeries.reduce(
+      (sum, series) => sum + series.total,
+      0
+    );
+
+    // Create combined data points for overall view
+    const dateMap = new Map<string, { date: string; total: number }>();
+    for (const row of data.results) {
+      const date = String(row[0]);
+      const cumulativeTotal = Number(row[2]);
+
+      if (!dateMap.has(date)) {
+        dateMap.set(date, { date, total: 0 });
+      }
+
+      const current = dateMap.get(date)!;
+      current.total = Math.max(current.total, cumulativeTotal);
+    }
+
+    const dataPoints = Array.from(dateMap.values())
+      .map((point) => ({
+        date: point.date,
+        total: point.total,
+        breakdown: "all",
+      }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    return {
+      timeWindow: {
+        ...timeWindow,
+        comparisonPeriods: [],
+      },
+      totalInstalls,
+      dataPoints,
+      breakdownSeries,
+    };
+  } catch (error) {
+    throw new ExternalAPIError(
+      "PostHog",
+      `Error fetching cumulative OSS installs: ${(error as Error).message}`
+    );
+  }
+}
+
+/**
+ * Get cumulative projects per organization
+ * Tracks project creation from postgres.projects data warehouse table
+ */
+export async function getCumulativeProjects(
+  timeWindow: { startDate: string; endDate: string },
+  options?: {
+    breakdownProperty?: string;
+    intervalUnit?: "day" | "week" | "month";
+    topN?: number;
+  }
+): Promise<CumulativeProjectsMetrics> {
+  try {
+    const startDate = formatDateForHogQL(timeWindow.startDate);
+    const endDate = formatDateForHogQL(timeWindow.endDate);
+
+    const breakdownProperty = options?.breakdownProperty || "org_id";
+    const intervalUnit = options?.intervalUnit || "month";
+    const topN = options?.topN || 25;
+
+    // Map interval unit to HogQL interval function
+    const intervalMap = {
+      day: "toIntervalDay",
+      week: "toIntervalWeek",
+      month: "toIntervalMonth",
+    };
+    const intervalFunc = intervalMap[intervalUnit];
+    const startOfIntervalFunc =
+      intervalUnit === "week"
+        ? "toStartOfWeek"
+        : `toStartOf${
+            intervalUnit.charAt(0).toUpperCase() + intervalUnit.slice(1)
+          }`;
+
+    // Build the main query for cumulative projects with breakdown by organization
+    const query = `
+      SELECT
+        ${startOfIntervalFunc}(day_start) AS date,
+        breakdown_value,
+        cumulative_total
+      FROM (
+        SELECT
+          day_start,
+          breakdown_value,
+          sum(count) OVER (
+            PARTITION BY breakdown_value 
+            ORDER BY day_start ASC
+            ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+          ) AS cumulative_total
+        FROM (
+          SELECT
+            ${startOfIntervalFunc}(created_at) AS day_start,
+            ifNull(nullIf(toString(${breakdownProperty}), ''), 'unknown') AS breakdown_value,
+            count() AS count
+          FROM postgres.projects
+          WHERE created_at >= '${startDate}'
+            AND created_at <= '${endDate}'
+          GROUP BY day_start, breakdown_value
+          ORDER BY day_start ASC
+        )
+      )
+      ORDER BY date ASC, breakdown_value ASC
+    `;
+
+    const result = await posthogAnalyticsClient.executeHogQL(query);
+    const data = result as { results?: unknown[][] };
+
+    if (!data.results || data.results.length === 0) {
+      return {
+        timeWindow: {
+          ...timeWindow,
+          comparisonPeriods: [],
+        },
+        totalProjects: 0,
+        totalOrganizations: 0,
+        dataPoints: [],
+        breakdownSeries: [],
+      };
+    }
+
+    // Process results into breakdown series
+    const breakdownMap = new Map<
+      string,
+      Array<{ date: string; cumulativeTotal: number }>
+    >();
+
+    for (const row of data.results) {
+      const date = String(row[0]);
+      const breakdown = String(row[1]);
+      const cumulativeTotal = Number(row[2]);
+
+      if (!breakdownMap.has(breakdown)) {
+        breakdownMap.set(breakdown, []);
+      }
+
+      breakdownMap.get(breakdown)!.push({ date, cumulativeTotal });
+    }
+
+    // Build breakdown series and sort by total
+    const breakdownSeries = Array.from(breakdownMap.entries())
+      .map(([breakdown, dataPoints]) => ({
+        breakdown,
+        dataPoints,
+        total: dataPoints[dataPoints.length - 1]?.cumulativeTotal || 0,
+      }))
+      .sort((a, b) => b.total - a.total);
+
+    // Calculate total projects (sum of latest values from each breakdown)
+    const totalProjects = breakdownSeries.reduce(
+      (sum, series) => sum + series.total,
+      0
+    );
+
+    // Count unique organizations
+    const totalOrganizations = breakdownSeries.filter(
+      (s) => s.breakdown !== "unknown"
+    ).length;
+
+    // Limit to top N organizations (merge others)
+    let finalBreakdownSeries = breakdownSeries;
+    if (breakdownSeries.length > topN) {
+      const topSeries = breakdownSeries.slice(0, topN);
+      const otherSeries = breakdownSeries.slice(topN);
+
+      // Aggregate "other" organizations
+      const otherDatesMap = new Map<string, number>();
+      otherSeries.forEach((series) => {
+        series.dataPoints.forEach((point) => {
+          const current = otherDatesMap.get(point.date) || 0;
+          otherDatesMap.set(point.date, current + point.cumulativeTotal);
+        });
+      });
+
+      const otherDataPoints = Array.from(otherDatesMap.entries())
+        .map(([date, cumulativeTotal]) => ({ date, cumulativeTotal }))
+        .sort((a, b) => a.date.localeCompare(b.date));
+
+      if (otherDataPoints.length > 0) {
+        topSeries.push({
+          breakdown: "other",
+          dataPoints: otherDataPoints,
+          total:
+            otherDataPoints[otherDataPoints.length - 1]?.cumulativeTotal || 0,
+        });
+      }
+
+      finalBreakdownSeries = topSeries;
+    }
+
+    // Create combined data points for overall view
+    const dateMap = new Map<string, { date: string; total: number }>();
+    for (const row of data.results) {
+      const date = String(row[0]);
+      const cumulativeTotal = Number(row[2]);
+
+      if (!dateMap.has(date)) {
+        dateMap.set(date, { date, total: 0 });
+      }
+
+      const current = dateMap.get(date)!;
+      current.total += cumulativeTotal;
+    }
+
+    const dataPoints = Array.from(dateMap.values())
+      .map((point) => ({
+        date: point.date,
+        total: point.total,
+        breakdown: "all",
+      }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    return {
+      timeWindow: {
+        ...timeWindow,
+        comparisonPeriods: [],
+      },
+      totalProjects,
+      totalOrganizations,
+      dataPoints,
+      breakdownSeries: finalBreakdownSeries,
+    };
+  } catch (error) {
+    throw new ExternalAPIError(
+      "PostHog",
+      `Error fetching cumulative projects: ${(error as Error).message}`
+    );
+  }
+}
+
+/**
+ * Get GitHub stars count
+ * Tracks cumulative GitHub stars accounting for additions and deletions
+ */
+export async function getGitHubStars(timeWindow: {
+  startDate: string;
+  endDate: string;
+}): Promise<{
+  currentStars: number;
+  chartData: Array<{ date: string; stars: number }>;
+}> {
+  try {
+    const startDate = formatDateForHogQL(timeWindow.startDate);
+    const endDate = formatDateForHogQL(timeWindow.endDate);
+
+    // PostHog Trends query format - returns arrays
+    const query = `
+      SELECT
+        arrayMap(number -> plus(toStartOfInterval(assumeNotNull(toDateTime('${startDate}')), toIntervalDay(1)), toIntervalDay(number)), range(0, plus(coalesce(dateDiff('day', toStartOfInterval(assumeNotNull(toDateTime('${startDate}')), toIntervalDay(1)), toStartOfInterval(assumeNotNull(toDateTime('${endDate}')), toIntervalDay(1)))), 1))) AS date,
+        arrayFill(x -> greater(x, 0), arrayMap(_match_date -> arraySum(arraySlice(groupArray(ifNull(count, 0)), indexOf(groupArray(day_start) AS _days_for_count, _match_date) AS _index, plus(minus(arrayLastIndex(x -> equals(x, _match_date), _days_for_count), _index), 1))), date)) AS total
+      FROM (
+        SELECT
+          day_start,
+          sum(count) OVER (ORDER BY day_start ASC) AS count
+        FROM (
+          SELECT
+            sum(total) AS count,
+            day_start
+          FROM (
+            SELECT
+              count() AS total,
+              toStartOfDay(timestamp) AS day_start
+            FROM events AS e SAMPLE 1
+            WHERE timestamp >= toStartOfInterval(assumeNotNull(toDateTime('${startDate}')), toIntervalDay(1))
+              AND timestamp <= assumeNotNull(toDateTime('${endDate}'))
+              AND event = 'GitHub Star'
+              AND ifNull(not(match(toString(properties.$host), '^(localhost|127\\\\.0\\\\.0\\\\.1)($|:)')), 1)
+              AND notEquals(properties.is_moose_developer, true)
+              AND notEquals(properties.is_developer, true)
+              AND notILike(toString(person.properties.email), '%fiveonefour.com%')
+              AND notEquals(properties.action, 'deleted')
+            GROUP BY day_start
+          )
+          GROUP BY day_start
+          ORDER BY day_start ASC
+        )
+        ORDER BY day_start ASC
+      )
+      ORDER BY arraySum(total) DESC
+      LIMIT 1
+    `;
+
+    const result = await posthogAnalyticsClient.executeHogQL(query);
+    const data = result as { results?: unknown[][] };
+
+    if (!data.results || data.results.length === 0) {
+      return {
+        currentStars: 0,
+        chartData: [],
+      };
+    }
+
+    // Parse the result - PostHog returns stringified arrays
+    const row = data.results[0];
+    let dates: string[];
+    let totals: number[];
+
+    try {
+      // The results might be arrays or stringified arrays
+      const datesRaw = row[0];
+      const totalsRaw = row[1];
+
+      // Check if already an array or needs parsing
+      if (Array.isArray(datesRaw)) {
+        dates = datesRaw.map(String);
+      } else {
+        const datesStr = String(datesRaw);
+        dates = JSON.parse(datesStr);
+      }
+
+      if (Array.isArray(totalsRaw)) {
+        totals = totalsRaw.map(Number);
+      } else {
+        const totalsStr = String(totalsRaw);
+        totals = JSON.parse(totalsStr);
+      }
+    } catch (parseError) {
+      console.error("Error parsing GitHub stars data:", parseError);
+      console.error("Raw data:", row);
+      // Return empty data if parsing fails
+      return {
+        currentStars: 0,
+        chartData: [],
+      };
+    }
+
+    // Build chart data
+    const chartData: Array<{ date: string; stars: number }> = [];
+    for (let i = 0; i < Math.min(dates.length, totals.length); i++) {
+      chartData.push({
+        date: dates[i],
+        stars: totals[i],
+      });
+    }
+
+    // Current stars is the last non-zero value
+    const currentStars = totals[totals.length - 1] || 0;
+
+    return {
+      currentStars,
+      chartData,
+    };
+  } catch (error) {
+    console.error("Error in getGitHubStars:", error);
+    throw new ExternalAPIError(
+      "PostHog",
+      `Error fetching GitHub stars: ${(error as Error).message}`
+    );
+  }
+}
+
+/**
+ * Get cumulative deployments per organization
+ * Tracks deployments from postgres.deploys joined with postgres.projects
+ */
+export async function getCumulativeDeployments(
+  timeWindow: { startDate: string; endDate: string },
+  options?: {
+    breakdownProperty?: string;
+    intervalUnit?: "day" | "week" | "month";
+    topN?: number;
+    statusFilter?: string[];
+  }
+): Promise<CumulativeDeploymentsMetrics> {
+  try {
+    const startDate = formatDateForHogQL(timeWindow.startDate);
+    const endDate = formatDateForHogQL(timeWindow.endDate);
+
+    const breakdownProperty = options?.breakdownProperty || "org_id";
+    const intervalUnit = options?.intervalUnit || "month";
+    const topN = options?.topN || 25;
+    const statusFilter = options?.statusFilter;
+
+    // Map interval unit to HogQL interval function
+    const startOfIntervalFunc =
+      intervalUnit === "week"
+        ? "toStartOfWeek"
+        : `toStartOf${
+            intervalUnit.charAt(0).toUpperCase() + intervalUnit.slice(1)
+          }`;
+
+    // Build status filter condition
+    const statusCondition = statusFilter
+      ? `AND d.status IN (${statusFilter.map((s) => `'${s}'`).join(", ")})`
+      : "";
+
+    // Build the main query for cumulative deployments with breakdown by organization
+    const query = `
+      SELECT
+        ${startOfIntervalFunc}(day_start) AS date,
+        breakdown_value,
+        cumulative_total
+      FROM (
+        SELECT
+          day_start,
+          breakdown_value,
+          sum(count) OVER (
+            PARTITION BY breakdown_value 
+            ORDER BY day_start ASC
+            ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+          ) AS cumulative_total
+        FROM (
+          SELECT
+            ${startOfIntervalFunc}(created_at) AS day_start,
+            ifNull(nullIf(toString(${breakdownProperty}), ''), 'unknown') AS breakdown_value,
+            count() AS count
+          FROM (
+            SELECT
+              d.deploy_id,
+              d.url,
+              d.status,
+              d.created_at,
+              p.name AS project_name,
+              p.repo_url,
+              p.org_id
+            FROM postgres.deploys AS d
+            JOIN postgres.projects AS p ON equals(d.project_id, p.project_id)
+            WHERE d.created_at >= '${startDate}'
+              AND d.created_at <= '${endDate}'
+              ${statusCondition}
+            ORDER BY d.created_at DESC
+          ) AS e
+          GROUP BY day_start, breakdown_value
+          ORDER BY day_start ASC
+        )
+      )
+      ORDER BY date ASC, breakdown_value ASC
+    `;
+
+    const result = await posthogAnalyticsClient.executeHogQL(query);
+    const data = result as { results?: unknown[][] };
+
+    if (!data.results || data.results.length === 0) {
+      return {
+        timeWindow: {
+          ...timeWindow,
+          comparisonPeriods: [],
+        },
+        totalDeployments: 0,
+        totalOrganizations: 0,
+        dataPoints: [],
+        breakdownSeries: [],
+      };
+    }
+
+    // Process results into breakdown series
+    const breakdownMap = new Map<
+      string,
+      Array<{ date: string; cumulativeTotal: number }>
+    >();
+
+    for (const row of data.results) {
+      const date = String(row[0]);
+      const breakdown = String(row[1]);
+      const cumulativeTotal = Number(row[2]);
+
+      if (!breakdownMap.has(breakdown)) {
+        breakdownMap.set(breakdown, []);
+      }
+
+      breakdownMap.get(breakdown)!.push({ date, cumulativeTotal });
+    }
+
+    // Build breakdown series and sort by total
+    const breakdownSeries = Array.from(breakdownMap.entries())
+      .map(([breakdown, dataPoints]) => ({
+        breakdown,
+        dataPoints,
+        total: dataPoints[dataPoints.length - 1]?.cumulativeTotal || 0,
+      }))
+      .sort((a, b) => b.total - a.total);
+
+    // Calculate total deployments (sum of latest values from each breakdown)
+    const totalDeployments = breakdownSeries.reduce(
+      (sum, series) => sum + series.total,
+      0
+    );
+
+    // Count unique organizations
+    const totalOrganizations = breakdownSeries.filter(
+      (s) => s.breakdown !== "unknown"
+    ).length;
+
+    // Limit to top N organizations (merge others)
+    let finalBreakdownSeries = breakdownSeries;
+    if (breakdownSeries.length > topN) {
+      const topSeries = breakdownSeries.slice(0, topN);
+      const otherSeries = breakdownSeries.slice(topN);
+
+      // Aggregate "other" organizations
+      const otherDatesMap = new Map<string, number>();
+      otherSeries.forEach((series) => {
+        series.dataPoints.forEach((point) => {
+          const current = otherDatesMap.get(point.date) || 0;
+          otherDatesMap.set(point.date, current + point.cumulativeTotal);
+        });
+      });
+
+      const otherDataPoints = Array.from(otherDatesMap.entries())
+        .map(([date, cumulativeTotal]) => ({ date, cumulativeTotal }))
+        .sort((a, b) => a.date.localeCompare(b.date));
+
+      if (otherDataPoints.length > 0) {
+        topSeries.push({
+          breakdown: "other",
+          dataPoints: otherDataPoints,
+          total:
+            otherDataPoints[otherDataPoints.length - 1]?.cumulativeTotal || 0,
+        });
+      }
+
+      finalBreakdownSeries = topSeries;
+    }
+
+    // Create combined data points for overall view
+    const dateMap = new Map<string, { date: string; total: number }>();
+    for (const row of data.results) {
+      const date = String(row[0]);
+      const cumulativeTotal = Number(row[2]);
+
+      if (!dateMap.has(date)) {
+        dateMap.set(date, { date, total: 0 });
+      }
+
+      const current = dateMap.get(date)!;
+      current.total += cumulativeTotal;
+    }
+
+    const dataPoints = Array.from(dateMap.values())
+      .map((point) => ({
+        date: point.date,
+        total: point.total,
+        breakdown: "all",
+      }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    return {
+      timeWindow: {
+        ...timeWindow,
+        comparisonPeriods: [],
+      },
+      totalDeployments,
+      totalOrganizations,
+      dataPoints,
+      breakdownSeries: finalBreakdownSeries,
+    };
+  } catch (error) {
+    throw new ExternalAPIError(
+      "PostHog",
+      `Error fetching cumulative deployments: ${(error as Error).message}`
     );
   }
 }

@@ -5,12 +5,13 @@ import { DateRange } from "react-day-picker";
 import { addDays, subDays } from "date-fns";
 import { DateRangeSelector } from "./date-range-selector";
 import { OverviewMetricsCard } from "./overview-metrics-card";
+import { OSSInstallsCard } from "./oss-installs-card";
+import { ProjectsCard } from "./projects-card";
+import { DeploymentsCard } from "./deployments-card";
 import { BorealMetricsCard } from "./boreal-metrics-card";
 import { MoosestackMetricsCard } from "./moosestack-metrics-card";
 import { BorealJourneysCard } from "./boreal-journeys-card";
 import { MoosestackJourneysCard } from "./moosestack-journeys-card";
-import { GTMMetricsCard } from "./gtm-metrics-card";
-import { GitHubStarsCard } from "./github-stars-card";
 
 export function MetricsClient() {
   // Default to last 30 days
@@ -41,6 +42,24 @@ export function MetricsClient() {
         <OverviewMetricsCard startDate={startDate} endDate={endDate} />
       </div>
 
+      {/* OSS Install metrics */}
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold">Open Source Adoption</h2>
+        <OSSInstallsCard startDate={startDate} endDate={endDate} />
+      </div>
+
+      {/* Projects metrics */}
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold">Project Growth</h2>
+        <ProjectsCard startDate={startDate} endDate={endDate} />
+      </div>
+
+      {/* Deployments metrics */}
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold">Deployment Activity</h2>
+        <DeploymentsCard startDate={startDate} endDate={endDate} />
+      </div>
+
       {/* Product metrics */}
       <div className="space-y-4">
         <h2 className="text-lg font-semibold">Product Metrics</h2>
@@ -48,18 +67,6 @@ export function MetricsClient() {
           <BorealMetricsCard startDate={startDate} endDate={endDate} />
           <MoosestackMetricsCard startDate={startDate} endDate={endDate} />
         </div>
-      </div>
-
-      {/* Go-to-Market metrics */}
-      <div className="space-y-4">
-        <h2 className="text-lg font-semibold">Go-to-Market</h2>
-        <GTMMetricsCard startDate={startDate} endDate={endDate} />
-      </div>
-
-      {/* Community metrics */}
-      <div className="space-y-4">
-        <h2 className="text-lg font-semibold">Community</h2>
-        <GitHubStarsCard startDate={startDate} endDate={endDate} />
       </div>
 
       {/* Journey metrics */}
