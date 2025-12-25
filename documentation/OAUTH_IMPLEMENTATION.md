@@ -43,12 +43,14 @@ This document describes the OAuth 2.1 implementation following the [MCP Authoriz
 **Location:** `app/.well-known/openid-configuration/route.ts`
 
 - Alternative discovery endpoint (OpenID Connect standard)
+- Uses `authServerMetadataHandlerClerk()` to proxy Clerk's OAuth configuration
 - Provides the same information as oauth-authorization-server
 - Compatible with OIDC-compliant clients
+- Supports GET, HEAD, and OPTIONS methods
 
 **What it does:**
 - OpenID Connect discovery endpoint
-- Some clients may use this instead of oauth-authorization-server
+- Some clients (including ChatGPT) may use this instead of oauth-authorization-server
 
 ### 4. `/mcp` - MCP Server Endpoint
 **Status:** ✅ Implemented with Auth  
