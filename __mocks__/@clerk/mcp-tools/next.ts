@@ -85,3 +85,6 @@ export const metadataCorsOptionsRequestHandler = () => {
 };
 
 export const verifyClerkToken = jest.fn();
+
+// Alias for openid-configuration endpoint (same as authServerMetadataHandlerClerk)
+export const oidcConfigHandlerClerk = authServerMetadataHandlerClerk;
