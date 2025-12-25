@@ -1,4 +1,33 @@
-<!-- 190a51f6-fd93-4cbd-865b-23e7d1c177e4 12c4b783-377c-4c2b-b4d6-c9e899540304 -->
+---
+name: PostHog Metrics Dashboard Implementation
+overview: ""
+todos:
+  - id: 76554541-6ffd-4073-9f95-b282c494e9f6
+    content: Extend PostHog schemas with metric types, time windows, and product-specific structures
+    status: pending
+  - id: 490e028c-5145-487b-8c2b-e11803ba113b
+    content: Implement PostHog query functions for product metrics, journeys, and comparisons using HogQL
+    status: pending
+  - id: fe417c41-428d-4592-81b8-58e1fdc01e8d
+    content: Create API routes for metrics endpoints with validation and error handling
+    status: pending
+  - id: 1ccb1010-2ad6-4062-83ff-ff9914b456ba
+    content: Add shadcn chart component to project if not already present
+    status: pending
+  - id: 721bed9d-5356-4f05-9267-342d7caa43e5
+    content: Build reusable metric card components and date range selectors
+    status: pending
+  - id: d3a01273-093e-4d76-ab49-4057f1cd9f9f
+    content: Create specific metric cards for hosting, framework, and AI products
+    status: pending
+  - id: 418f3692-9926-4261-bfc5-8d074279eb0b
+    content: Build journey metrics card with funnel visualization
+    status: pending
+  - id: 5450e8e4-d1d2-4cc6-a597-de3f19541086
+    content: Transform metrics page to use dynamic data with client component orchestration
+    status: pending
+---
+
 # PostHog Metrics Dashboard Implementation
 
 ## Overview
@@ -102,14 +131,3 @@ Transform to:
 - Use React Query for data fetching with stale-while-revalidate
 - Implement loading skeletons using shadcn skeleton component
 - Add proper TypeScript typing throughout
-
-### To-dos
-
-- [ ] Extend PostHog schemas with metric types, time windows, and product-specific structures
-- [ ] Implement PostHog query functions for product metrics, journeys, and comparisons using HogQL
-- [ ] Create API routes for metrics endpoints with validation and error handling
-- [ ] Add shadcn chart component to project if not already present
-- [ ] Build reusable metric card components and date range selectors
-- [ ] Create specific metric cards for hosting, framework, and AI products
-- [ ] Build journey metrics card with funnel visualization
-- [ ] Transform metrics page to use dynamic data with client component orchestration

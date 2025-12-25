@@ -1,6 +1,8 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 import type {
   Project,
   Initiative,
@@ -9,6 +11,7 @@ import type {
 import { ActiveProjectsCard } from "./active-projects-card";
 import { ActiveInitiativesCard } from "./active-initiatives-card";
 import { RecentlyCompletedFeed } from "./recently-completed-feed";
+import { useBreadcrumb } from "@/components/breadcrumb-provider";
 
 interface WorkClientProps {
   initialProjects: Project[];
@@ -62,6 +65,38 @@ export function WorkClient({
   initialInitiatives,
   initialIssues,
 }: WorkClientProps) {
+  const searchParams = useSearchParams();
+  const { setItems } = useBreadcrumb();
+
+  // Update breadcrumb based on active filters
+  useEffect(() => {
+    const breadcrumbItems = [];
+
+    const projectState = searchParams.get("projectState");
+    const initiativeStatus = searchParams.get("initiativeStatus");
+    const dateFilter = searchParams.get("dateFilter");
+
+    if (projectState) {
+      breadcrumbItems.push({ label: `Projects: ${projectState}` });
+    }
+
+    if (initiativeStatus) {
+      breadcrumbItems.push({ label: `Initiatives: ${initiativeStatus}` });
+    }
+
+    if (dateFilter) {
+      const filterLabels: Record<string, string> = {
+        overdue: "Overdue",
+        this_month: "This month",
+        this_quarter: "This quarter",
+        no_date: "No target date",
+      };
+      breadcrumbItems.push({ label: filterLabels[dateFilter] || dateFilter });
+    }
+
+    setItems(breadcrumbItems);
+  }, [searchParams, setItems]);
+
   const { data: projects, isLoading: projectsLoading } = useQuery({
     queryKey: ["projects", "started"],
     queryFn: fetchProjects,

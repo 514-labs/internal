@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { DateRange } from "react-day-picker";
-import { addDays, subDays } from "date-fns";
+import { format, subDays } from "date-fns";
 import { DateRangeSelector } from "./date-range-selector";
 import { OverviewMetricsCard } from "./overview-metrics-card";
 import { OSSInstallsCard } from "./oss-installs-card";
@@ -12,16 +12,53 @@ import { BorealMetricsCard } from "./boreal-metrics-card";
 import { MoosestackMetricsCard } from "./moosestack-metrics-card";
 import { BorealJourneysCard } from "./boreal-journeys-card";
 import { MoosestackJourneysCard } from "./moosestack-journeys-card";
+import { useUrlDateState } from "@/hooks/use-url-state";
+import { useBreadcrumb } from "@/components/breadcrumb-provider";
 
 export function MetricsClient() {
   // Default to last 30 days
-  const [dateRange, setDateRange] = React.useState<DateRange | undefined>({
-    from: subDays(new Date(), 30),
-    to: new Date(),
-  });
+  const [fromDate, setFromDate] = useUrlDateState(
+    "from",
+    subDays(new Date(), 30)
+  );
+  const [toDate, setToDate] = useUrlDateState("to", new Date());
+  const { setItems } = useBreadcrumb();
 
-  const startDate = dateRange?.from?.toISOString() || "";
-  const endDate = dateRange?.to?.toISOString() || "";
+  // Create DateRange object for the selector
+  const dateRange: DateRange | undefined = React.useMemo(
+    () => ({
+      from: fromDate || undefined,
+      to: toDate || undefined,
+    }),
+    [fromDate, toDate]
+  );
+
+  // Update breadcrumb with date range
+  React.useEffect(() => {
+    if (fromDate && toDate) {
+      setItems([
+        {
+          label: `${format(fromDate, "MMM d")} - ${format(
+            toDate,
+            "MMM d, yyyy"
+          )}`,
+        },
+      ]);
+    } else {
+      setItems([]);
+    }
+  }, [fromDate, toDate, setItems]);
+
+  const handleDateRangeChange = React.useCallback(
+    (range: DateRange | undefined) => {
+      setFromDate(range?.from || null);
+      setToDate(range?.to || null);
+    },
+    [setFromDate, setToDate]
+  );
+
+  const startDate = fromDate?.toISOString() || "";
+  const endDate = toDate?.toISOString() || "";
 
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">
@@ -33,7 +70,7 @@ export function MetricsClient() {
             Track key metrics across Boreal and Moosestack products
           </p>
         </div>
-        <DateRangeSelector value={dateRange} onChange={setDateRange} />
+        <DateRangeSelector value={dateRange} onChange={handleDateRangeChange} />
       </div>
 
       {/* Overview metrics */}

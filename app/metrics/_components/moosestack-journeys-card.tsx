@@ -12,6 +12,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { JourneyFlowDiagram } from "./journey-flow-diagram";
+import { useUrlState } from "@/hooks/use-url-state";
 
 interface MoosestackJourneysCardProps {
   startDate: string;
@@ -34,7 +35,10 @@ export function MoosestackJourneysCard({
   startDate,
   endDate,
 }: MoosestackJourneysCardProps) {
-  const [selectedJourney, setSelectedJourney] = React.useState(journeyIds[0]);
+  const [selectedJourney, setSelectedJourney] = useUrlState(
+    "moosestackJourney",
+    journeyIds[0]
+  );
 
   // Fetch individual journey details
   const { data: journeyDetail, isLoading } = useQuery({

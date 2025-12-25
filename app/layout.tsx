@@ -15,6 +15,8 @@ import {
 import { AppSidebar } from "@/components/app-sidebar";
 import { Separator } from "@/components/ui/separator";
 import { QueryProvider } from "@/components/query-provider";
+import { BreadcrumbProvider } from "@/components/breadcrumb-provider";
+import { AppBreadcrumb } from "@/components/app-breadcrumb";
 
 declare global {
   interface Window {
@@ -88,17 +90,19 @@ export default function RootLayout({
               </div>
             </SignedOut>
             <SignedIn>
-              <SidebarProvider>
-                <AppSidebar />
-                <SidebarInset>
-                  <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-                    <SidebarTrigger className="-ml-1" />
-                    <Separator orientation="vertical" className="mr-2 h-4" />
-                    <div className="text-sm font-medium">Internal 514</div>
-                  </header>
-                  {children}
-                </SidebarInset>
-              </SidebarProvider>
+              <BreadcrumbProvider>
+                <SidebarProvider>
+                  <AppSidebar />
+                  <SidebarInset>
+                    <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+                      <SidebarTrigger className="-ml-1" />
+                      <Separator orientation="vertical" className="mr-2 h-4" />
+                      <AppBreadcrumb />
+                    </header>
+                    {children}
+                  </SidebarInset>
+                </SidebarProvider>
+              </BreadcrumbProvider>
             </SignedIn>
             <SpeedInsights />
             <Analytics />

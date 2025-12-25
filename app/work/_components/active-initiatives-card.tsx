@@ -38,6 +38,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useMemo } from "react";
+import { useUrlState } from "@/hooks/use-url-state";
 
 interface ActiveInitiativesCardProps {
   initiatives: Initiative[];
@@ -48,10 +49,13 @@ export function ActiveInitiativesCard({
   initiatives,
   isLoading,
 }: ActiveInitiativesCardProps) {
-  const [selectedStatus, setSelectedStatus] = useState<string | null>("active");
-  const [selectedDateFilter, setSelectedDateFilter] = useState<string | null>(
-    null
+  const [selectedStatus, setSelectedStatus] = useUrlState<string | null>(
+    "initiativeStatus",
+    "active"
   );
+  const [selectedDateFilter, setSelectedDateFilter] = useUrlState<
+    string | null
+  >("dateFilter", null);
   const [statusOpen, setStatusOpen] = useState(false);
   const [dateOpen, setDateOpen] = useState(false);
 
