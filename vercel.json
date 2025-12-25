@@ -1,0 +1,20 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "bypassProtection": {
+    "paths": [
+      {
+        "source": "/.well-known/:path*",
+        "has": []
+      },
+      {
+        "source": "/mcp",
+        "has": []
+      },
+      {
+        "source": "/sse",
+        "has": []
+      }
+    ]
+  }
+}
+
