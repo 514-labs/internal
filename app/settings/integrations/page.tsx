@@ -2,18 +2,30 @@
 
 /**
  * Admin Settings - Integrations
- * Manage third-party integrations (Linear, etc.)
+ * Manage third-party integrations (Linear, Rippling, etc.)
+ *
+ * INTEGRATION TYPES:
+ * - Linear: Workspace-level OAuth (admin only)
+ * - Rippling: Per-user API tokens (each user manages their own)
  */
 
 import { useEffect, useState } from "react";
 import { useAuth, useOrganizationList } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { RipplingApiExplorer } from "./_components/rippling-api-explorer";
 
 interface LinearStatus {
   connected: boolean;
   expiresAt?: string;
   scope?: string;
   hasRefreshToken?: boolean;
+  message?: string;
+}
+
+interface RipplingStatus {
+  connected: boolean;
+  createdAt?: string;
   message?: string;
 }
 
@@ -24,9 +36,24 @@ export default function IntegrationsPage() {
       infinite: true,
     },
   });
+
+  // Linear state (admin only)
   const [linearStatus, setLinearStatus] = useState<LinearStatus | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [disconnecting, setDisconnecting] = useState(false);
+  const [linearLoading, setLinearLoading] = useState(true);
+  const [linearDisconnecting, setLinearDisconnecting] = useState(false);
+
+  // Rippling state (per-user)
+  const [ripplingStatus, setRipplingStatus] = useState<RipplingStatus | null>(
+    null
+  );
+  const [ripplingLoading, setRipplingLoading] = useState(true);
+  const [ripplingToken, setRipplingToken] = useState("");
+  const [ripplingSaving, setRipplingSaving] = useState(false);
+  const [ripplingDisconnecting, setRipplingDisconnecting] = useState(false);
+  const [showRipplingTokenInput, setShowRipplingTokenInput] = useState(false);
+  const [showRipplingExplorer, setShowRipplingExplorer] = useState(false);
+
+  // General state
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -48,27 +75,30 @@ export default function IntegrationsPage() {
       setError(
         `Error: ${errorParam}${errorDetails ? ` - ${errorDetails}` : ""}`
       );
-      // Clean up URL
       window.history.replaceState({}, "", window.location.pathname);
     }
 
     if (successParam === "linear_connected") {
       setSuccessMessage("Linear integration connected successfully!");
-      // Clean up URL
       window.history.replaceState({}, "", window.location.pathname);
     }
 
-    // Fetch Linear connection status
+    // Fetch integration statuses
     if (isAdmin) {
       fetchLinearStatus();
     } else {
-      setLoading(false);
+      setLinearLoading(false);
     }
-  }, [isAdmin]);
+
+    // Rippling is per-user, so fetch for all authenticated users
+    if (userId) {
+      fetchRipplingStatus();
+    }
+  }, [isAdmin, userId]);
 
   const fetchLinearStatus = async () => {
     try {
-      setLoading(true);
+      setLinearLoading(true);
       const response = await fetch("/api/integrations/linear/status");
 
       if (!response.ok) {
@@ -79,14 +109,32 @@ export default function IntegrationsPage() {
       setLinearStatus(data);
     } catch (err) {
       console.error("Error fetching Linear status:", err);
-      setError("Failed to load integration status");
+      setError("Failed to load Linear integration status");
     } finally {
-      setLoading(false);
+      setLinearLoading(false);
+    }
+  };
+
+  const fetchRipplingStatus = async () => {
+    try {
+      setRipplingLoading(true);
+      const response = await fetch("/api/integrations/rippling/status");
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch Rippling status");
+      }
+
+      const data = await response.json();
+      setRipplingStatus(data);
+    } catch (err) {
+      console.error("Error fetching Rippling status:", err);
+      // Don't set error for Rippling - it's optional
+    } finally {
+      setRipplingLoading(false);
     }
   };
 
   const handleConnectLinear = () => {
-    // Redirect to Linear OAuth authorization
     window.location.href = "/api/integrations/linear/authorize";
   };
 
@@ -100,7 +148,7 @@ export default function IntegrationsPage() {
     }
 
     try {
-      setDisconnecting(true);
+      setLinearDisconnecting(true);
       setError(null);
 
       const response = await fetch("/api/integrations/linear/disconnect", {
@@ -118,7 +166,75 @@ export default function IntegrationsPage() {
       console.error("Error disconnecting Linear:", err);
       setError((err as Error).message);
     } finally {
-      setDisconnecting(false);
+      setLinearDisconnecting(false);
+    }
+  };
+
+  const handleSaveRipplingToken = async () => {
+    if (!ripplingToken.trim()) {
+      setError("Please enter your Rippling API token");
+      return;
+    }
+
+    try {
+      setRipplingSaving(true);
+      setError(null);
+
+      const response = await fetch("/api/integrations/rippling/token", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ token: ripplingToken }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to save token");
+      }
+
+      setSuccessMessage("Rippling API token saved successfully");
+      setRipplingToken("");
+      setShowRipplingTokenInput(false);
+      await fetchRipplingStatus();
+    } catch (err) {
+      console.error("Error saving Rippling token:", err);
+      setError((err as Error).message);
+    } finally {
+      setRipplingSaving(false);
+    }
+  };
+
+  const handleDisconnectRippling = async () => {
+    if (
+      !confirm(
+        "Are you sure you want to disconnect Rippling? You will need to re-enter your API token to reconnect."
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setRipplingDisconnecting(true);
+      setError(null);
+
+      const response = await fetch("/api/integrations/rippling/token", {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || "Failed to disconnect");
+      }
+
+      setSuccessMessage("Rippling integration disconnected successfully");
+      await fetchRipplingStatus();
+    } catch (err) {
+      console.error("Error disconnecting Rippling:", err);
+      setError((err as Error).message);
+    } finally {
+      setRipplingDisconnecting(false);
     }
   };
 
@@ -127,81 +243,6 @@ export default function IntegrationsPage() {
       <div className="container mx-auto p-8">
         <div className="max-w-4xl mx-auto">
           <p className="text-red-600">Please sign in to access this page.</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
-    return (
-      <div className="container mx-auto p-8">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold mb-6">Integrations</h1>
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-            <div className="flex items-start gap-3 mb-4">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6 text-yellow-600 flex-shrink-0"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                />
-              </svg>
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-yellow-900 mb-2">
-                  Admin Access Required
-                </h3>
-                <p className="text-yellow-800 mb-4">
-                  You need administrator permissions to manage integrations.
-                </p>
-
-                <div className="bg-white rounded-md p-4 mb-4">
-                  <p className="text-sm font-medium text-gray-900 mb-2">
-                    To get admin access:
-                  </p>
-                  <ol className="list-decimal list-inside space-y-2 text-sm text-gray-700">
-                    <li>
-                      Go to{" "}
-                      <a
-                        href="https://dashboard.clerk.com"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline"
-                      >
-                        Clerk Dashboard
-                      </a>
-                    </li>
-                    <li>Navigate to Organizations</li>
-                    <li>Create an organization if you don't have one</li>
-                    <li>Add yourself as a member with the "Admin" role</li>
-                  </ol>
-                </div>
-
-                <details className="text-sm">
-                  <summary className="cursor-pointer text-yellow-800 hover:text-yellow-900 font-medium">
-                    Or: Join your organization
-                  </summary>
-                  <div className="mt-2 p-3 bg-white rounded">
-                    <p className="text-gray-700 mb-2">
-                      If your organization already exists, you need to be
-                      invited by an existing admin or create your own
-                      organization.
-                    </p>
-                    <p className="text-xs text-gray-600 mt-2">
-                      Your user ID:{" "}
-                      <code className="bg-gray-100 px-1 rounded">{userId}</code>
-                    </p>
-                  </div>
-                </details>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     );
@@ -239,17 +280,17 @@ export default function IntegrationsPage() {
           </div>
         )}
 
-        {/* Linear Integration */}
-        <div className="border rounded-lg p-6 bg-white shadow-sm">
+        {/* Rippling Integration (Per-User) */}
+        <div className="border rounded-lg p-6 bg-white shadow-sm mb-6">
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <h2 className="text-xl font-semibold mb-2 flex items-center gap-2">
-                Linear
-                {loading ? (
+                Rippling
+                {ripplingLoading ? (
                   <span className="text-sm font-normal text-gray-500">
                     Loading...
                   </span>
-                ) : linearStatus?.connected ? (
+                ) : ripplingStatus?.connected ? (
                   <span className="text-sm font-normal text-green-600 bg-green-50 px-2 py-1 rounded">
                     Connected
                   </span>
@@ -259,104 +300,290 @@ export default function IntegrationsPage() {
                   </span>
                 )}
               </h2>
-              <p className="text-gray-600 mb-4">
-                Connect your Linear workspace to sync issues, projects, and
-                initiatives.
+              <p className="text-gray-600 mb-2">
+                Connect your Rippling account to access employee, team, and
+                department data.
+              </p>
+              <p className="text-sm text-amber-700 bg-amber-50 px-3 py-2 rounded mb-4">
+                <strong>Note:</strong> Your Rippling API token is personal and
+                provides access based on your Rippling permissions. It is stored
+                securely and not shared with other users.
               </p>
 
-              {linearStatus?.connected && (
-                <div className="text-sm text-gray-600 space-y-1 mb-4">
-                  {linearStatus.expiresAt && (
-                    <p>
-                      <strong>Token expires:</strong>{" "}
-                      {new Date(linearStatus.expiresAt).toLocaleString()}
-                    </p>
-                  )}
-                  {linearStatus.scope && (
-                    <p>
-                      <strong>Scopes:</strong> {linearStatus.scope}
-                    </p>
-                  )}
-                  {linearStatus.hasRefreshToken && (
-                    <p className="text-green-600">
-                      ✓ Automatic token refresh enabled
-                    </p>
-                  )}
+              {ripplingStatus?.connected && ripplingStatus.createdAt && (
+                <div className="text-sm text-gray-600 mb-4">
+                  <p>
+                    <strong>Connected since:</strong>{" "}
+                    {new Date(ripplingStatus.createdAt).toLocaleString()}
+                  </p>
                 </div>
               )}
             </div>
 
-            <div className="ml-4">
-              {linearStatus?.connected ? (
-                <Button
-                  onClick={handleDisconnectLinear}
-                  disabled={disconnecting}
-                  variant="outline"
-                >
-                  {disconnecting ? "Disconnecting..." : "Disconnect"}
-                </Button>
+            <div className="ml-4 flex flex-col gap-2">
+              {ripplingStatus?.connected ? (
+                <>
+                  <Button
+                    onClick={() => setShowRipplingExplorer(!showRipplingExplorer)}
+                    variant={showRipplingExplorer ? "secondary" : "default"}
+                  >
+                    {showRipplingExplorer ? "Hide Explorer" : "API Explorer"}
+                  </Button>
+                  <Button
+                    onClick={handleDisconnectRippling}
+                    disabled={ripplingDisconnecting}
+                    variant="outline"
+                    size="sm"
+                  >
+                    {ripplingDisconnecting ? "Disconnecting..." : "Disconnect"}
+                  </Button>
+                </>
               ) : (
-                <Button onClick={handleConnectLinear} disabled={loading}>
-                  Connect Linear
+                <Button
+                  onClick={() => setShowRipplingTokenInput(true)}
+                  disabled={ripplingLoading || showRipplingTokenInput}
+                >
+                  Connect Rippling
                 </Button>
               )}
             </div>
           </div>
 
-          {/* Setup Instructions */}
-          {!linearStatus?.connected && !loading && (
+          {/* Token Input Form */}
+          {showRipplingTokenInput && !ripplingStatus?.connected && (
             <div className="mt-6 pt-6 border-t">
-              <h3 className="font-semibold mb-2">Setup Instructions</h3>
+              <h3 className="font-semibold mb-3">Enter your Rippling API Token</h3>
+              <div className="flex gap-3">
+                <Input
+                  type="password"
+                  placeholder="Paste your Rippling API token here"
+                  value={ripplingToken}
+                  onChange={(e) => setRipplingToken(e.target.value)}
+                  className="flex-1"
+                />
+                <Button
+                  onClick={handleSaveRipplingToken}
+                  disabled={ripplingSaving || !ripplingToken.trim()}
+                >
+                  {ripplingSaving ? "Saving..." : "Save Token"}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowRipplingTokenInput(false);
+                    setRipplingToken("");
+                  }}
+                >
+                  Cancel
+                </Button>
+              </div>
+              <p className="text-sm text-gray-500 mt-2">
+                Your token will be validated before saving.
+              </p>
+            </div>
+          )}
+
+          {/* Setup Instructions */}
+          {!ripplingStatus?.connected && !ripplingLoading && !showRipplingTokenInput && (
+            <div className="mt-6 pt-6 border-t">
+              <h3 className="font-semibold mb-2">How to get your API Token</h3>
               <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600">
                 <li>
-                  Create an OAuth app in Linear at{" "}
+                  Go to the{" "}
                   <a
-                    href="https://linear.app/settings/api"
+                    href="https://app.rippling.com/developer/api-tokens"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-600 underline"
                   >
-                    linear.app/settings/api
+                    Rippling API Tokens page
                   </a>
                 </li>
                 <li>
-                  Set the callback URL to your deployment URL +{" "}
-                  <code className="bg-gray-100 px-1 rounded">
-                    /api/integrations/linear/callback
-                  </code>
+                  Click <strong>Create API Key</strong>
                 </li>
                 <li>
-                  Copy the Client ID and Client Secret to your environment
-                  variables
+                  Assign the scopes you need (e.g., users.read, teams.read, departments.read)
                 </li>
-                <li>
-                  Set environment variables:
-                  <ul className="list-disc list-inside ml-4 mt-1">
-                    <li>
-                      <code className="bg-gray-100 px-1 rounded">
-                        LINEAR_CLIENT_ID
-                      </code>
-                    </li>
-                    <li>
-                      <code className="bg-gray-100 px-1 rounded">
-                        LINEAR_CLIENT_SECRET
-                      </code>
-                    </li>
-                    <li>
-                      <code className="bg-gray-100 px-1 rounded">
-                        LINEAR_OAUTH_REDIRECT_URI
-                      </code>
-                    </li>
-                  </ul>
-                </li>
-                <li>Click "Connect Linear" above to authorize</li>
+                <li>Copy the generated API token</li>
+                <li>Click "Connect Rippling" above and paste your token</li>
               </ol>
+              <p className="text-sm text-gray-500 mt-4">
+                For detailed instructions, see the{" "}
+                <a
+                  href="https://developer.rippling.com/documentation/rest-api"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 underline"
+                >
+                  Rippling API documentation
+                </a>
+                .
+              </p>
+            </div>
+          )}
+
+          {/* API Explorer */}
+          {ripplingStatus?.connected && showRipplingExplorer && (
+            <div className="mt-6 pt-6 border-t">
+              <RipplingApiExplorer />
             </div>
           )}
         </div>
 
-        {/* Future integrations can be added here */}
-        <div className="mt-6 p-6 border rounded-lg bg-gray-50">
+        {/* Linear Integration (Admin Only) */}
+        {isAdmin && (
+          <div className="border rounded-lg p-6 bg-white shadow-sm mb-6">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <h2 className="text-xl font-semibold mb-2 flex items-center gap-2">
+                  Linear
+                  <span className="text-xs font-normal text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                    Admin
+                  </span>
+                  {linearLoading ? (
+                    <span className="text-sm font-normal text-gray-500">
+                      Loading...
+                    </span>
+                  ) : linearStatus?.connected ? (
+                    <span className="text-sm font-normal text-green-600 bg-green-50 px-2 py-1 rounded">
+                      Connected
+                    </span>
+                  ) : (
+                    <span className="text-sm font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                      Not Connected
+                    </span>
+                  )}
+                </h2>
+                <p className="text-gray-600 mb-4">
+                  Connect your Linear workspace to sync issues, projects, and
+                  initiatives. This is a workspace-wide integration managed by
+                  administrators.
+                </p>
+
+                {linearStatus?.connected && (
+                  <div className="text-sm text-gray-600 space-y-1 mb-4">
+                    {linearStatus.expiresAt && (
+                      <p>
+                        <strong>Token expires:</strong>{" "}
+                        {new Date(linearStatus.expiresAt).toLocaleString()}
+                      </p>
+                    )}
+                    {linearStatus.scope && (
+                      <p>
+                        <strong>Scopes:</strong> {linearStatus.scope}
+                      </p>
+                    )}
+                    {linearStatus.hasRefreshToken && (
+                      <p className="text-green-600">
+                        ✓ Automatic token refresh enabled
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="ml-4">
+                {linearStatus?.connected ? (
+                  <Button
+                    onClick={handleDisconnectLinear}
+                    disabled={linearDisconnecting}
+                    variant="outline"
+                  >
+                    {linearDisconnecting ? "Disconnecting..." : "Disconnect"}
+                  </Button>
+                ) : (
+                  <Button onClick={handleConnectLinear} disabled={linearLoading}>
+                    Connect Linear
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {/* Setup Instructions */}
+            {!linearStatus?.connected && !linearLoading && (
+              <div className="mt-6 pt-6 border-t">
+                <h3 className="font-semibold mb-2">Setup Instructions</h3>
+                <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600">
+                  <li>
+                    Create an OAuth app in Linear at{" "}
+                    <a
+                      href="https://linear.app/settings/api"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 underline"
+                    >
+                      linear.app/settings/api
+                    </a>
+                  </li>
+                  <li>
+                    Set the callback URL to your deployment URL +{" "}
+                    <code className="bg-gray-100 px-1 rounded">
+                      /api/integrations/linear/callback
+                    </code>
+                  </li>
+                  <li>
+                    Copy the Client ID and Client Secret to your environment
+                    variables
+                  </li>
+                  <li>
+                    Set environment variables:
+                    <ul className="list-disc list-inside ml-4 mt-1">
+                      <li>
+                        <code className="bg-gray-100 px-1 rounded">
+                          LINEAR_CLIENT_ID
+                        </code>
+                      </li>
+                      <li>
+                        <code className="bg-gray-100 px-1 rounded">
+                          LINEAR_CLIENT_SECRET
+                        </code>
+                      </li>
+                      <li>
+                        <code className="bg-gray-100 px-1 rounded">
+                          LINEAR_OAUTH_REDIRECT_URI
+                        </code>
+                      </li>
+                    </ul>
+                  </li>
+                  <li>Click "Connect Linear" above to authorize</li>
+                </ol>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Non-admin Linear info */}
+        {!isAdmin && (
+          <div className="border rounded-lg p-6 bg-gray-50 mb-6">
+            <div className="flex items-start gap-3">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 text-gray-500 flex-shrink-0 mt-0.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <div>
+                <h3 className="font-semibold text-gray-700">Linear</h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  Linear is a workspace-wide integration managed by administrators.
+                  Contact your admin to set up or modify the Linear connection.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Future integrations */}
+        <div className="p-6 border rounded-lg bg-gray-50">
           <h3 className="font-semibold text-gray-700 mb-2">
             More integrations coming soon
           </h3>
