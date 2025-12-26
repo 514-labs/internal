@@ -9,6 +9,19 @@ const getAppsSdkCompatibleHtml = async (baseUrl: string, path: string) => {
   return await result.text();
 };
 
+// Widget domain for sandboxing (must be unique to your app)
+const WIDGET_DOMAIN = "internal-fiveonefour-widgets";
+
+// Content Security Policy for widgets
+// Restricts what resources the widget can load for security
+const WIDGET_CSP =
+  "default-src 'none'; " +
+  "script-src 'self'; " +
+  "style-src 'self' 'unsafe-inline'; " +
+  "img-src 'self' data: https:; " +
+  "font-src 'self'; " +
+  "connect-src 'self';";
+
 type ContentWidget = {
   id: string;
   title: string;
@@ -53,6 +66,8 @@ const handler = createMcpHandler(async (server) => {
       _meta: {
         "openai/widgetDescription": contentWidget.description,
         "openai/widgetPrefersBorder": true,
+        "openai/widgetCsp": WIDGET_CSP,
+        "openai/widgetDomain": WIDGET_DOMAIN,
       },
     },
     async (uri) => ({
@@ -64,6 +79,8 @@ const handler = createMcpHandler(async (server) => {
           _meta: {
             "openai/widgetDescription": contentWidget.description,
             "openai/widgetPrefersBorder": true,
+            "openai/widgetCsp": WIDGET_CSP,
+            "openai/widgetDomain": WIDGET_DOMAIN,
           },
         },
       ],
