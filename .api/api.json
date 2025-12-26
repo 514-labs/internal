@@ -1,0 +1,11 @@
+{
+  "version": "1.0",
+  "apis": [
+    {
+      "identifier": "mercurytechnologies",
+      "source": "@mercurytechnologies/v1#9m901l1mj8uv8bi",
+      "integrity": "sha512-R5Ossr6aLsl2AS6lmVrVXBrfKcVBjR5n4uPdv5S31j5a9rty11XIGGND8XUxguxXqnt/gFe03Bp3P00lzz3dNw==",
+      "installerVersion": "6.1.3"
+    }
+  ]
+}

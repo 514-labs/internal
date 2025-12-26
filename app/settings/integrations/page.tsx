@@ -2,11 +2,12 @@
 
 /**
  * Admin Settings - Integrations
- * Manage third-party integrations (Linear, Rippling, etc.)
+ * Manage third-party integrations (Linear, Rippling, Mercury, etc.)
  *
  * INTEGRATION TYPES:
  * - Linear: Workspace-level OAuth (admin only)
  * - Rippling: Per-user API tokens (each user manages their own)
+ * - Mercury: Per-user API tokens (each user manages their own)
  */
 
 import { useEffect, useState } from "react";
@@ -14,6 +15,7 @@ import { useAuth, useOrganizationList } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { RipplingApiExplorer } from "./_components/rippling-api-explorer";
+import { MercuryApiExplorer } from "./_components/mercury-api-explorer";
 
 interface LinearStatus {
   connected: boolean;
@@ -24,6 +26,12 @@ interface LinearStatus {
 }
 
 interface RipplingStatus {
+  connected: boolean;
+  createdAt?: string;
+  message?: string;
+}
+
+interface MercuryStatus {
   connected: boolean;
   createdAt?: string;
   message?: string;
@@ -52,6 +60,17 @@ export default function IntegrationsPage() {
   const [ripplingDisconnecting, setRipplingDisconnecting] = useState(false);
   const [showRipplingTokenInput, setShowRipplingTokenInput] = useState(false);
   const [showRipplingExplorer, setShowRipplingExplorer] = useState(false);
+
+  // Mercury state (per-user)
+  const [mercuryStatus, setMercuryStatus] = useState<MercuryStatus | null>(
+    null
+  );
+  const [mercuryLoading, setMercuryLoading] = useState(true);
+  const [mercuryToken, setMercuryToken] = useState("");
+  const [mercurySaving, setMercurySaving] = useState(false);
+  const [mercuryDisconnecting, setMercuryDisconnecting] = useState(false);
+  const [showMercuryTokenInput, setShowMercuryTokenInput] = useState(false);
+  const [showMercuryExplorer, setShowMercuryExplorer] = useState(false);
 
   // General state
   const [error, setError] = useState<string | null>(null);
@@ -90,9 +109,10 @@ export default function IntegrationsPage() {
       setLinearLoading(false);
     }
 
-    // Rippling is per-user, so fetch for all authenticated users
+    // Rippling and Mercury are per-user, so fetch for all authenticated users
     if (userId) {
       fetchRipplingStatus();
+      fetchMercuryStatus();
     }
   }, [isAdmin, userId]);
 
@@ -131,6 +151,25 @@ export default function IntegrationsPage() {
       // Don't set error for Rippling - it's optional
     } finally {
       setRipplingLoading(false);
+    }
+  };
+
+  const fetchMercuryStatus = async () => {
+    try {
+      setMercuryLoading(true);
+      const response = await fetch("/api/integrations/mercury/status");
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch Mercury status");
+      }
+
+      const data = await response.json();
+      setMercuryStatus(data);
+    } catch (err) {
+      console.error("Error fetching Mercury status:", err);
+      // Don't set error for Mercury - it's optional
+    } finally {
+      setMercuryLoading(false);
     }
   };
 
@@ -235,6 +274,74 @@ export default function IntegrationsPage() {
       setError((err as Error).message);
     } finally {
       setRipplingDisconnecting(false);
+    }
+  };
+
+  const handleSaveMercuryToken = async () => {
+    if (!mercuryToken.trim()) {
+      setError("Please enter your Mercury API token");
+      return;
+    }
+
+    try {
+      setMercurySaving(true);
+      setError(null);
+
+      const response = await fetch("/api/integrations/mercury/token", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ token: mercuryToken }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to save token");
+      }
+
+      setSuccessMessage("Mercury API token saved successfully");
+      setMercuryToken("");
+      setShowMercuryTokenInput(false);
+      await fetchMercuryStatus();
+    } catch (err) {
+      console.error("Error saving Mercury token:", err);
+      setError((err as Error).message);
+    } finally {
+      setMercurySaving(false);
+    }
+  };
+
+  const handleDisconnectMercury = async () => {
+    if (
+      !confirm(
+        "Are you sure you want to disconnect Mercury? You will need to re-enter your API token to reconnect."
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setMercuryDisconnecting(true);
+      setError(null);
+
+      const response = await fetch("/api/integrations/mercury/token", {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || "Failed to disconnect");
+      }
+
+      setSuccessMessage("Mercury integration disconnected successfully");
+      await fetchMercuryStatus();
+    } catch (err) {
+      console.error("Error disconnecting Mercury:", err);
+      setError((err as Error).message);
+    } finally {
+      setMercuryDisconnecting(false);
     }
   };
 
@@ -427,6 +534,157 @@ export default function IntegrationsPage() {
           {ripplingStatus?.connected && showRipplingExplorer && (
             <div className="mt-6 pt-6 border-t">
               <RipplingApiExplorer />
+            </div>
+          )}
+        </div>
+
+        {/* Mercury Integration (Per-User) */}
+        <div className="border rounded-lg p-6 bg-white shadow-sm mb-6">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <h2 className="text-xl font-semibold mb-2 flex items-center gap-2">
+                Mercury
+                {mercuryLoading ? (
+                  <span className="text-sm font-normal text-gray-500">
+                    Loading...
+                  </span>
+                ) : mercuryStatus?.connected ? (
+                  <span className="text-sm font-normal text-green-600 bg-green-50 px-2 py-1 rounded">
+                    Connected
+                  </span>
+                ) : (
+                  <span className="text-sm font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                    Not Connected
+                  </span>
+                )}
+              </h2>
+              <p className="text-gray-600 mb-2">
+                Connect your Mercury banking account to access accounts,
+                transactions, and financial data.
+              </p>
+              <p className="text-sm text-amber-700 bg-amber-50 px-3 py-2 rounded mb-4">
+                <strong>Note:</strong> Your Mercury API token is personal and
+                provides access based on your Mercury permissions. It is stored
+                securely and not shared with other users.
+              </p>
+
+              {mercuryStatus?.connected && mercuryStatus.createdAt && (
+                <div className="text-sm text-gray-600 mb-4">
+                  <p>
+                    <strong>Connected since:</strong>{" "}
+                    {new Date(mercuryStatus.createdAt).toLocaleString()}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="ml-4 flex flex-col gap-2">
+              {mercuryStatus?.connected ? (
+                <>
+                  <Button
+                    onClick={() => setShowMercuryExplorer(!showMercuryExplorer)}
+                    variant={showMercuryExplorer ? "secondary" : "default"}
+                  >
+                    {showMercuryExplorer ? "Hide Explorer" : "API Explorer"}
+                  </Button>
+                  <Button
+                    onClick={handleDisconnectMercury}
+                    disabled={mercuryDisconnecting}
+                    variant="outline"
+                    size="sm"
+                  >
+                    {mercuryDisconnecting ? "Disconnecting..." : "Disconnect"}
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  onClick={() => setShowMercuryTokenInput(true)}
+                  disabled={mercuryLoading || showMercuryTokenInput}
+                >
+                  Connect Mercury
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* Token Input Form */}
+          {showMercuryTokenInput && !mercuryStatus?.connected && (
+            <div className="mt-6 pt-6 border-t">
+              <h3 className="font-semibold mb-3">Enter your Mercury API Token</h3>
+              <div className="flex gap-3">
+                <Input
+                  type="password"
+                  placeholder="Paste your Mercury API token here"
+                  value={mercuryToken}
+                  onChange={(e) => setMercuryToken(e.target.value)}
+                  className="flex-1"
+                />
+                <Button
+                  onClick={handleSaveMercuryToken}
+                  disabled={mercurySaving || !mercuryToken.trim()}
+                >
+                  {mercurySaving ? "Saving..." : "Save Token"}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowMercuryTokenInput(false);
+                    setMercuryToken("");
+                  }}
+                >
+                  Cancel
+                </Button>
+              </div>
+              <p className="text-sm text-gray-500 mt-2">
+                Your token will be validated before saving.
+              </p>
+            </div>
+          )}
+
+          {/* Setup Instructions */}
+          {!mercuryStatus?.connected && !mercuryLoading && !showMercuryTokenInput && (
+            <div className="mt-6 pt-6 border-t">
+              <h3 className="font-semibold mb-2">How to get your API Token</h3>
+              <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600">
+                <li>
+                  Go to the{" "}
+                  <a
+                    href="https://app.mercury.com/settings/tokens"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 underline"
+                  >
+                    Mercury API Tokens page
+                  </a>
+                </li>
+                <li>
+                  Click <strong>Create Token</strong>
+                </li>
+                <li>
+                  Select the appropriate permissions (Read Only, Read and Write, or Custom)
+                </li>
+                <li>Copy the generated API token</li>
+                <li>Click "Connect Mercury" above and paste your token</li>
+              </ol>
+              <p className="text-sm text-gray-500 mt-4">
+                For detailed instructions, see the{" "}
+                <a
+                  href="https://docs.mercury.com/reference/getting-started-with-your-api"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 underline"
+                >
+                  Mercury API documentation
+                </a>
+                .
+              </p>
+            </div>
+          )}
+
+          {/* API Explorer */}
+          {mercuryStatus?.connected && showMercuryExplorer && (
+            <div className="mt-6 pt-6 border-t">
+              <MercuryApiExplorer />
             </div>
           )}
         </div>
