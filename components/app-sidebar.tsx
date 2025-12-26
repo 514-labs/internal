@@ -25,6 +25,7 @@ import {
   Briefcase,
   FlaskConical,
   Plug,
+  Settings,
 } from "lucide-react";
 
 const menuItems = [
@@ -70,9 +71,12 @@ const menuItems = [
     icon: Building2,
     shortcut: "C",
   },
+];
+
+const adminItems = [
   {
     title: "Integrations",
-    url: "/settings/integrations",
+    url: "/admin/integrations",
     icon: Plug,
     shortcut: "I",
   },
@@ -81,6 +85,8 @@ const menuItems = [
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
+
+  const allItems = [...menuItems, ...adminItems];
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -91,7 +97,7 @@ export function AppSidebar() {
         const code = e.code;
         if (code.startsWith("Key")) {
           const letter = code.replace("Key", "").toLowerCase();
-          const item = menuItems.find(
+          const item = allItems.find(
             (item) => item.shortcut.toLowerCase() === letter
           );
           if (item) {
@@ -123,6 +129,33 @@ export function AppSidebar() {
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild isActive={pathname === item.url}>
+                      <Link href={item.url}>
+                        <Icon className="h-4 w-4" />
+                        <span>{item.title}</span>
+                        <span className="ml-auto text-xs text-muted-foreground">
+                          ⌥{item.shortcut}
+                        </span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Admin</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {adminItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname.startsWith(item.url)}
+                    >
                       <Link href={item.url}>
                         <Icon className="h-4 w-4" />
                         <span>{item.title}</span>
