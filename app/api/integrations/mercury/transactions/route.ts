@@ -12,6 +12,8 @@
  * - status: Transaction status filter
  * - order: Sort order ('asc' or 'desc', default 'asc')
  * - search: Search term for transaction descriptions
+ * - startAfter: Cursor for forward pagination (transaction ID)
+ * - endBefore: Cursor for backward pagination (transaction ID)
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -36,9 +38,11 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status");
     const order = searchParams.get("order");
     const search = searchParams.get("search");
+    const startAfter = searchParams.get("startAfter");
+    const endBefore = searchParams.get("endBefore");
 
     const client = await createMercuryClient(userId);
-    const transactions = await client.listTransactions({
+    const result = await client.listTransactions({
       limit: limit ? parseInt(limit, 10) : undefined,
       offset: offset ? parseInt(offset, 10) : undefined,
       start: start || undefined,
@@ -48,9 +52,11 @@ export async function GET(request: NextRequest) {
       status: status || undefined,
       order: order === "asc" || order === "desc" ? order : undefined,
       search: search || undefined,
+      startAfter: startAfter || undefined,
+      endBefore: endBefore || undefined,
     });
 
-    return NextResponse.json({ data: transactions });
+    return NextResponse.json({ data: result });
   } catch (error) {
     return handleMercuryError(error, "fetch transactions");
   }

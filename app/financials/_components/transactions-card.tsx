@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,21 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -34,10 +19,12 @@ import {
   ArrowUpRight,
   AlertCircle,
   ArrowLeftRight,
-  ArrowUpDown,
   Filter,
   CalendarIcon,
   X,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -57,7 +44,10 @@ export interface Transaction {
 
 interface TransactionsResponse {
   transactions: Transaction[];
-  total?: number;
+  page: {
+    nextPage?: string;
+    previousPage?: string;
+  };
 }
 
 interface FetchParams {
@@ -65,12 +55,12 @@ interface FetchParams {
   start?: string;
   end?: string;
   order?: "asc" | "desc";
+  limit?: number;
+  startAfter?: string;
+  endBefore?: string;
 }
 
-type SortOption = "date-desc" | "date-asc" | "amount-desc" | "amount-asc";
-
-const ITEMS_PER_PAGE = 10;
-const MAX_TRANSACTIONS = 100; // Fetch more to enable proper sorting
+const ITEMS_PER_PAGE = 25;
 
 const STATUS_OPTIONS = [
   { value: "all", label: "All Statuses" },
@@ -80,23 +70,18 @@ const STATUS_OPTIONS = [
   { value: "failed", label: "Failed" },
 ];
 
-const SORT_OPTIONS: { value: SortOption; label: string }[] = [
-  { value: "date-desc", label: "Date (Newest)" },
-  { value: "date-asc", label: "Date (Oldest)" },
-  { value: "amount-desc", label: "Amount (High → Low)" },
-  { value: "amount-asc", label: "Amount (Low → High)" },
-];
-
 async function fetchTransactions(params: FetchParams): Promise<TransactionsResponse> {
   const searchParams = new URLSearchParams();
-  searchParams.set("limit", MAX_TRANSACTIONS.toString());
-  // Use API-level sorting (Mercury supports 'asc' or 'desc')
-  if (params.order) searchParams.set("order", params.order);
+  searchParams.set("limit", (params.limit || ITEMS_PER_PAGE).toString());
+  searchParams.set("order", params.order || "desc");
+  
   if (params.status && params.status !== "all") {
     searchParams.set("status", params.status);
   }
   if (params.start) searchParams.set("start", params.start);
   if (params.end) searchParams.set("end", params.end);
+  if (params.startAfter) searchParams.set("startAfter", params.startAfter);
+  if (params.endBefore) searchParams.set("endBefore", params.endBefore);
 
   const response = await fetch(`/api/integrations/mercury/transactions?${searchParams}`);
   if (!response.ok) {
@@ -141,68 +126,84 @@ function TransactionSkeleton() {
 }
 
 export function TransactionsCard() {
-  const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState("all");
-  const [sortBy, setSortBy] = useState<SortOption>("date-desc");
   const [dateRange, setDateRange] = useState<{
     from: Date | undefined;
     to: Date | undefined;
   }>({ from: undefined, to: undefined });
-
-  // Determine API order based on sort preference (date sorts use API, amount sorts use client-side)
-  const apiOrder = sortBy === "date-asc" ? "asc" : "desc";
   
-  const { data, isLoading, error } = useQuery({
+  // Cursor-based pagination state
+  const [cursorStack, setCursorStack] = useState<string[]>([]); // Stack of previous page cursors
+  const [currentCursor, setCurrentCursor] = useState<string | undefined>(undefined);
+  const [isNavigatingBack, setIsNavigatingBack] = useState(false);
+
+  const { data, isLoading, error, isFetching } = useQuery({
     queryKey: [
       "mercury",
       "transactions",
       statusFilter,
-      apiOrder,
       dateRange.from?.toISOString(),
       dateRange.to?.toISOString(),
+      currentCursor,
+      isNavigatingBack,
     ],
     queryFn: () =>
       fetchTransactions({
         status: statusFilter !== "all" ? statusFilter : undefined,
         start: dateRange.from ? format(dateRange.from, "yyyy-MM-dd") : undefined,
         end: dateRange.to ? format(dateRange.to, "yyyy-MM-dd") : undefined,
-        order: apiOrder,
+        order: "desc",
+        limit: ITEMS_PER_PAGE,
+        startAfter: !isNavigatingBack ? currentCursor : undefined,
+        endBefore: isNavigatingBack ? currentCursor : undefined,
       }),
     staleTime: 1000 * 60 * 2,
   });
 
-  // Sort transactions - API handles date sorting, client handles amount sorting
-  const sortedTransactions = useMemo(() => {
-    if (!data?.transactions) return [];
-    
-    // For date-based sorts, API already returns correct order
-    if (sortBy === "date-desc" || sortBy === "date-asc") {
-      return data.transactions;
-    }
-    
-    // For amount-based sorts, sort client-side
-    const sorted = [...data.transactions];
-    if (sortBy === "amount-desc") {
-      sorted.sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount));
-    } else if (sortBy === "amount-asc") {
-      sorted.sort((a, b) => Math.abs(a.amount) - Math.abs(b.amount));
-    }
-    return sorted;
-  }, [data?.transactions, sortBy]);
-
-  // Client-side pagination of sorted results
-  const totalPages = Math.ceil(sortedTransactions.length / ITEMS_PER_PAGE) || 1;
-  const paginatedTransactions = useMemo(() => {
-    const start = (page - 1) * ITEMS_PER_PAGE;
-    return sortedTransactions.slice(start, start + ITEMS_PER_PAGE);
-  }, [sortedTransactions, page]);
+  const transactions = data?.transactions || [];
+  const hasNextPage = !!data?.page?.nextPage;
+  const hasPreviousPage = cursorStack.length > 0;
   const hasFilters = statusFilter !== "all" || dateRange.from || dateRange.to;
+
+  const goToNextPage = () => {
+    if (data?.page?.nextPage && transactions.length > 0) {
+      // Save current first transaction ID for going back
+      setCursorStack((prev) => [...prev, transactions[0].id]);
+      setCurrentCursor(data.page.nextPage);
+      setIsNavigatingBack(false);
+    }
+  };
+
+  const goToPreviousPage = () => {
+    if (cursorStack.length > 0) {
+      const newStack = [...cursorStack];
+      const previousCursor = newStack.pop();
+      setCursorStack(newStack);
+      
+      if (newStack.length === 0) {
+        // Going back to first page
+        setCurrentCursor(undefined);
+        setIsNavigatingBack(false);
+      } else {
+        setCurrentCursor(previousCursor);
+        setIsNavigatingBack(true);
+      }
+    }
+  };
+
+  const resetPagination = () => {
+    setCursorStack([]);
+    setCurrentCursor(undefined);
+    setIsNavigatingBack(false);
+  };
 
   const clearFilters = () => {
     setStatusFilter("all");
     setDateRange({ from: undefined, to: undefined });
-    setPage(1);
+    resetPagination();
   };
+
+  const pageNumber = cursorStack.length + 1;
 
   return (
     <Card>
@@ -212,9 +213,12 @@ export function TransactionsCard() {
             <ArrowLeftRight className="h-5 w-5 text-green-600" />
             Transactions
           </CardTitle>
-          {sortedTransactions.length > 0 && (
-            <span className="text-sm text-gray-500">
-              {sortedTransactions.length} transactions
+          {transactions.length > 0 && (
+            <span className="text-sm text-gray-500 flex items-center gap-2">
+              {isFetching && !isLoading && (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              )}
+              Page {pageNumber}
             </span>
           )}
         </div>
@@ -226,7 +230,7 @@ export function TransactionsCard() {
             value={statusFilter}
             onValueChange={(value) => {
               setStatusFilter(value);
-              setPage(1);
+              resetPagination();
             }}
           >
             <SelectTrigger className="w-[140px] h-8 text-xs">
@@ -266,32 +270,13 @@ export function TransactionsCard() {
                 selected={{ from: dateRange.from, to: dateRange.to }}
                 onSelect={(range) => {
                   setDateRange({ from: range?.from, to: range?.to });
-                  setPage(1);
+                  resetPagination();
                 }}
                 numberOfMonths={2}
                 initialFocus
               />
             </PopoverContent>
           </Popover>
-
-          {/* Sort Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-8 text-xs gap-1">
-                <ArrowUpDown className="h-3 w-3" />
-                {SORT_OPTIONS.find((o) => o.value === sortBy)?.label || "Sort"}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              <DropdownMenuRadioGroup value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
-                {SORT_OPTIONS.map((option) => (
-                  <DropdownMenuRadioItem key={option.value} value={option.value}>
-                    {option.label}
-                  </DropdownMenuRadioItem>
-                ))}
-              </DropdownMenuRadioGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
 
           {/* Clear Filters */}
           {hasFilters && (
@@ -325,7 +310,7 @@ export function TransactionsCard() {
               </p>
             </div>
           </div>
-        ) : paginatedTransactions.length === 0 ? (
+        ) : transactions.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-gray-500">No transactions found</p>
             {hasFilters && (
@@ -337,7 +322,7 @@ export function TransactionsCard() {
         ) : (
           <>
             <div className="divide-y">
-              {paginatedTransactions.map((tx) => {
+              {transactions.map((tx) => {
                 const isCredit = tx.amount > 0;
                 const displayName =
                   tx.counterpartyNickname ||
@@ -402,62 +387,31 @@ export function TransactionsCard() {
             </div>
 
             {/* Pagination */}
-            {sortedTransactions.length > ITEMS_PER_PAGE && (
+            {(hasPreviousPage || hasNextPage) && (
               <div className="flex items-center justify-between pt-4 border-t mt-4">
-                <p className="text-sm text-gray-500">
-                  Page {page} of {totalPages}
-                </p>
-                <Pagination>
-                  <PaginationContent>
-                    <PaginationItem>
-                      <PaginationPrevious
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          if (page > 1) setPage(page - 1);
-                        }}
-                        className={page <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                      />
-                    </PaginationItem>
-                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                      let pageNum: number;
-                      if (totalPages <= 5) {
-                        pageNum = i + 1;
-                      } else if (page <= 3) {
-                        pageNum = i + 1;
-                      } else if (page >= totalPages - 2) {
-                        pageNum = totalPages - 4 + i;
-                      } else {
-                        pageNum = page - 2 + i;
-                      }
-                      return (
-                        <PaginationItem key={pageNum}>
-                          <PaginationLink
-                            href="#"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setPage(pageNum);
-                            }}
-                            isActive={page === pageNum}
-                            className="cursor-pointer"
-                          >
-                            {pageNum}
-                          </PaginationLink>
-                        </PaginationItem>
-                      );
-                    })}
-                    <PaginationItem>
-                      <PaginationNext
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          if (page < totalPages) setPage(page + 1);
-                        }}
-                        className={page >= totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                      />
-                    </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={goToPreviousPage}
+                  disabled={!hasPreviousPage || isFetching}
+                  className="gap-1"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Previous
+                </Button>
+                <span className="text-sm text-gray-500">
+                  Page {pageNumber}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={goToNextPage}
+                  disabled={!hasNextPage || isFetching}
+                  className="gap-1"
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
               </div>
             )}
           </>
