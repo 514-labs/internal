@@ -82,11 +82,14 @@ function formatMonths(months: number): string {
   return `${Math.round(months)} months`;
 }
 
+interface MonthBurn {
+  amount: number;
+  label: string;
+}
+
 interface MonthlyBurnData {
-  currentMonth: number;
-  currentMonthLabel: string;
-  lastMonth: number;
-  lastMonthLabel: string;
+  months: MonthBurn[];
+  averageBurn: number;
 }
 
 function calculateMonthlyBurn(transactions: Transaction[]): MonthlyBurnData {
@@ -110,10 +113,8 @@ function calculateMonthlyBurn(transactions: Transaction[]): MonthlyBurnData {
 
   if (validTransactions.length === 0) {
     return {
-      currentMonth: 0,
-      currentMonthLabel: "No data",
-      lastMonth: 0,
-      lastMonthLabel: "No data",
+      months: [],
+      averageBurn: 0,
     };
   }
 
@@ -140,10 +141,6 @@ function calculateMonthlyBurn(transactions: Transaction[]): MonthlyBurnData {
     .sort((a, b) => b[1].date.getTime() - a[1].date.getTime());
 
   const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  
-  // Get current (most recent) and last month
-  const currentMonthData = sortedMonths[0];
-  const lastMonthData = sortedMonths[1];
 
   const formatMonthLabel = (date: Date) => {
     const now = new Date();
@@ -155,11 +152,21 @@ function calculateMonthlyBurn(transactions: Transaction[]): MonthlyBurnData {
     return monthName;
   };
 
+  // Get top 3 months
+  const months: MonthBurn[] = sortedMonths.slice(0, 3).map((entry) => ({
+    amount: entry[1].total,
+    label: formatMonthLabel(entry[1].date),
+  }));
+
+  // Calculate average burn (exclude current month as it may be incomplete)
+  const completedMonths = sortedMonths.slice(1, 4); // Skip current, take next 3
+  const averageBurn = completedMonths.length > 0
+    ? completedMonths.reduce((sum, m) => sum + m[1].total, 0) / completedMonths.length
+    : months[0]?.amount || 0;
+
   return {
-    currentMonth: currentMonthData?.[1].total || 0,
-    currentMonthLabel: currentMonthData ? formatMonthLabel(currentMonthData[1].date) : "No data",
-    lastMonth: lastMonthData?.[1].total || 0,
-    lastMonthLabel: lastMonthData ? formatMonthLabel(lastMonthData[1].date) : "No data",
+    months,
+    averageBurn,
   };
 }
 
@@ -207,10 +214,10 @@ export function KPIsCard() {
   // Calculate burn rate
   const burnData = txData?.transactions
     ? calculateMonthlyBurn(txData.transactions)
-    : { currentMonth: 0, currentMonthLabel: "", lastMonth: 0, lastMonthLabel: "" };
+    : { months: [], averageBurn: 0 };
 
-  // Use last month's burn for runway calculation (more complete data)
-  const monthlyBurnForRunway = burnData.lastMonth > 0 ? burnData.lastMonth : burnData.currentMonth;
+  // Use average burn for runway calculation (more stable than single month)
+  const monthlyBurnForRunway = burnData.averageBurn;
 
   // Calculate runway
   const runwayMonths = monthlyBurnForRunway > 0 ? totalCash / monthlyBurnForRunway : Infinity;
@@ -230,9 +237,11 @@ export function KPIsCard() {
 
   const runwayStatus = getRunwayStatus();
 
-  // Calculate burn change percentage
-  const burnChange = burnData.lastMonth > 0
-    ? ((burnData.currentMonth - burnData.lastMonth) / burnData.lastMonth) * 100
+  // Calculate burn change percentage (current vs last month)
+  const currentMonth = burnData.months[0];
+  const lastMonth = burnData.months[1];
+  const burnChange = lastMonth && lastMonth.amount > 0
+    ? ((currentMonth.amount - lastMonth.amount) / lastMonth.amount) * 100
     : 0;
 
   return (
@@ -258,7 +267,7 @@ export function KPIsCard() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900">Monthly Burn</h3>
-                    <p className="text-xs text-gray-500">Total expenses per month</p>
+                    <p className="text-xs text-gray-500">Last 3 months of expenses</p>
                   </div>
                 </div>
                 {burnChange !== 0 && (
@@ -269,25 +278,26 @@ export function KPIsCard() {
                   </span>
                 )}
               </div>
-              <div className="space-y-3">
-                {/* Current Month */}
-                <div>
-                  <div className="flex items-baseline justify-between">
-                    <span className="text-xs text-gray-500 uppercase tracking-wide">{burnData.currentMonthLabel} (Current)</span>
+              <div className="space-y-2">
+                {burnData.months.map((month, index) => (
+                  <div
+                    key={month.label}
+                    className={index === 0 ? "" : "pt-2 border-t border-orange-100"}
+                  >
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-xs text-gray-500">
+                        {month.label}
+                        {index === 0 && " (Current)"}
+                      </span>
+                      <span className={`font-semibold ${index === 0 ? "text-lg text-orange-600" : "text-sm text-gray-700"}`}>
+                        {formatCurrency(month.amount)}
+                      </span>
+                    </div>
                   </div>
-                  <p className="text-2xl font-bold text-orange-600">
-                    {formatCurrency(burnData.currentMonth)}
-                  </p>
-                </div>
-                {/* Last Month */}
-                <div className="pt-2 border-t border-orange-100">
-                  <div className="flex items-baseline justify-between">
-                    <span className="text-xs text-gray-500">{burnData.lastMonthLabel} (Last month)</span>
-                    <span className="text-sm font-semibold text-gray-700">
-                      {formatCurrency(burnData.lastMonth)}
-                    </span>
-                  </div>
-                </div>
+                ))}
+                {burnData.months.length === 0 && (
+                  <p className="text-sm text-gray-500">No expense data available</p>
+                )}
               </div>
             </div>
 
@@ -305,7 +315,7 @@ export function KPIsCard() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900">Runway</h3>
-                    <p className="text-xs text-gray-500">Based on {burnData.lastMonthLabel} burn rate</p>
+                    <p className="text-xs text-gray-500">Based on 3-month average burn</p>
                   </div>
                 </div>
                 <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${runwayStatus.bg} ${runwayStatus.color}`}>
@@ -322,7 +332,7 @@ export function KPIsCard() {
                     <span className="font-medium text-gray-700">{formatCurrency(totalCash)}</span>
                   </div>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-500">Monthly burn</span>
+                    <span className="text-gray-500">Avg. monthly burn</span>
                     <span className="font-medium text-gray-700">{formatCurrency(monthlyBurnForRunway)}/mo</span>
                   </div>
                 </div>
