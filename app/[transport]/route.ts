@@ -9,18 +9,17 @@ const getAppsSdkCompatibleHtml = async (baseUrl: string, path: string) => {
   return await result.text();
 };
 
-// Widget domain for sandboxing (must be unique to your app)
-const WIDGET_DOMAIN = "internal-fiveonefour-widgets";
+// Widget domain for sandboxing - renders under <domain>.web-sandbox.oaiusercontent.com
+const WIDGET_DOMAIN = "https://internal.fiveonefour.com";
 
-// Content Security Policy for widgets
-// Restricts what resources the widget can load for security
-const WIDGET_CSP =
-  "default-src 'none'; " +
-  "script-src 'self'; " +
-  "style-src 'self' 'unsafe-inline'; " +
-  "img-src 'self' data: https:; " +
-  "font-src 'self'; " +
-  "connect-src 'self';";
+// Content Security Policy for widgets (object format per OpenAI Apps SDK)
+// See: https://developers.openai.com/apps-sdk/build/mcp-server#content-security-policy-csp
+const WIDGET_CSP = {
+  // Hosts your widget can fetch from (API calls)
+  connect_domains: ["https://internal.fiveonefour.com"],
+  // Hosts for static assets (images, fonts, scripts)
+  resource_domains: ["https://internal.fiveonefour.com"],
+};
 
 type ContentWidget = {
   id: string;
@@ -66,7 +65,7 @@ const handler = createMcpHandler(async (server) => {
       _meta: {
         "openai/widgetDescription": contentWidget.description,
         "openai/widgetPrefersBorder": true,
-        "openai/widgetCsp": WIDGET_CSP,
+        "openai/widgetCSP": WIDGET_CSP,
         "openai/widgetDomain": WIDGET_DOMAIN,
       },
     },
@@ -79,7 +78,7 @@ const handler = createMcpHandler(async (server) => {
           _meta: {
             "openai/widgetDescription": contentWidget.description,
             "openai/widgetPrefersBorder": true,
-            "openai/widgetCsp": WIDGET_CSP,
+            "openai/widgetCSP": WIDGET_CSP,
             "openai/widgetDomain": WIDGET_DOMAIN,
           },
         },
