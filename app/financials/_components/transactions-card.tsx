@@ -41,7 +41,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 
-interface Transaction {
+export interface Transaction {
   id: string;
   amount: number;
   status: string;
@@ -64,6 +64,7 @@ interface FetchParams {
   status?: string;
   start?: string;
   end?: string;
+  order?: "asc" | "desc";
 }
 
 type SortOption = "date-desc" | "date-asc" | "amount-desc" | "amount-asc";
@@ -88,8 +89,9 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
 
 async function fetchTransactions(params: FetchParams): Promise<TransactionsResponse> {
   const searchParams = new URLSearchParams();
-  // Fetch more transactions to enable proper client-side sorting
   searchParams.set("limit", MAX_TRANSACTIONS.toString());
+  // Use API-level sorting (Mercury supports 'asc' or 'desc')
+  if (params.order) searchParams.set("order", params.order);
   if (params.status && params.status !== "all") {
     searchParams.set("status", params.status);
   }
@@ -147,11 +149,15 @@ export function TransactionsCard() {
     to: Date | undefined;
   }>({ from: undefined, to: undefined });
 
+  // Determine API order based on sort preference (date sorts use API, amount sorts use client-side)
+  const apiOrder = sortBy === "date-asc" ? "asc" : "desc";
+  
   const { data, isLoading, error } = useQuery({
     queryKey: [
       "mercury",
       "transactions",
       statusFilter,
+      apiOrder,
       dateRange.from?.toISOString(),
       dateRange.to?.toISOString(),
     ],
@@ -160,36 +166,26 @@ export function TransactionsCard() {
         status: statusFilter !== "all" ? statusFilter : undefined,
         start: dateRange.from ? format(dateRange.from, "yyyy-MM-dd") : undefined,
         end: dateRange.to ? format(dateRange.to, "yyyy-MM-dd") : undefined,
+        order: apiOrder,
       }),
     staleTime: 1000 * 60 * 2,
   });
 
-  // Sort transactions client-side
+  // Sort transactions - API handles date sorting, client handles amount sorting
   const sortedTransactions = useMemo(() => {
     if (!data?.transactions) return [];
-    const sorted = [...data.transactions];
     
-    switch (sortBy) {
-      case "date-desc":
-        sorted.sort(
-          (a, b) =>
-            new Date(b.postedAt || b.createdAt).getTime() -
-            new Date(a.postedAt || a.createdAt).getTime()
-        );
-        break;
-      case "date-asc":
-        sorted.sort(
-          (a, b) =>
-            new Date(a.postedAt || a.createdAt).getTime() -
-            new Date(b.postedAt || b.createdAt).getTime()
-        );
-        break;
-      case "amount-desc":
-        sorted.sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount));
-        break;
-      case "amount-asc":
-        sorted.sort((a, b) => Math.abs(a.amount) - Math.abs(b.amount));
-        break;
+    // For date-based sorts, API already returns correct order
+    if (sortBy === "date-desc" || sortBy === "date-asc") {
+      return data.transactions;
+    }
+    
+    // For amount-based sorts, sort client-side
+    const sorted = [...data.transactions];
+    if (sortBy === "amount-desc") {
+      sorted.sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount));
+    } else if (sortBy === "amount-asc") {
+      sorted.sort((a, b) => Math.abs(a.amount) - Math.abs(b.amount));
     }
     return sorted;
   }, [data?.transactions, sortBy]);

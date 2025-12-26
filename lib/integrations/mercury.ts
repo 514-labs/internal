@@ -437,6 +437,10 @@ export class MercuryClient {
     start?: string;
     end?: string;
     status?: string;
+    order?: "asc" | "desc";
+    search?: string;
+    postedStart?: string;
+    postedEnd?: string;
   }) {
     const params = new URLSearchParams();
     if (options?.limit) params.set("limit", options.limit.toString());
@@ -444,6 +448,10 @@ export class MercuryClient {
     if (options?.start) params.set("start", options.start);
     if (options?.end) params.set("end", options.end);
     if (options?.status) params.set("status", options.status);
+    if (options?.order) params.set("order", options.order);
+    if (options?.search) params.set("search", options.search);
+    if (options?.postedStart) params.set("postedStart", options.postedStart);
+    if (options?.postedEnd) params.set("postedEnd", options.postedEnd);
 
     const query = params.toString();
     return this.request<{ transactions: unknown[] }>(

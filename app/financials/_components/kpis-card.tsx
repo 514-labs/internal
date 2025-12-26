@@ -56,7 +56,8 @@ async function fetchTreasury(): Promise<TreasuryResponse> {
 }
 
 async function fetchTransactions(): Promise<TransactionsResponse> {
-  const response = await fetch("/api/integrations/mercury/transactions?limit=500");
+  // Use order=desc to get most recent transactions first, limit=1000 (API max)
+  const response = await fetch("/api/integrations/mercury/transactions?limit=1000&order=desc");
   if (!response.ok) throw new Error("Failed to fetch transactions");
   const result = await response.json();
   return result.data;
