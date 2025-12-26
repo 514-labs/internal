@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { AccountsCard } from "./accounts-card";
 import { TransactionsCard } from "./transactions-card";
+import { TreasuryCard } from "./treasury-card";
 import { AlertCircle, DollarSign, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -82,7 +83,10 @@ export function FinancialsClient() {
         </div>
       </div>
 
-      {/* Main Content */}
+      {/* Treasury - Full Width */}
+      <TreasuryCard />
+
+      {/* Bank Accounts & Transactions */}
       <div className="grid gap-6 lg:grid-cols-2">
         <AccountsCard />
         <TransactionsCard />

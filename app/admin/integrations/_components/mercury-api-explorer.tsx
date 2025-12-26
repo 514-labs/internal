@@ -10,6 +10,7 @@ import {
   Building2,
   CreditCard,
   Wallet,
+  PiggyBank,
 } from "lucide-react";
 
 interface EndpointConfig {
@@ -70,6 +71,16 @@ const endpoints: EndpointConfig[] = [
     endpoint: "/api/integrations/mercury/users",
     icon: CreditCard,
     color: "bg-amber-500",
+  },
+
+  // Treasury
+  {
+    id: "treasury",
+    title: "Treasury",
+    description: "Treasury accounts and investments",
+    endpoint: "/api/integrations/mercury/treasury",
+    icon: PiggyBank,
+    color: "bg-emerald-500",
   },
 ];
 
@@ -148,6 +159,7 @@ function EndpointCard({ config }: EndpointCardProps) {
       if (Array.isArray(obj.transactions)) return obj.transactions.length;
       if (Array.isArray(obj.recipients)) return obj.recipients.length;
       if (Array.isArray(obj.users)) return obj.users.length;
+      if (Array.isArray(obj.treasuryAccounts)) return obj.treasuryAccounts.length;
       if (Array.isArray(obj.data)) return obj.data.length;
       if (Array.isArray(obj.results)) return obj.results.length;
     }
