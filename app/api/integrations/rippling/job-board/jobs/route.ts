@@ -1,28 +1,24 @@
 /**
  * Rippling Job Board - Jobs Endpoint
- * GET: List jobs for a job board
+ * GET: List jobs for the configured job board (no auth required)
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
-import { createRipplingClient } from "@/lib/integrations/rippling";
+import {
+  getPublicJobBoardJobs,
+  isJobBoardConfigured,
+} from "@/lib/integrations/rippling";
 import { handleRipplingError } from "@/lib/integrations/rippling-error-handler";
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ boardSlug: string }> }
-) {
+export async function GET(request: NextRequest) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { boardSlug } = await params;
-    if (!boardSlug) {
+    if (!isJobBoardConfigured()) {
       return NextResponse.json(
-        { error: "Board slug is required" },
-        { status: 400 }
+        {
+          error: "Job Board not configured",
+          message: "Set RIPPLING_JOB_BOARD_SLUG environment variable.",
+        },
+        { status: 503 }
       );
     }
 
@@ -32,8 +28,7 @@ export async function GET(
     const workLocation = searchParams.get("workLocation") || undefined;
     const department = searchParams.get("department") || undefined;
 
-    const client = await createRipplingClient(userId);
-    const jobs = await client.getJobBoardJobs(boardSlug, {
+    const jobs = await getPublicJobBoardJobs({
       searchTerm,
       workLocation,
       department,

@@ -24,6 +24,21 @@ const RIPPLING_API_BASE_URL =
 const RIPPLING_JOB_BOARD_API_BASE_URL =
   process.env.RIPPLING_JOB_BOARD_API_BASE_URL ||
   "https://api.rippling.com/platform/api/ats/v2/board";
+const RIPPLING_JOB_BOARD_SLUG = process.env.RIPPLING_JOB_BOARD_SLUG || "";
+
+/**
+ * Get the configured job board slug
+ */
+export function getJobBoardSlug(): string {
+  return RIPPLING_JOB_BOARD_SLUG;
+}
+
+/**
+ * Check if job board is configured
+ */
+export function isJobBoardConfigured(): boolean {
+  return RIPPLING_JOB_BOARD_SLUG.length > 0;
+}
 
 // ============================================================================
 // Types
@@ -576,25 +591,24 @@ export class RipplingClient {
   // ==========================================================================
 
   /**
-   * Make an authenticated request to the Rippling Job Board API
+   * Make a request to the Rippling Job Board API
+   * Note: Job Board API is public and doesn't require authentication
    */
   private async jobBoardRequest<T>(
-    boardSlug: string,
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
-    if (!this.token) {
+    if (!RIPPLING_JOB_BOARD_SLUG) {
       throw new ConfigurationError(
-        "Client not initialized. Call initialize() first."
+        "Job Board is not configured. Set RIPPLING_JOB_BOARD_SLUG environment variable."
       );
     }
 
-    const url = `${RIPPLING_JOB_BOARD_API_BASE_URL}/${boardSlug}${endpoint}`;
+    const url = `${RIPPLING_JOB_BOARD_API_BASE_URL}/${RIPPLING_JOB_BOARD_SLUG}${endpoint}`;
 
     const response = await fetch(url, {
       ...options,
       headers: {
-        Authorization: `Bearer ${this.token}`,
         Accept: "application/json",
         "Content-Type": "application/json",
         ...options.headers,
@@ -655,49 +669,42 @@ export class RipplingClient {
   }
 
   /**
-   * Get jobs for a job board
-   * @param boardSlug - The unique slug for the job board
+   * Get jobs for the configured job board
    * @param options - Optional filters (searchTerm, workLocation, department)
    */
-  async getJobBoardJobs(
-    boardSlug: string,
-    options?: {
-      searchTerm?: string;
-      workLocation?: string;
-      department?: string;
-    }
-  ): Promise<unknown> {
+  async getJobBoardJobs(options?: {
+    searchTerm?: string;
+    workLocation?: string;
+    department?: string;
+  }): Promise<unknown> {
     const params = new URLSearchParams();
     if (options?.searchTerm) params.set("searchTerm", options.searchTerm);
     if (options?.workLocation) params.set("workLocation", options.workLocation);
     if (options?.department) params.set("department", options.department);
 
     const query = params.toString();
-    return this.jobBoardRequest(boardSlug, `/jobs${query ? `?${query}` : ""}`);
+    return this.jobBoardRequest(`/jobs${query ? `?${query}` : ""}`);
   }
 
   /**
-   * Get branding info for a job board
-   * @param boardSlug - The unique slug for the job board
+   * Get branding info for the configured job board
    */
-  async getJobBoardBranding(boardSlug: string): Promise<unknown> {
-    return this.jobBoardRequest(boardSlug, "/branding");
+  async getJobBoardBranding(): Promise<unknown> {
+    return this.jobBoardRequest("/branding");
   }
 
   /**
-   * Get locations for a job board
-   * @param boardSlug - The unique slug for the job board
+   * Get locations for the configured job board
    */
-  async getJobBoardLocations(boardSlug: string): Promise<unknown> {
-    return this.jobBoardRequest(boardSlug, "/locations");
+  async getJobBoardLocations(): Promise<unknown> {
+    return this.jobBoardRequest("/locations");
   }
 
   /**
-   * Get departments for a job board
-   * @param boardSlug - The unique slug for the job board
+   * Get departments for the configured job board
    */
-  async getJobBoardDepartments(boardSlug: string): Promise<unknown> {
-    return this.jobBoardRequest(boardSlug, "/departments");
+  async getJobBoardDepartments(): Promise<unknown> {
+    return this.jobBoardRequest("/departments");
   }
 }
 
@@ -713,4 +720,90 @@ export async function createRipplingClient(
   const client = new RipplingClient(userId);
   await client.initialize();
   return client;
+}
+
+// ============================================================================
+// Standalone Job Board Functions (no auth required)
+// ============================================================================
+
+/**
+ * Fetch job board data without requiring user authentication
+ * Job Board API is public and doesn't need a Rippling API token
+ */
+async function fetchJobBoard<T>(endpoint: string): Promise<T> {
+  if (!RIPPLING_JOB_BOARD_SLUG) {
+    throw new ConfigurationError(
+      "Job Board is not configured. Set RIPPLING_JOB_BOARD_SLUG environment variable."
+    );
+  }
+
+  const url = `${RIPPLING_JOB_BOARD_API_BASE_URL}/${RIPPLING_JOB_BOARD_SLUG}${endpoint}`;
+
+  const response = await fetch(url, {
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    let errorBody = "";
+    try {
+      errorBody = await response.text();
+    } catch {
+      // ignore
+    }
+
+    if (response.status === 404) {
+      throw new ExternalAPIError(
+        "Rippling Job Board",
+        `Board not found. Check RIPPLING_JOB_BOARD_SLUG is correct.`,
+        404
+      );
+    }
+    throw new ExternalAPIError(
+      "Rippling Job Board",
+      `Request failed: ${errorBody || response.status}`,
+      response.status
+    );
+  }
+
+  return response.json();
+}
+
+/**
+ * Get jobs from the configured job board (no auth required)
+ */
+export async function getPublicJobBoardJobs(options?: {
+  searchTerm?: string;
+  workLocation?: string;
+  department?: string;
+}): Promise<unknown> {
+  const params = new URLSearchParams();
+  if (options?.searchTerm) params.set("searchTerm", options.searchTerm);
+  if (options?.workLocation) params.set("workLocation", options.workLocation);
+  if (options?.department) params.set("department", options.department);
+
+  const query = params.toString();
+  return fetchJobBoard(`/jobs${query ? `?${query}` : ""}`);
+}
+
+/**
+ * Get branding from the configured job board (no auth required)
+ */
+export async function getPublicJobBoardBranding(): Promise<unknown> {
+  return fetchJobBoard("/branding");
+}
+
+/**
+ * Get locations from the configured job board (no auth required)
+ */
+export async function getPublicJobBoardLocations(): Promise<unknown> {
+  return fetchJobBoard("/locations");
+}
+
+/**
+ * Get departments from the configured job board (no auth required)
+ */
+export async function getPublicJobBoardDepartments(): Promise<unknown> {
+  return fetchJobBoard("/departments");
 }
