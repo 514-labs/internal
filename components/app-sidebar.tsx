@@ -63,8 +63,8 @@ const performanceItems = [
   },
 ];
 
-// Main navigation items
-const mainItems = [
+// Execution section
+const executionItems = [
   {
     title: "Work",
     url: "/work",
@@ -130,7 +130,7 @@ export function AppSidebar() {
   const allItems = [
     ...overviewItems,
     ...performanceItems,
-    ...mainItems,
+    ...executionItems,
     ...knowledgeItems,
     ...adminItems,
   ];
@@ -205,11 +205,12 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Main Navigation */}
+        {/* Execution */}
         <SidebarGroup>
+          <SidebarGroupLabel>Execution</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {mainItems.map(renderMenuItem)}
+              {executionItems.map(renderMenuItem)}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
