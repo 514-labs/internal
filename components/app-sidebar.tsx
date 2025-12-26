@@ -19,34 +19,30 @@ import { useEffect } from "react";
 import {
   LayoutDashboard,
   TrendingUp,
-  Users,
-  Target,
-  Building2,
-  Briefcase,
-  FlaskConical,
-  Plug,
   DollarSign,
+  LineChart,
+  Briefcase,
+  Target,
+  Users,
+  BookOpen,
+  Compass,
+  Scale,
+  PlayCircle,
+  Plug,
 } from "lucide-react";
 
-const menuItems = [
+// Top-level items (before Performance group)
+const overviewItems = [
   {
-    title: "Dashboard",
+    title: "Overview",
     url: "/",
     icon: LayoutDashboard,
-    shortcut: "D",
+    shortcut: "O",
   },
-  {
-    title: "Work",
-    url: "/work",
-    icon: Briefcase,
-    shortcut: "W",
-  },
-  {
-    title: "Experiments",
-    url: "/experiments",
-    icon: FlaskConical,
-    shortcut: "X",
-  },
+];
+
+// Performance section
+const performanceItems = [
   {
     title: "Metrics",
     url: "/metrics",
@@ -54,10 +50,26 @@ const menuItems = [
     shortcut: "M",
   },
   {
-    title: "Teams",
-    url: "/teams",
-    icon: Users,
-    shortcut: "E",
+    title: "Financials",
+    url: "/financials",
+    icon: DollarSign,
+    shortcut: "F",
+  },
+  {
+    title: "Trends",
+    url: "/trends",
+    icon: LineChart,
+    shortcut: "T",
+  },
+];
+
+// Main navigation items
+const mainItems = [
+  {
+    title: "Work",
+    url: "/work",
+    icon: Briefcase,
+    shortcut: "W",
   },
   {
     title: "Goals",
@@ -66,19 +78,42 @@ const menuItems = [
     shortcut: "G",
   },
   {
-    title: "Company",
-    url: "/company",
-    icon: Building2,
-    shortcut: "C",
-  },
-  {
-    title: "Financials",
-    url: "/financials",
-    icon: DollarSign,
-    shortcut: "F",
+    title: "Teams",
+    url: "/teams",
+    icon: Users,
+    shortcut: "E",
   },
 ];
 
+// Knowledge section
+const knowledgeItems = [
+  {
+    title: "Handbook",
+    url: "/handbook",
+    icon: BookOpen,
+    shortcut: "H",
+  },
+  {
+    title: "Strategy",
+    url: "/strategy",
+    icon: Compass,
+    shortcut: "S",
+  },
+  {
+    title: "Decisions",
+    url: "/decisions",
+    icon: Scale,
+    shortcut: "D",
+  },
+  {
+    title: "Playbooks",
+    url: "/playbooks",
+    icon: PlayCircle,
+    shortcut: "P",
+  },
+];
+
+// Admin section
 const adminItems = [
   {
     title: "Integrations",
@@ -92,14 +127,17 @@ export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
 
-  const allItems = [...menuItems, ...adminItems];
+  const allItems = [
+    ...overviewItems,
+    ...performanceItems,
+    ...mainItems,
+    ...knowledgeItems,
+    ...adminItems,
+  ];
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Only trigger if Option (Alt) is pressed and no other modifiers
       if (e.altKey && !e.metaKey && !e.ctrlKey && !e.shiftKey) {
-        // Use code instead of key to get the physical key pressed
-        // e.code is like "KeyD", "KeyM", etc.
         const code = e.code;
         if (code.startsWith("Key")) {
           const letter = code.replace("Key", "").toLowerCase();
@@ -118,6 +156,28 @@ export function AppSidebar() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [router]);
 
+  const renderMenuItem = (item: (typeof allItems)[0]) => {
+    const Icon = item.icon;
+    const isActive =
+      item.url === "/"
+        ? pathname === "/"
+        : pathname.startsWith(item.url);
+
+    return (
+      <SidebarMenuItem key={item.title}>
+        <SidebarMenuButton asChild isActive={isActive}>
+          <Link href={item.url}>
+            <Icon className="h-4 w-4" />
+            <span>{item.title}</span>
+            <span className="ml-auto text-xs text-muted-foreground">
+              ⌥{item.shortcut}
+            </span>
+          </Link>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    );
+  };
+
   return (
     <Sidebar>
       <SidebarHeader>
@@ -126,53 +186,50 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
       <SidebarContent>
+        {/* Overview */}
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menuItems.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={pathname === item.url}>
-                      <Link href={item.url}>
-                        <Icon className="h-4 w-4" />
-                        <span>{item.title}</span>
-                        <span className="ml-auto text-xs text-muted-foreground">
-                          ⌥{item.shortcut}
-                        </span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
+              {overviewItems.map(renderMenuItem)}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
+        {/* Performance */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Performance</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {performanceItems.map(renderMenuItem)}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Main Navigation */}
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {mainItems.map(renderMenuItem)}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Knowledge */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Knowledge</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {knowledgeItems.map(renderMenuItem)}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Admin */}
         <SidebarGroup>
           <SidebarGroupLabel>Admin</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {adminItems.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={pathname.startsWith(item.url)}
-                    >
-                      <Link href={item.url}>
-                        <Icon className="h-4 w-4" />
-                        <span>{item.title}</span>
-                        <span className="ml-auto text-xs text-muted-foreground">
-                          ⌥{item.shortcut}
-                        </span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
+              {adminItems.map(renderMenuItem)}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
