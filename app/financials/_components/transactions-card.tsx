@@ -61,8 +61,6 @@ interface TransactionsResponse {
 }
 
 interface FetchParams {
-  limit: number;
-  offset: number;
   status?: string;
   start?: string;
   end?: string;
@@ -71,6 +69,7 @@ interface FetchParams {
 type SortOption = "date-desc" | "date-asc" | "amount-desc" | "amount-asc";
 
 const ITEMS_PER_PAGE = 10;
+const MAX_TRANSACTIONS = 100; // Fetch more to enable proper sorting
 
 const STATUS_OPTIONS = [
   { value: "all", label: "All Statuses" },
@@ -89,8 +88,8 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
 
 async function fetchTransactions(params: FetchParams): Promise<TransactionsResponse> {
   const searchParams = new URLSearchParams();
-  searchParams.set("limit", params.limit.toString());
-  searchParams.set("offset", params.offset.toString());
+  // Fetch more transactions to enable proper client-side sorting
+  searchParams.set("limit", MAX_TRANSACTIONS.toString());
   if (params.status && params.status !== "all") {
     searchParams.set("status", params.status);
   }
@@ -148,21 +147,16 @@ export function TransactionsCard() {
     to: Date | undefined;
   }>({ from: undefined, to: undefined });
 
-  const offset = (page - 1) * ITEMS_PER_PAGE;
-
   const { data, isLoading, error } = useQuery({
     queryKey: [
       "mercury",
       "transactions",
-      page,
       statusFilter,
       dateRange.from?.toISOString(),
       dateRange.to?.toISOString(),
     ],
     queryFn: () =>
       fetchTransactions({
-        limit: ITEMS_PER_PAGE,
-        offset,
         status: statusFilter !== "all" ? statusFilter : undefined,
         start: dateRange.from ? format(dateRange.from, "yyyy-MM-dd") : undefined,
         end: dateRange.to ? format(dateRange.to, "yyyy-MM-dd") : undefined,
@@ -200,7 +194,12 @@ export function TransactionsCard() {
     return sorted;
   }, [data?.transactions, sortBy]);
 
-  const totalPages = Math.ceil((data?.transactions?.length || 0) / ITEMS_PER_PAGE) || 1;
+  // Client-side pagination of sorted results
+  const totalPages = Math.ceil(sortedTransactions.length / ITEMS_PER_PAGE) || 1;
+  const paginatedTransactions = useMemo(() => {
+    const start = (page - 1) * ITEMS_PER_PAGE;
+    return sortedTransactions.slice(start, start + ITEMS_PER_PAGE);
+  }, [sortedTransactions, page]);
   const hasFilters = statusFilter !== "all" || dateRange.from || dateRange.to;
 
   const clearFilters = () => {
@@ -217,9 +216,9 @@ export function TransactionsCard() {
             <ArrowLeftRight className="h-5 w-5 text-green-600" />
             Transactions
           </CardTitle>
-          {data?.transactions && (
+          {sortedTransactions.length > 0 && (
             <span className="text-sm text-gray-500">
-              {data.transactions.length} results
+              {sortedTransactions.length} transactions
             </span>
           )}
         </div>
@@ -330,7 +329,7 @@ export function TransactionsCard() {
               </p>
             </div>
           </div>
-        ) : sortedTransactions.length === 0 ? (
+        ) : paginatedTransactions.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-gray-500">No transactions found</p>
             {hasFilters && (
@@ -342,7 +341,7 @@ export function TransactionsCard() {
         ) : (
           <>
             <div className="divide-y">
-              {sortedTransactions.map((tx) => {
+              {paginatedTransactions.map((tx) => {
                 const isCredit = tx.amount > 0;
                 const displayName =
                   tx.counterpartyNickname ||
@@ -407,7 +406,7 @@ export function TransactionsCard() {
             </div>
 
             {/* Pagination */}
-            {data?.transactions && data.transactions.length > 0 && (
+            {sortedTransactions.length > ITEMS_PER_PAGE && (
               <div className="flex items-center justify-between pt-4 border-t mt-4">
                 <p className="text-sm text-gray-500">
                   Page {page} of {totalPages}
