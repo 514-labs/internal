@@ -25,7 +25,7 @@ import {
   Briefcase,
   FlaskConical,
   Plug,
-  Settings,
+  DollarSign,
 } from "lucide-react";
 
 const menuItems = [
@@ -70,6 +70,12 @@ const menuItems = [
     url: "/company",
     icon: Building2,
     shortcut: "C",
+  },
+  {
+    title: "Financials",
+    url: "/financials",
+    icon: DollarSign,
+    shortcut: "F",
   },
 ];
 
