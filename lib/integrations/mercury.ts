@@ -7,6 +7,7 @@
  * - Tokens inherit the permissions of the Mercury user who created them
  * - Users must NEVER be able to access another user's token
  * - All functions scope operations to the requesting user's ID
+ * - Tokens are encrypted with per-user keys before storage
  */
 
 import { supabaseAnalyticsClient } from "../analytics/supabase/client";
@@ -15,6 +16,7 @@ import {
   ExternalAPIError,
   AuthenticationError,
 } from "../analytics/shared/errors";
+import { encryptToken, decryptToken, isEncrypted } from "../encryption";
 import mercurySDK from "@api/mercurytechnologies";
 
 const INTEGRATION_NAME = "mercury";
@@ -46,7 +48,10 @@ export interface MercuryConnectionStatus {
 /**
  * Store a Mercury API token for the authenticated user
  *
- * SECURITY: Token is stored scoped to the userId - only this user can retrieve it
+ * SECURITY:
+ * - Token is encrypted with a user-specific key before storage
+ * - Only the same user (with correct userId) can decrypt it
+ * - Even database access alone cannot reveal the token
  *
  * @param userId - The authenticated user's ID (from Clerk)
  * @param token - The Mercury API token provided by the user
@@ -69,12 +74,15 @@ export async function storeMercuryToken(
     );
   }
 
+  // Encrypt the token with a user-specific key
+  const encryptedToken = encryptToken(token.trim(), userId);
+
   const supabase = supabaseAnalyticsClient.getClient();
 
   const tokenData = {
     user_id: userId,
     integration_name: INTEGRATION_NAME,
-    access_token: token,
+    access_token: encryptedToken,
     updated_at: new Date().toISOString(),
   };
 
@@ -100,11 +108,13 @@ export async function storeMercuryToken(
 /**
  * Retrieve the Mercury API token for the authenticated user
  *
- * SECURITY: Only returns the token for the requesting user
- * There is no way to request another user's token
+ * SECURITY:
+ * - Only returns the token for the requesting user
+ * - Token is decrypted using a user-specific key
+ * - Decryption will fail if userId doesn't match the encryption context
  *
  * @param userId - The authenticated user's ID (from Clerk)
- * @returns The token if found, null otherwise
+ * @returns The decrypted token if found, null otherwise
  */
 export async function getMercuryToken(userId: string): Promise<string | null> {
   if (!userId) {
@@ -134,7 +144,26 @@ export async function getMercuryToken(userId: string): Promise<string | null> {
     return null;
   }
 
-  return data?.access_token ?? null;
+  const storedToken = data?.access_token;
+  if (!storedToken) {
+    return null;
+  }
+
+  // Check if token is encrypted (for migration from plaintext)
+  if (isEncrypted(storedToken)) {
+    try {
+      return decryptToken(storedToken, userId);
+    } catch (err) {
+      console.error("Error decrypting Mercury token:", (err as Error).message);
+      return null;
+    }
+  }
+
+  // Token is not encrypted (legacy) - return as-is but log a warning
+  console.warn(
+    "[Mercury] Found unencrypted token. It will be encrypted on next save."
+  );
+  return storedToken;
 }
 
 /**
