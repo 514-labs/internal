@@ -27,6 +27,7 @@ interface Transaction {
   postedAt: string;
   createdAt: string;
   status: string;
+  kind: string;
 }
 
 interface AccountsResponse {
@@ -89,9 +90,22 @@ interface MonthlyBurnData {
 }
 
 function calculateMonthlyBurn(transactions: Transaction[]): MonthlyBurnData {
-  // Find all unique months with transactions
+  // Filter for actual expenses (outflows to external parties)
+  // Exclude:
+  // - Internal transfers (moving money between Mercury accounts)
+  // - Treasury transfers (moving to/from treasury)
+  // - Cancelled/failed transactions
+  const INTERNAL_TRANSACTION_KINDS = [
+    "internalTransfer",
+    "treasuryTransfer",
+  ];
+
   const validTransactions = transactions.filter(
-    (tx) => tx.status !== "cancelled" && tx.status !== "failed" && tx.amount < 0
+    (tx) =>
+      tx.status !== "cancelled" &&
+      tx.status !== "failed" &&
+      tx.amount < 0 &&
+      !INTERNAL_TRANSACTION_KINDS.includes(tx.kind)
   );
 
   if (validTransactions.length === 0) {
