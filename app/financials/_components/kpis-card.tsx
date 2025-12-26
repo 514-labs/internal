@@ -88,46 +88,63 @@ interface MonthlyBurnData {
 }
 
 function calculateMonthlyBurn(transactions: Transaction[]): MonthlyBurnData {
-  const now = new Date();
-  
-  // Current month boundaries (actual current month)
-  const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const currentMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-  
-  // Last month boundaries
-  const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+  // Find all unique months with transactions
+  const validTransactions = transactions.filter(
+    (tx) => tx.status !== "cancelled" && tx.status !== "failed" && tx.amount < 0
+  );
 
-  // Filter transactions by month and only count outflows (expenses)
-  const getMonthBurn = (startDate: Date, endDate: Date) => {
-    return transactions
-      .filter((tx) => {
-        const txDate = new Date(tx.postedAt || tx.createdAt);
-        return (
-          txDate >= startDate &&
-          txDate <= endDate &&
-          tx.status !== "cancelled" &&
-          tx.status !== "failed" &&
-          tx.amount < 0 // Only outflows
-        );
-      })
-      .reduce((sum, tx) => sum + Math.abs(tx.amount), 0);
+  if (validTransactions.length === 0) {
+    return {
+      currentMonth: 0,
+      currentMonthLabel: "No data",
+      lastMonth: 0,
+      lastMonthLabel: "No data",
+    };
+  }
+
+  // Group transactions by month
+  const monthlyTotals = new Map<string, { total: number; date: Date }>();
+  
+  validTransactions.forEach((tx) => {
+    const txDate = new Date(tx.postedAt || tx.createdAt);
+    const monthKey = `${txDate.getFullYear()}-${txDate.getMonth()}`;
+    
+    const existing = monthlyTotals.get(monthKey);
+    if (existing) {
+      existing.total += Math.abs(tx.amount);
+    } else {
+      monthlyTotals.set(monthKey, {
+        total: Math.abs(tx.amount),
+        date: new Date(txDate.getFullYear(), txDate.getMonth(), 1),
+      });
+    }
+  });
+
+  // Sort months by date (most recent first)
+  const sortedMonths = Array.from(monthlyTotals.entries())
+    .sort((a, b) => b[1].date.getTime() - a[1].date.getTime());
+
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  
+  // Get current (most recent) and last month
+  const currentMonthData = sortedMonths[0];
+  const lastMonthData = sortedMonths[1];
+
+  const formatMonthLabel = (date: Date) => {
+    const now = new Date();
+    const monthName = monthNames[date.getMonth()];
+    // Include year if not current year
+    if (date.getFullYear() !== now.getFullYear()) {
+      return `${monthName} ${date.getFullYear()}`;
+    }
+    return monthName;
   };
 
-  const currentMonthBurn = getMonthBurn(currentMonthStart, currentMonthEnd);
-  const lastMonthBurn = getMonthBurn(lastMonthStart, lastMonthEnd);
-
-  // Format month labels
-  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const currentMonthLabel = monthNames[now.getMonth()];
-  const lastMonthIdx = now.getMonth() === 0 ? 11 : now.getMonth() - 1;
-  const lastMonthLabel = monthNames[lastMonthIdx];
-
   return {
-    currentMonth: currentMonthBurn,
-    currentMonthLabel,
-    lastMonth: lastMonthBurn,
-    lastMonthLabel,
+    currentMonth: currentMonthData?.[1].total || 0,
+    currentMonthLabel: currentMonthData ? formatMonthLabel(currentMonthData[1].date) : "No data",
+    lastMonth: lastMonthData?.[1].total || 0,
+    lastMonthLabel: lastMonthData ? formatMonthLabel(lastMonthData[1].date) : "No data",
   };
 }
 
