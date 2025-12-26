@@ -26,6 +26,7 @@ import {
   Users,
   BookOpen,
   Compass,
+  Boxes,
   Scale,
   PlayCircle,
   Plug,
@@ -98,6 +99,12 @@ const knowledgeItems = [
     url: "/strategy",
     icon: Compass,
     shortcut: "S",
+  },
+  {
+    title: "Frameworks",
+    url: "/frameworks",
+    icon: Boxes,
+    shortcut: "R",
   },
   {
     title: "Decisions",
