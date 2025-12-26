@@ -8,16 +8,6 @@ import { auth } from "@clerk/nextjs/server";
 import { createMercuryClient } from "@/lib/integrations/mercury";
 import { handleMercuryError } from "@/lib/integrations/mercury-error-handler";
 
-type TransactionStatus = "pending" | "sent" | "cancelled" | "failed" | "reversed" | "blocked";
-
-const validStatuses: TransactionStatus[] = ["pending", "sent", "cancelled", "failed", "reversed", "blocked"];
-
-function parseStatus(status: string | null): TransactionStatus[] | undefined {
-  if (!status) return undefined;
-  const statuses = status.split(",").filter((s) => validStatuses.includes(s as TransactionStatus));
-  return statuses.length > 0 ? (statuses as TransactionStatus[]) : undefined;
-}
-
 export async function GET(request: NextRequest) {
   try {
     const { userId } = await auth();
@@ -38,7 +28,7 @@ export async function GET(request: NextRequest) {
       offset: offset ? parseInt(offset, 10) : undefined,
       start: start || undefined,
       end: end || undefined,
-      status: parseStatus(status),
+      status: status || undefined,
     });
 
     return NextResponse.json({ data: transactions });
@@ -46,4 +36,3 @@ export async function GET(request: NextRequest) {
     return handleMercuryError(error, "fetch transactions");
   }
 }
-

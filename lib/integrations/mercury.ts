@@ -1,6 +1,6 @@
 /**
  * Mercury API integration
- * Handles per-user API token management and Mercury API calls using the official SDK
+ * Handles per-user API token management and Mercury API calls
  *
  * SECURITY CRITICAL:
  * - Each user has their own Mercury API token
@@ -17,9 +17,9 @@ import {
   AuthenticationError,
 } from "../analytics/shared/errors";
 import { encryptToken, decryptToken, isEncrypted } from "../encryption";
-import mercurySDK from "@api/mercurytechnologies";
 
 const INTEGRATION_NAME = "mercury";
+const MERCURY_API_BASE_URL = "https://api.mercury.com/api/v1";
 
 // ============================================================================
 // Types
@@ -240,16 +240,24 @@ export async function getMercuryConnectionStatus(
 
 /**
  * Validate a Mercury API token by making a test API call
+ * Mercury uses Basic auth: base64(apiKey:)
  *
  * @param token - The token to validate
  * @returns True if the token is valid
  */
 export async function validateMercuryToken(token: string): Promise<boolean> {
   try {
-    // Configure SDK with the token and make a test call
-    mercurySDK.auth(token);
-    const response = await mercurySDK.getAccounts();
-    return response.status === 200;
+    const authHeader = `Basic ${Buffer.from(`${token}:`).toString("base64")}`;
+
+    const response = await fetch(`${MERCURY_API_BASE_URL}/accounts`, {
+      method: "GET",
+      headers: {
+        Authorization: authHeader,
+        Accept: "application/json",
+      },
+    });
+
+    return response.ok;
   } catch (err) {
     console.error("[Mercury] Validation error:", err);
     return false;
@@ -261,7 +269,8 @@ export async function validateMercuryToken(token: string): Promise<boolean> {
 // ============================================================================
 
 /**
- * Mercury API client wrapper for making authenticated requests
+ * Mercury API client for making authenticated requests
+ * Uses Basic authentication with the API token
  *
  * SECURITY: The client is initialized with a userId and only uses that user's token
  */
@@ -286,34 +295,82 @@ export class MercuryClient {
         "Mercury is not connected. Please add your API token in Settings > Integrations."
       );
     }
-    // Configure the SDK with the user's token
-    mercurySDK.auth(this.token);
   }
 
   /**
-   * Handle SDK errors and convert to our error types
+   * Get the Basic auth header for Mercury API
    */
-  private handleError(error: unknown, operation: string): never {
-    const err = error as { status?: number; data?: { message?: string } };
-    const message = err.data?.message || (error as Error).message || "Unknown error";
-    
-    if (err.status === 401) {
-      throw new AuthenticationError(
-        `Mercury API authentication failed: ${message}. Your token may be invalid or expired.`
+  private getAuthHeader(): string {
+    return `Basic ${Buffer.from(`${this.token}:`).toString("base64")}`;
+  }
+
+  /**
+   * Make an authenticated request to the Mercury API
+   */
+  private async request<T>(
+    endpoint: string,
+    options: RequestInit = {}
+  ): Promise<T> {
+    if (!this.token) {
+      throw new ConfigurationError(
+        "Client not initialized. Call initialize() first."
       );
     }
-    if (err.status === 403) {
+
+    const url = `${MERCURY_API_BASE_URL}${endpoint}`;
+
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        Authorization: this.getAuthHeader(),
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+
+    if (!response.ok) {
+      let errorBody: string | null = null;
+      let errorDetails: Record<string, unknown> = {};
+      try {
+        const text = await response.text();
+        errorBody = text;
+        try {
+          errorDetails = JSON.parse(text);
+        } catch {
+          // Not JSON, keep as text
+        }
+      } catch {
+        // Couldn't read body
+      }
+
+      const errorMessage =
+        errorDetails.message || errorDetails.error || errorBody;
+
+      if (response.status === 401) {
+        throw new AuthenticationError(
+          `Mercury API authentication failed: ${
+            errorMessage || "Your token may be invalid or expired."
+          }`
+        );
+      }
+      if (response.status === 403) {
+        throw new ExternalAPIError(
+          "Mercury",
+          `Access forbidden: ${
+            errorMessage || "Your token may not have the required permissions."
+          }`,
+          403
+        );
+      }
       throw new ExternalAPIError(
         "Mercury",
-        `Access forbidden: ${message}. Your token may not have the required permissions.`,
-        403
+        `Request failed: ${errorMessage || `Status ${response.status}`}`,
+        response.status
       );
     }
-    throw new ExternalAPIError(
-      "Mercury",
-      `${operation} failed: ${message}`,
-      err.status || 500
-    );
+
+    return response.json();
   }
 
   // ==========================================================================
@@ -324,36 +381,21 @@ export class MercuryClient {
    * Get all accounts
    */
   async getAccounts() {
-    try {
-      const response = await mercurySDK.getAccounts();
-      return response.data;
-    } catch (error) {
-      this.handleError(error, "Get accounts");
-    }
+    return this.request<{ accounts: unknown[] }>("/accounts");
   }
 
   /**
    * Get account by ID
    */
   async getAccount(accountId: string) {
-    try {
-      const response = await mercurySDK.getAccount({ accountId });
-      return response.data;
-    } catch (error) {
-      this.handleError(error, "Get account");
-    }
+    return this.request<unknown>(`/account/${accountId}`);
   }
 
   /**
    * Get cards for account
    */
   async getAccountCards(accountId: string) {
-    try {
-      const response = await mercurySDK.getAccountCards({ accountId });
-      return response.data;
-    } catch (error) {
-      this.handleError(error, "Get account cards");
-    }
+    return this.request<{ cards: unknown[] }>(`/account/${accountId}/cards`);
   }
 
   // ==========================================================================
@@ -370,19 +412,20 @@ export class MercuryClient {
       offset?: number;
       start?: string;
       end?: string;
-      status?: "pending" | "sent" | "cancelled" | "failed" | "reversed" | "blocked";
-      search?: string;
+      status?: string;
     }
   ) {
-    try {
-      const response = await mercurySDK.listAccountTransactions({
-        accountId,
-        ...options,
-      });
-      return response.data;
-    } catch (error) {
-      this.handleError(error, "List account transactions");
-    }
+    const params = new URLSearchParams();
+    if (options?.limit) params.set("limit", options.limit.toString());
+    if (options?.offset) params.set("offset", options.offset.toString());
+    if (options?.start) params.set("start", options.start);
+    if (options?.end) params.set("end", options.end);
+    if (options?.status) params.set("status", options.status);
+
+    const query = params.toString();
+    return this.request<{ transactions: unknown[] }>(
+      `/account/${accountId}/transactions${query ? `?${query}` : ""}`
+    );
   }
 
   /**
@@ -393,38 +436,26 @@ export class MercuryClient {
     offset?: number;
     start?: string;
     end?: string;
-    status?: ("pending" | "sent" | "cancelled" | "failed" | "reversed" | "blocked")[];
+    status?: string;
   }) {
-    try {
-      const response = await mercurySDK.listTransactions(options);
-      return response.data;
-    } catch (error) {
-      this.handleError(error, "List transactions");
-    }
+    const params = new URLSearchParams();
+    if (options?.limit) params.set("limit", options.limit.toString());
+    if (options?.offset) params.set("offset", options.offset.toString());
+    if (options?.start) params.set("start", options.start);
+    if (options?.end) params.set("end", options.end);
+    if (options?.status) params.set("status", options.status);
+
+    const query = params.toString();
+    return this.request<{ transactions: unknown[] }>(
+      `/transactions${query ? `?${query}` : ""}`
+    );
   }
 
   /**
    * Get transaction by ID
    */
-  async getTransaction(accountId: string, transactionId: string) {
-    try {
-      const response = await mercurySDK.getTransaction({ accountId, transactionId });
-      return response.data;
-    } catch (error) {
-      this.handleError(error, "Get transaction");
-    }
-  }
-
-  /**
-   * Get transaction by ID (without account ID)
-   */
-  async getTransactionById(transactionId: string) {
-    try {
-      const response = await mercurySDK.getTransactionById({ transactionId });
-      return response.data;
-    } catch (error) {
-      this.handleError(error, "Get transaction by ID");
-    }
+  async getTransaction(transactionId: string) {
+    return this.request<unknown>(`/transaction/${transactionId}`);
   }
 
   // ==========================================================================
@@ -434,25 +465,15 @@ export class MercuryClient {
   /**
    * Get all recipients
    */
-  async getRecipients(options?: { limit?: number }) {
-    try {
-      const response = await mercurySDK.getRecipients(options);
-      return response.data;
-    } catch (error) {
-      this.handleError(error, "Get recipients");
-    }
+  async getRecipients() {
+    return this.request<{ recipients: unknown[] }>("/recipients");
   }
 
   /**
    * Get recipient by ID
    */
   async getRecipient(recipientId: string) {
-    try {
-      const response = await mercurySDK.getRecipient({ recipientId });
-      return response.data;
-    } catch (error) {
-      this.handleError(error, "Get recipient");
-    }
+    return this.request<unknown>(`/recipient/${recipientId}`);
   }
 
   // ==========================================================================
@@ -463,12 +484,7 @@ export class MercuryClient {
    * Get organization information
    */
   async getOrganization() {
-    try {
-      const response = await mercurySDK.getOrganization();
-      return response.data;
-    } catch (error) {
-      this.handleError(error, "Get organization");
-    }
+    return this.request<unknown>("/organization");
   }
 
   // ==========================================================================
@@ -479,24 +495,14 @@ export class MercuryClient {
    * Get all users
    */
   async getUsers() {
-    try {
-      const response = await mercurySDK.getUsers();
-      return response.data;
-    } catch (error) {
-      this.handleError(error, "Get users");
-    }
+    return this.request<{ users: unknown[] }>("/users");
   }
 
   /**
    * Get user by ID
    */
   async getUser(userId: string) {
-    try {
-      const response = await mercurySDK.getUser({ userId });
-      return response.data;
-    } catch (error) {
-      this.handleError(error, "Get user");
-    }
+    return this.request<unknown>(`/users/${userId}`);
   }
 
   // ==========================================================================
@@ -507,28 +513,7 @@ export class MercuryClient {
    * List all expense categories
    */
   async listCategories() {
-    try {
-      const response = await mercurySDK.listCategories();
-      return response.data;
-    } catch (error) {
-      this.handleError(error, "List categories");
-    }
-  }
-
-  // ==========================================================================
-  // Credit
-  // ==========================================================================
-
-  /**
-   * List all credit accounts
-   */
-  async listCredit() {
-    try {
-      const response = await mercurySDK.listCredit();
-      return response.data;
-    } catch (error) {
-      this.handleError(error, "List credit");
-    }
+    return this.request<{ categories: unknown[] }>("/categories");
   }
 
   // ==========================================================================
@@ -539,12 +524,7 @@ export class MercuryClient {
    * Get all treasury accounts
    */
   async getTreasury() {
-    try {
-      const response = await mercurySDK.getTreasury();
-      return response.data;
-    } catch (error) {
-      this.handleError(error, "Get treasury");
-    }
+    return this.request<{ treasuryAccounts: unknown[] }>("/treasury");
   }
 }
 
@@ -561,4 +541,3 @@ export async function createMercuryClient(
   await client.initialize();
   return client;
 }
-
