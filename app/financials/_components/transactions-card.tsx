@@ -45,7 +45,7 @@ function formatCurrency(amount: number): string {
     style: "currency",
     currency: "USD",
     minimumFractionDigits: 2,
-  }).format(absAmount / 100); // Mercury uses cents
+  }).format(absAmount); // Mercury returns dollars, not cents
 }
 
 function formatDate(dateString: string): string {

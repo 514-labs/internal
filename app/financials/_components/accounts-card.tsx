@@ -36,7 +36,7 @@ function formatCurrency(amount: number): string {
     style: "currency",
     currency: "USD",
     minimumFractionDigits: 2,
-  }).format(amount / 100); // Mercury uses cents
+  }).format(amount); // Mercury returns dollars, not cents
 }
 
 function AccountSkeleton() {
