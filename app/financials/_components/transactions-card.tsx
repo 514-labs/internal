@@ -1,14 +1,45 @@
 "use client";
 
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import {
   ArrowDownLeft,
   ArrowUpRight,
   AlertCircle,
   ArrowLeftRight,
+  ArrowUpDown,
+  Filter,
+  CalendarIcon,
+  X,
 } from "lucide-react";
+import { format } from "date-fns";
 
 interface Transaction {
   id: string;
@@ -29,8 +60,44 @@ interface TransactionsResponse {
   total?: number;
 }
 
-async function fetchTransactions(): Promise<TransactionsResponse> {
-  const response = await fetch("/api/integrations/mercury/transactions?limit=20");
+interface FetchParams {
+  limit: number;
+  offset: number;
+  status?: string;
+  start?: string;
+  end?: string;
+}
+
+type SortOption = "date-desc" | "date-asc" | "amount-desc" | "amount-asc";
+
+const ITEMS_PER_PAGE = 10;
+
+const STATUS_OPTIONS = [
+  { value: "all", label: "All Statuses" },
+  { value: "pending", label: "Pending" },
+  { value: "sent", label: "Sent" },
+  { value: "cancelled", label: "Cancelled" },
+  { value: "failed", label: "Failed" },
+];
+
+const SORT_OPTIONS: { value: SortOption; label: string }[] = [
+  { value: "date-desc", label: "Date (Newest)" },
+  { value: "date-asc", label: "Date (Oldest)" },
+  { value: "amount-desc", label: "Amount (High → Low)" },
+  { value: "amount-asc", label: "Amount (Low → High)" },
+];
+
+async function fetchTransactions(params: FetchParams): Promise<TransactionsResponse> {
+  const searchParams = new URLSearchParams();
+  searchParams.set("limit", params.limit.toString());
+  searchParams.set("offset", params.offset.toString());
+  if (params.status && params.status !== "all") {
+    searchParams.set("status", params.status);
+  }
+  if (params.start) searchParams.set("start", params.start);
+  if (params.end) searchParams.set("end", params.end);
+
+  const response = await fetch(`/api/integrations/mercury/transactions?${searchParams}`);
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.message || "Failed to fetch transactions");
@@ -45,7 +112,7 @@ function formatCurrency(amount: number): string {
     style: "currency",
     currency: "USD",
     minimumFractionDigits: 2,
-  }).format(absAmount); // Mercury returns dollars, not cents
+  }).format(absAmount);
 }
 
 function formatDate(dateString: string): string {
@@ -73,32 +140,183 @@ function TransactionSkeleton() {
 }
 
 export function TransactionsCard() {
+  const [page, setPage] = useState(1);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [sortBy, setSortBy] = useState<SortOption>("date-desc");
+  const [dateRange, setDateRange] = useState<{
+    from: Date | undefined;
+    to: Date | undefined;
+  }>({ from: undefined, to: undefined });
+
+  const offset = (page - 1) * ITEMS_PER_PAGE;
+
   const { data, isLoading, error } = useQuery({
-    queryKey: ["mercury", "transactions"],
-    queryFn: fetchTransactions,
-    staleTime: 1000 * 60 * 2, // 2 minutes
+    queryKey: [
+      "mercury",
+      "transactions",
+      page,
+      statusFilter,
+      dateRange.from?.toISOString(),
+      dateRange.to?.toISOString(),
+    ],
+    queryFn: () =>
+      fetchTransactions({
+        limit: ITEMS_PER_PAGE,
+        offset,
+        status: statusFilter !== "all" ? statusFilter : undefined,
+        start: dateRange.from ? format(dateRange.from, "yyyy-MM-dd") : undefined,
+        end: dateRange.to ? format(dateRange.to, "yyyy-MM-dd") : undefined,
+      }),
+    staleTime: 1000 * 60 * 2,
   });
+
+  // Sort transactions client-side
+  const sortedTransactions = useMemo(() => {
+    if (!data?.transactions) return [];
+    const sorted = [...data.transactions];
+    
+    switch (sortBy) {
+      case "date-desc":
+        sorted.sort(
+          (a, b) =>
+            new Date(b.postedAt || b.createdAt).getTime() -
+            new Date(a.postedAt || a.createdAt).getTime()
+        );
+        break;
+      case "date-asc":
+        sorted.sort(
+          (a, b) =>
+            new Date(a.postedAt || a.createdAt).getTime() -
+            new Date(b.postedAt || b.createdAt).getTime()
+        );
+        break;
+      case "amount-desc":
+        sorted.sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount));
+        break;
+      case "amount-asc":
+        sorted.sort((a, b) => Math.abs(a.amount) - Math.abs(b.amount));
+        break;
+    }
+    return sorted;
+  }, [data?.transactions, sortBy]);
+
+  const totalPages = Math.ceil((data?.transactions?.length || 0) / ITEMS_PER_PAGE) || 1;
+  const hasFilters = statusFilter !== "all" || dateRange.from || dateRange.to;
+
+  const clearFilters = () => {
+    setStatusFilter("all");
+    setDateRange({ from: undefined, to: undefined });
+    setPage(1);
+  };
 
   return (
     <Card>
       <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <CardTitle className="text-lg font-semibold flex items-center gap-2">
             <ArrowLeftRight className="h-5 w-5 text-green-600" />
-            Recent Transactions
+            Transactions
           </CardTitle>
           {data?.transactions && (
             <span className="text-sm text-gray-500">
-              {data.transactions.length} transactions
+              {data.transactions.length} results
             </span>
           )}
         </div>
-        <p className="text-sm text-gray-500">Latest activity across all accounts</p>
+
+        {/* Filters Row */}
+        <div className="flex flex-wrap items-center gap-2 pt-2">
+          {/* Status Filter */}
+          <Select
+            value={statusFilter}
+            onValueChange={(value) => {
+              setStatusFilter(value);
+              setPage(1);
+            }}
+          >
+            <SelectTrigger className="w-[140px] h-8 text-xs">
+              <Filter className="h-3 w-3 mr-1" />
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              {STATUS_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Date Range Filter */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="h-8 text-xs gap-1">
+                <CalendarIcon className="h-3 w-3" />
+                {dateRange.from ? (
+                  dateRange.to ? (
+                    <>
+                      {format(dateRange.from, "MMM d")} - {format(dateRange.to, "MMM d")}
+                    </>
+                  ) : (
+                    format(dateRange.from, "MMM d, yyyy")
+                  )
+                ) : (
+                  "Date Range"
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="range"
+                selected={{ from: dateRange.from, to: dateRange.to }}
+                onSelect={(range) => {
+                  setDateRange({ from: range?.from, to: range?.to });
+                  setPage(1);
+                }}
+                numberOfMonths={2}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+
+          {/* Sort Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="h-8 text-xs gap-1">
+                <ArrowUpDown className="h-3 w-3" />
+                {SORT_OPTIONS.find((o) => o.value === sortBy)?.label || "Sort"}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <DropdownMenuRadioGroup value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
+                {SORT_OPTIONS.map((option) => (
+                  <DropdownMenuRadioItem key={option.value} value={option.value}>
+                    {option.label}
+                  </DropdownMenuRadioItem>
+                ))}
+              </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Clear Filters */}
+          {hasFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 text-xs text-gray-500 hover:text-gray-700"
+              onClick={clearFilters}
+            >
+              <X className="h-3 w-3 mr-1" />
+              Clear
+            </Button>
+          )}
+        </div>
       </CardHeader>
+
       <CardContent>
         {isLoading ? (
           <div className="divide-y">
-            {Array.from({ length: 5 }).map((_, i) => (
+            {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
               <TransactionSkeleton key={i} />
             ))}
           </div>
@@ -112,76 +330,144 @@ export function TransactionsCard() {
               </p>
             </div>
           </div>
-        ) : data?.transactions?.length === 0 ? (
-          <p className="text-gray-500 text-center py-8">No transactions found</p>
-        ) : (
-          <div className="divide-y">
-            {data?.transactions?.map((tx) => {
-              const isCredit = tx.amount > 0;
-              const displayName =
-                tx.counterpartyNickname ||
-                tx.counterpartyName ||
-                tx.bankDescription ||
-                "Unknown";
-              const description = tx.note || tx.externalMemo || tx.kind;
-
-              return (
-                <div
-                  key={tx.id}
-                  className="flex items-center justify-between py-3 hover:bg-gray-50 -mx-4 px-4 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`p-2 rounded-full ${
-                        isCredit
-                          ? "bg-green-100 text-green-600"
-                          : "bg-red-100 text-red-600"
-                      }`}
-                    >
-                      {isCredit ? (
-                        <ArrowDownLeft className="h-4 w-4" />
-                      ) : (
-                        <ArrowUpRight className="h-4 w-4" />
-                      )}
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900 line-clamp-1">
-                        {displayName}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {formatDate(tx.postedAt || tx.createdAt)}
-                        {description && ` • ${description}`}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p
-                      className={`font-semibold ${
-                        isCredit ? "text-green-600" : "text-gray-900"
-                      }`}
-                    >
-                      {isCredit ? "+" : "-"}
-                      {formatCurrency(tx.amount)}
-                    </p>
-                    <p
-                      className={`text-xs capitalize ${
-                        tx.status === "pending"
-                          ? "text-amber-600"
-                          : tx.status === "sent" || tx.status === "completed"
-                          ? "text-green-600"
-                          : "text-gray-500"
-                      }`}
-                    >
-                      {tx.status}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
+        ) : sortedTransactions.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-gray-500">No transactions found</p>
+            {hasFilters && (
+              <Button variant="link" className="mt-2" onClick={clearFilters}>
+                Clear filters
+              </Button>
+            )}
           </div>
+        ) : (
+          <>
+            <div className="divide-y">
+              {sortedTransactions.map((tx) => {
+                const isCredit = tx.amount > 0;
+                const displayName =
+                  tx.counterpartyNickname ||
+                  tx.counterpartyName ||
+                  tx.bankDescription ||
+                  "Unknown";
+                const description = tx.note || tx.externalMemo || tx.kind;
+
+                return (
+                  <div
+                    key={tx.id}
+                    className="flex items-center justify-between py-3 hover:bg-gray-50 -mx-4 px-4 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`p-2 rounded-full ${
+                          isCredit
+                            ? "bg-green-100 text-green-600"
+                            : "bg-red-100 text-red-600"
+                        }`}
+                      >
+                        {isCredit ? (
+                          <ArrowDownLeft className="h-4 w-4" />
+                        ) : (
+                          <ArrowUpRight className="h-4 w-4" />
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-gray-900 line-clamp-1">
+                          {displayName}
+                        </p>
+                        <p className="text-xs text-gray-500 line-clamp-1">
+                          {formatDate(tx.postedAt || tx.createdAt)}
+                          {description && ` • ${description}`}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right shrink-0 ml-4">
+                      <p
+                        className={`font-semibold ${
+                          isCredit ? "text-green-600" : "text-gray-900"
+                        }`}
+                      >
+                        {isCredit ? "+" : "-"}
+                        {formatCurrency(tx.amount)}
+                      </p>
+                      <p
+                        className={`text-xs capitalize ${
+                          tx.status === "pending"
+                            ? "text-amber-600"
+                            : tx.status === "sent" || tx.status === "completed"
+                            ? "text-green-600"
+                            : "text-gray-500"
+                        }`}
+                      >
+                        {tx.status}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Pagination */}
+            {data?.transactions && data.transactions.length > 0 && (
+              <div className="flex items-center justify-between pt-4 border-t mt-4">
+                <p className="text-sm text-gray-500">
+                  Page {page} of {totalPages}
+                </p>
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (page > 1) setPage(page - 1);
+                        }}
+                        className={page <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                      />
+                    </PaginationItem>
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNum: number;
+                      if (totalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (page <= 3) {
+                        pageNum = i + 1;
+                      } else if (page >= totalPages - 2) {
+                        pageNum = totalPages - 4 + i;
+                      } else {
+                        pageNum = page - 2 + i;
+                      }
+                      return (
+                        <PaginationItem key={pageNum}>
+                          <PaginationLink
+                            href="#"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setPage(pageNum);
+                            }}
+                            isActive={page === pageNum}
+                            className="cursor-pointer"
+                          >
+                            {pageNum}
+                          </PaginationLink>
+                        </PaginationItem>
+                      );
+                    })}
+                    <PaginationItem>
+                      <PaginationNext
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (page < totalPages) setPage(page + 1);
+                        }}
+                        className={page >= totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            )}
+          </>
         )}
       </CardContent>
     </Card>
   );
 }
-
