@@ -21,6 +21,9 @@ import { encryptToken, decryptToken, isEncrypted } from "../encryption";
 const INTEGRATION_NAME = "rippling";
 const RIPPLING_API_BASE_URL =
   process.env.RIPPLING_API_BASE_URL || "https://rest.ripplingapis.com";
+const RIPPLING_JOB_BOARD_API_BASE_URL =
+  process.env.RIPPLING_JOB_BOARD_API_BASE_URL ||
+  "https://api.rippling.com/platform/api/ats/v1/board";
 
 // ============================================================================
 // Types
@@ -565,6 +568,139 @@ export class RipplingClient {
    */
   async getSupergroupExclusionMembers(groupId: string): Promise<unknown> {
     return this.request(`/supergroups/${groupId}/exclusion-members`);
+  }
+
+  // ==========================================================================
+  // Job Board API (ATS)
+  // Note: Uses a different base URL than the main Rippling API
+  // ==========================================================================
+
+  /**
+   * Make an authenticated request to the Rippling Job Board API
+   */
+  private async jobBoardRequest<T>(
+    boardSlug: string,
+    endpoint: string,
+    options: RequestInit = {}
+  ): Promise<T> {
+    if (!this.token) {
+      throw new ConfigurationError(
+        "Client not initialized. Call initialize() first."
+      );
+    }
+
+    const url = `${RIPPLING_JOB_BOARD_API_BASE_URL}/${boardSlug}${endpoint}`;
+
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        Authorization: `Bearer ${this.token}`,
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+
+    if (!response.ok) {
+      let errorBody: string | null = null;
+      let errorDetails: Record<string, unknown> = {};
+      try {
+        const text = await response.text();
+        errorBody = text;
+        try {
+          errorDetails = JSON.parse(text);
+        } catch {
+          // Not JSON
+        }
+      } catch {
+        // Couldn't read body
+      }
+
+      const errorMessage =
+        errorDetails.message || errorDetails.error || errorBody;
+
+      if (response.status === 401) {
+        throw new AuthenticationError(
+          `Job Board API authentication failed: ${
+            errorMessage || "Your token may be invalid or expired."
+          }`
+        );
+      }
+      if (response.status === 403) {
+        throw new ExternalAPIError(
+          "Rippling Job Board",
+          `Access forbidden: ${
+            errorMessage || "Your token may not have the required permissions."
+          }`,
+          403
+        );
+      }
+      if (response.status === 404) {
+        throw new ExternalAPIError(
+          "Rippling Job Board",
+          `Board not found: ${
+            errorMessage || "The job board slug may be incorrect."
+          }`,
+          404
+        );
+      }
+      throw new ExternalAPIError(
+        "Rippling Job Board",
+        `Request failed: ${errorMessage || `Status ${response.status}`}`,
+        response.status
+      );
+    }
+
+    return response.json();
+  }
+
+  /**
+   * Get jobs for a job board
+   * @param boardSlug - The unique slug for the job board
+   * @param options - Optional filters (searchTerm, workLocation, department)
+   */
+  async getJobBoardJobs(
+    boardSlug: string,
+    options?: {
+      searchTerm?: string;
+      workLocation?: string;
+      department?: string;
+    }
+  ): Promise<unknown> {
+    const params = new URLSearchParams();
+    if (options?.searchTerm) params.set("searchTerm", options.searchTerm);
+    if (options?.workLocation) params.set("workLocation", options.workLocation);
+    if (options?.department) params.set("department", options.department);
+
+    const query = params.toString();
+    return this.jobBoardRequest(
+      boardSlug,
+      `/jobs${query ? `?${query}` : ""}`
+    );
+  }
+
+  /**
+   * Get branding info for a job board
+   * @param boardSlug - The unique slug for the job board
+   */
+  async getJobBoardBranding(boardSlug: string): Promise<unknown> {
+    return this.jobBoardRequest(boardSlug, "/branding");
+  }
+
+  /**
+   * Get locations for a job board
+   * @param boardSlug - The unique slug for the job board
+   */
+  async getJobBoardLocations(boardSlug: string): Promise<unknown> {
+    return this.jobBoardRequest(boardSlug, "/locations");
+  }
+
+  /**
+   * Get departments for a job board
+   * @param boardSlug - The unique slug for the job board
+   */
+  async getJobBoardDepartments(boardSlug: string): Promise<unknown> {
+    return this.jobBoardRequest(boardSlug, "/departments");
   }
 }
 
