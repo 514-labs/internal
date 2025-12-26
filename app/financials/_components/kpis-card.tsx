@@ -80,43 +80,74 @@ function formatMonths(months: number): string {
   return `${Math.round(months)} months`;
 }
 
-function calculateMonthlyBurn(transactions: Transaction[]): number {
-  // Get transactions from the last 3 months for a more accurate average
-  const now = new Date();
-  const threeMonthsAgo = new Date(now);
-  threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+interface MonthlyBurnData {
+  currentMonth: number;
+  currentMonthLabel: string;
+  lastMonth: number;
+  lastMonthLabel: string;
+}
 
-  const recentTransactions = transactions.filter((tx) => {
-    const txDate = new Date(tx.postedAt || tx.createdAt);
-    return txDate >= threeMonthsAgo && tx.status !== "cancelled" && tx.status !== "failed";
-  });
+function calculateMonthlyBurn(transactions: Transaction[]): MonthlyBurnData {
+  // Find the most recent transaction date to use as reference
+  const sortedByDate = [...transactions]
+    .filter((tx) => tx.status !== "cancelled" && tx.status !== "failed")
+    .sort((a, b) => {
+      const dateA = new Date(a.postedAt || a.createdAt).getTime();
+      const dateB = new Date(b.postedAt || b.createdAt).getTime();
+      return dateB - dateA;
+    });
 
-  // Sum all negative (outgoing) transactions
-  const totalOutflow = recentTransactions
-    .filter((tx) => tx.amount < 0)
-    .reduce((sum, tx) => sum + Math.abs(tx.amount), 0);
+  if (sortedByDate.length === 0) {
+    return {
+      currentMonth: 0,
+      currentMonthLabel: "",
+      lastMonth: 0,
+      lastMonthLabel: "",
+    };
+  }
 
-  // Sum all positive (incoming) transactions
-  const totalInflow = recentTransactions
-    .filter((tx) => tx.amount > 0)
-    .reduce((sum, tx) => sum + tx.amount, 0);
+  // Use the most recent transaction's month as "current"
+  const mostRecentDate = new Date(sortedByDate[0].postedAt || sortedByDate[0].createdAt);
+  
+  // Current month boundaries (based on most recent transaction)
+  const currentMonthStart = new Date(mostRecentDate.getFullYear(), mostRecentDate.getMonth(), 1);
+  const currentMonthEnd = new Date(mostRecentDate.getFullYear(), mostRecentDate.getMonth() + 1, 0);
+  
+  // Last month boundaries
+  const lastMonthStart = new Date(mostRecentDate.getFullYear(), mostRecentDate.getMonth() - 1, 1);
+  const lastMonthEnd = new Date(mostRecentDate.getFullYear(), mostRecentDate.getMonth(), 0);
 
-  // Net burn = outflow - inflow (positive means burning cash)
-  const netBurn = totalOutflow - totalInflow;
+  // Filter transactions by month and only count outflows (expenses)
+  const getMonthBurn = (startDate: Date, endDate: Date) => {
+    return transactions
+      .filter((tx) => {
+        const txDate = new Date(tx.postedAt || tx.createdAt);
+        return (
+          txDate >= startDate &&
+          txDate <= endDate &&
+          tx.status !== "cancelled" &&
+          tx.status !== "failed" &&
+          tx.amount < 0 // Only outflows
+        );
+      })
+      .reduce((sum, tx) => sum + Math.abs(tx.amount), 0);
+  };
 
-  // Calculate number of months in the period
-  const oldestTx = recentTransactions.reduce((oldest, tx) => {
-    const txDate = new Date(tx.postedAt || tx.createdAt);
-    return txDate < oldest ? txDate : oldest;
-  }, now);
+  const currentMonthBurn = getMonthBurn(currentMonthStart, currentMonthEnd);
+  const lastMonthBurn = getMonthBurn(lastMonthStart, lastMonthEnd);
 
-  const monthsInPeriod = Math.max(
-    1,
-    (now.getTime() - oldestTx.getTime()) / (1000 * 60 * 60 * 24 * 30)
-  );
+  // Format month labels
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const currentMonthLabel = monthNames[mostRecentDate.getMonth()];
+  const lastMonthIdx = mostRecentDate.getMonth() === 0 ? 11 : mostRecentDate.getMonth() - 1;
+  const lastMonthLabel = monthNames[lastMonthIdx];
 
-  // Return monthly average
-  return netBurn / monthsInPeriod;
+  return {
+    currentMonth: currentMonthBurn,
+    currentMonthLabel,
+    lastMonth: lastMonthBurn,
+    lastMonthLabel,
+  };
 }
 
 function KPISkeleton() {
@@ -161,12 +192,15 @@ export function KPIsCard() {
   const totalCash = bankBalance + treasuryBalance;
 
   // Calculate burn rate
-  const monthlyBurn = txData?.transactions
+  const burnData = txData?.transactions
     ? calculateMonthlyBurn(txData.transactions)
-    : 0;
+    : { currentMonth: 0, currentMonthLabel: "", lastMonth: 0, lastMonthLabel: "" };
+
+  // Use last month's burn for runway calculation (more complete data)
+  const monthlyBurnForRunway = burnData.lastMonth > 0 ? burnData.lastMonth : burnData.currentMonth;
 
   // Calculate runway
-  const runwayMonths = monthlyBurn > 0 ? totalCash / monthlyBurn : Infinity;
+  const runwayMonths = monthlyBurnForRunway > 0 ? totalCash / monthlyBurnForRunway : Infinity;
 
   // Determine runway health status
   const getRunwayStatus = () => {
@@ -183,20 +217,10 @@ export function KPIsCard() {
 
   const runwayStatus = getRunwayStatus();
 
-  // Determine burn status
-  const getBurnStatus = () => {
-    if (monthlyBurn <= 0) {
-      return { color: "text-emerald-600", bg: "bg-emerald-100", label: "Net Positive" };
-    } else if (monthlyBurn < 50000) {
-      return { color: "text-blue-600", bg: "bg-blue-100", label: "Low Burn" };
-    } else if (monthlyBurn < 150000) {
-      return { color: "text-amber-600", bg: "bg-amber-100", label: "Moderate" };
-    } else {
-      return { color: "text-red-600", bg: "bg-red-100", label: "High Burn" };
-    }
-  };
-
-  const burnStatus = getBurnStatus();
+  // Calculate burn change percentage
+  const burnChange = burnData.lastMonth > 0
+    ? ((burnData.currentMonth - burnData.lastMonth) / burnData.lastMonth) * 100
+    : 0;
 
   return (
     <Card>
@@ -221,24 +245,35 @@ export function KPIsCard() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900">Monthly Burn</h3>
-                    <p className="text-xs text-gray-500">3-month average net burn</p>
+                    <p className="text-xs text-gray-500">Total expenses per month</p>
                   </div>
                 </div>
-                <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${burnStatus.bg} ${burnStatus.color}`}>
-                  {burnStatus.label}
-                </span>
-              </div>
-              <div className="space-y-2">
-                <p className={`text-2xl font-bold ${monthlyBurn > 0 ? "text-orange-600" : "text-emerald-600"}`}>
-                  {monthlyBurn > 0 ? "-" : "+"}
-                  {formatCurrency(Math.abs(monthlyBurn))}
-                  <span className="text-sm font-normal text-gray-500">/mo</span>
-                </p>
-                <div className="flex items-center gap-2 text-xs text-gray-500">
-                  <TrendingDown className="h-3 w-3" />
-                  <span>
-                    Based on {txData?.transactions?.length || 0} transactions
+                {burnChange !== 0 && (
+                  <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
+                    burnChange < 0 ? "bg-emerald-100 text-emerald-600" : "bg-red-100 text-red-600"
+                  }`}>
+                    {burnChange > 0 ? "+" : ""}{burnChange.toFixed(0)}%
                   </span>
+                )}
+              </div>
+              <div className="space-y-3">
+                {/* Current Month */}
+                <div>
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-xs text-gray-500 uppercase tracking-wide">{burnData.currentMonthLabel} (Current)</span>
+                  </div>
+                  <p className="text-2xl font-bold text-orange-600">
+                    {formatCurrency(burnData.currentMonth)}
+                  </p>
+                </div>
+                {/* Last Month */}
+                <div className="pt-2 border-t border-orange-100">
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-xs text-gray-500">{burnData.lastMonthLabel} (Last month)</span>
+                    <span className="text-sm font-semibold text-gray-700">
+                      {formatCurrency(burnData.lastMonth)}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -257,26 +292,26 @@ export function KPIsCard() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900">Runway</h3>
-                    <p className="text-xs text-gray-500">Months of cash remaining</p>
+                    <p className="text-xs text-gray-500">Based on {burnData.lastMonthLabel} burn rate</p>
                   </div>
                 </div>
                 <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${runwayStatus.bg} ${runwayStatus.color}`}>
                   {runwayStatus.status}
                 </span>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <p className={`text-2xl font-bold ${runwayStatus.color}`}>
                   {runwayMonths === Infinity ? "∞" : formatMonths(runwayMonths)}
                 </p>
-                <div className="flex items-center gap-2 text-xs text-gray-500">
-                  {runwayMonths > 12 ? (
-                    <CheckCircle className="h-3 w-3 text-emerald-500" />
-                  ) : (
-                    <AlertTriangle className="h-3 w-3 text-amber-500" />
-                  )}
-                  <span>
-                    {formatCurrency(totalCash)} cash / {formatCurrency(Math.abs(monthlyBurn))}/mo
-                  </span>
+                <div className="pt-2 border-t border-gray-100 space-y-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-gray-500">Cash position</span>
+                    <span className="font-medium text-gray-700">{formatCurrency(totalCash)}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-gray-500">Monthly burn</span>
+                    <span className="font-medium text-gray-700">{formatCurrency(monthlyBurnForRunway)}/mo</span>
+                  </div>
                 </div>
               </div>
             </div>
