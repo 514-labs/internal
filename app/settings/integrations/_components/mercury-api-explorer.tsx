@@ -85,6 +85,31 @@ function EndpointCard({ config }: EndpointCardProps) {
 
   const Icon = config.icon;
 
+  const parseErrorMessage = (result: Record<string, unknown>, status: number): string => {
+    // Handle nested error structures from Mercury API
+    const errors = result.errors as Record<string, unknown> | undefined;
+    const nestedMessage = errors?.message as string | undefined;
+    const directMessage = result.message as string | undefined;
+    const directError = result.error as string | undefined;
+
+    // Map common errors to user-friendly messages
+    if (status === 401) {
+      return "Your API token is invalid or expired. Please reconnect Mercury.";
+    }
+    if (status === 403) {
+      return "Your Mercury account doesn't have access to this feature. Check your API token permissions.";
+    }
+    if (status === 404) {
+      return "This resource was not found in your Mercury account.";
+    }
+    if (status === 429) {
+      return "Too many requests. Please wait a moment and try again.";
+    }
+
+    // Return the most specific message available
+    return nestedMessage || directMessage || directError || `Request failed (${status})`;
+  };
+
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -94,14 +119,21 @@ function EndpointCard({ config }: EndpointCardProps) {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.message || result.error || "Failed to fetch data");
+        const errorMessage = parseErrorMessage(result, response.status);
+        setError(errorMessage);
+        return;
       }
 
       setData(result.data);
       setExpanded(true);
     } catch (err) {
-      console.error(`Error fetching ${config.title}:`, err);
-      setError((err as Error).message);
+      // Network errors or JSON parse errors
+      const error = err as Error;
+      if (error.name === "TypeError" && error.message.includes("fetch")) {
+        setError("Network error. Please check your connection.");
+      } else {
+        setError(error.message || "An unexpected error occurred");
+      }
     } finally {
       setLoading(false);
     }
@@ -153,8 +185,9 @@ function EndpointCard({ config }: EndpointCardProps) {
         </div>
 
         {error && (
-          <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-sm text-red-700">{error}</p>
+          <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <p className="text-sm text-amber-800 font-medium">Unable to fetch data</p>
+            <p className="text-sm text-amber-700 mt-1">{error}</p>
           </div>
         )}
 
