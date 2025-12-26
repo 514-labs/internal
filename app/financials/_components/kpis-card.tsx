@@ -88,34 +88,15 @@ interface MonthlyBurnData {
 }
 
 function calculateMonthlyBurn(transactions: Transaction[]): MonthlyBurnData {
-  // Find the most recent transaction date to use as reference
-  const sortedByDate = [...transactions]
-    .filter((tx) => tx.status !== "cancelled" && tx.status !== "failed")
-    .sort((a, b) => {
-      const dateA = new Date(a.postedAt || a.createdAt).getTime();
-      const dateB = new Date(b.postedAt || b.createdAt).getTime();
-      return dateB - dateA;
-    });
-
-  if (sortedByDate.length === 0) {
-    return {
-      currentMonth: 0,
-      currentMonthLabel: "",
-      lastMonth: 0,
-      lastMonthLabel: "",
-    };
-  }
-
-  // Use the most recent transaction's month as "current"
-  const mostRecentDate = new Date(sortedByDate[0].postedAt || sortedByDate[0].createdAt);
+  const now = new Date();
   
-  // Current month boundaries (based on most recent transaction)
-  const currentMonthStart = new Date(mostRecentDate.getFullYear(), mostRecentDate.getMonth(), 1);
-  const currentMonthEnd = new Date(mostRecentDate.getFullYear(), mostRecentDate.getMonth() + 1, 0);
+  // Current month boundaries (actual current month)
+  const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const currentMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
   
   // Last month boundaries
-  const lastMonthStart = new Date(mostRecentDate.getFullYear(), mostRecentDate.getMonth() - 1, 1);
-  const lastMonthEnd = new Date(mostRecentDate.getFullYear(), mostRecentDate.getMonth(), 0);
+  const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
 
   // Filter transactions by month and only count outflows (expenses)
   const getMonthBurn = (startDate: Date, endDate: Date) => {
@@ -138,8 +119,8 @@ function calculateMonthlyBurn(transactions: Transaction[]): MonthlyBurnData {
 
   // Format month labels
   const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const currentMonthLabel = monthNames[mostRecentDate.getMonth()];
-  const lastMonthIdx = mostRecentDate.getMonth() === 0 ? 11 : mostRecentDate.getMonth() - 1;
+  const currentMonthLabel = monthNames[now.getMonth()];
+  const lastMonthIdx = now.getMonth() === 0 ? 11 : now.getMonth() - 1;
   const lastMonthLabel = monthNames[lastMonthIdx];
 
   return {
