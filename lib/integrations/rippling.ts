@@ -23,7 +23,7 @@ const RIPPLING_API_BASE_URL =
   process.env.RIPPLING_API_BASE_URL || "https://rest.ripplingapis.com";
 const RIPPLING_JOB_BOARD_API_BASE_URL =
   process.env.RIPPLING_JOB_BOARD_API_BASE_URL ||
-  "https://api.rippling.com/platform/api/ats/v1/board";
+  "https://api.rippling.com/platform/api/ats/v2/board";
 
 // ============================================================================
 // Types
@@ -673,10 +673,7 @@ export class RipplingClient {
     if (options?.department) params.set("department", options.department);
 
     const query = params.toString();
-    return this.jobBoardRequest(
-      boardSlug,
-      `/jobs${query ? `?${query}` : ""}`
-    );
+    return this.jobBoardRequest(boardSlug, `/jobs${query ? `?${query}` : ""}`);
   }
 
   /**
