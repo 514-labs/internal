@@ -60,7 +60,14 @@ interface FetchParams {
   endBefore?: string;
 }
 
-const ITEMS_PER_PAGE = 25;
+const DEFAULT_PAGE_SIZE = 10;
+
+const PAGE_SIZE_OPTIONS = [
+  { value: "10", label: "10 per page" },
+  { value: "25", label: "25 per page" },
+  { value: "50", label: "50 per page" },
+  { value: "100", label: "100 per page" },
+];
 
 const STATUS_OPTIONS = [
   { value: "all", label: "All Statuses" },
@@ -72,7 +79,7 @@ const STATUS_OPTIONS = [
 
 async function fetchTransactions(params: FetchParams): Promise<TransactionsResponse> {
   const searchParams = new URLSearchParams();
-  searchParams.set("limit", (params.limit || ITEMS_PER_PAGE).toString());
+  searchParams.set("limit", (params.limit || DEFAULT_PAGE_SIZE).toString());
   searchParams.set("order", params.order || "desc");
   
   if (params.status && params.status !== "all") {
@@ -127,6 +134,7 @@ function TransactionSkeleton() {
 
 export function TransactionsCard() {
   const [statusFilter, setStatusFilter] = useState("all");
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [dateRange, setDateRange] = useState<{
     from: Date | undefined;
     to: Date | undefined;
@@ -142,6 +150,7 @@ export function TransactionsCard() {
       "mercury",
       "transactions",
       statusFilter,
+      pageSize,
       dateRange.from?.toISOString(),
       dateRange.to?.toISOString(),
       currentCursor,
@@ -153,7 +162,7 @@ export function TransactionsCard() {
         start: dateRange.from ? format(dateRange.from, "yyyy-MM-dd") : undefined,
         end: dateRange.to ? format(dateRange.to, "yyyy-MM-dd") : undefined,
         order: "desc",
-        limit: ITEMS_PER_PAGE,
+        limit: pageSize,
         startAfter: !isNavigatingBack ? currentCursor : undefined,
         endBefore: isNavigatingBack ? currentCursor : undefined,
       }),
@@ -290,13 +299,36 @@ export function TransactionsCard() {
               Clear
             </Button>
           )}
+
+          {/* Spacer */}
+          <div className="flex-1" />
+
+          {/* Page Size Selector */}
+          <Select
+            value={pageSize.toString()}
+            onValueChange={(value) => {
+              setPageSize(parseInt(value, 10));
+              resetPagination();
+            }}
+          >
+            <SelectTrigger className="w-[120px] h-8 text-xs">
+              <SelectValue placeholder="Per page" />
+            </SelectTrigger>
+            <SelectContent>
+              {PAGE_SIZE_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </CardHeader>
 
       <CardContent>
         {isLoading ? (
           <div className="divide-y">
-            {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
+            {Array.from({ length: pageSize }).map((_, i) => (
               <TransactionSkeleton key={i} />
             ))}
           </div>

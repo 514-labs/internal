@@ -30,6 +30,10 @@ import {
   Scale,
   PlayCircle,
   Plug,
+  Trophy,
+  Citrus,
+  Package,
+  Wrench,
 } from "lucide-react";
 
 // Top-level items (before Performance group)
@@ -39,6 +43,12 @@ const overviewItems = [
     url: "/",
     icon: LayoutDashboard,
     shortcut: "O",
+  },
+  {
+    title: "Strategy",
+    url: "/strategy",
+    icon: Compass,
+    shortcut: "S",
   },
 ];
 
@@ -95,10 +105,16 @@ const knowledgeItems = [
     shortcut: "H",
   },
   {
-    title: "Strategy",
-    url: "/strategy",
-    icon: Compass,
-    shortcut: "S",
+    title: "Products",
+    url: "/products",
+    icon: Package,
+    shortcut: "U",
+  },
+  {
+    title: "Services",
+    url: "/services",
+    icon: Wrench,
+    shortcut: "V",
   },
   {
     title: "Frameworks",
@@ -117,6 +133,22 @@ const knowledgeItems = [
     url: "/playbooks",
     icon: PlayCircle,
     shortcut: "P",
+  },
+];
+
+// Fun section
+const funItems = [
+  {
+    title: "Wins",
+    url: "/wins",
+    icon: Trophy,
+    shortcut: "N",
+  },
+  {
+    title: "Lemon Prizes",
+    url: "/lemon-prizes",
+    icon: Citrus,
+    shortcut: "L",
   },
 ];
 
@@ -139,6 +171,7 @@ export function AppSidebar() {
     ...performanceItems,
     ...executionItems,
     ...knowledgeItems,
+    ...funItems,
     ...adminItems,
   ];
 
@@ -228,6 +261,16 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {knowledgeItems.map(renderMenuItem)}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Fun */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Fun</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {funItems.map(renderMenuItem)}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
