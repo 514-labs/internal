@@ -1,8 +1,13 @@
-export default function CompanyPage() {
+export default function HandbookPage() {
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Company</h1>
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Handbook</h1>
+          <p className="text-muted-foreground mt-1">
+            Company information, policies, and guidelines
+          </p>
+        </div>
       </div>
       <div className="grid gap-4 md:grid-cols-2">
         <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">

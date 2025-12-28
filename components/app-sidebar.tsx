@@ -12,41 +12,48 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { SignedIn, UserButton, useOrganizationList } from "@clerk/nextjs";
+import { SignedIn, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import {
   LayoutDashboard,
   TrendingUp,
-  Users,
-  Target,
-  Building2,
+  DollarSign,
+  LineChart,
   Briefcase,
-  FlaskConical,
-  Settings,
+  Target,
+  Users,
+  BookOpen,
+  Compass,
+  Boxes,
+  Scale,
+  PlayCircle,
   Plug,
+  Trophy,
+  Citrus,
+  Package,
+  Wrench,
 } from "lucide-react";
 
-const menuItems = [
+// Top-level items (before Performance group)
+const overviewItems = [
   {
-    title: "Dashboard",
+    title: "Overview",
     url: "/",
     icon: LayoutDashboard,
-    shortcut: "D",
+    shortcut: "O",
   },
   {
-    title: "Work",
-    url: "/work",
-    icon: Briefcase,
-    shortcut: "W",
+    title: "Strategy",
+    url: "/strategy",
+    icon: Compass,
+    shortcut: "S",
   },
-  {
-    title: "Experiments",
-    url: "/experiments",
-    icon: FlaskConical,
-    shortcut: "X",
-  },
+];
+
+// Performance section
+const performanceItems = [
   {
     title: "Metrics",
     url: "/metrics",
@@ -54,10 +61,26 @@ const menuItems = [
     shortcut: "M",
   },
   {
-    title: "Teams",
-    url: "/teams",
-    icon: Users,
-    shortcut: "E",
+    title: "Financials",
+    url: "/financials",
+    icon: DollarSign,
+    shortcut: "F",
+  },
+  {
+    title: "Trends",
+    url: "/trends",
+    icon: LineChart,
+    shortcut: "T",
+  },
+];
+
+// Execution section
+const executionItems = [
+  {
+    title: "Work",
+    url: "/work",
+    icon: Briefcase,
+    shortcut: "W",
   },
   {
     title: "Goals",
@@ -66,38 +89,99 @@ const menuItems = [
     shortcut: "G",
   },
   {
-    title: "Company",
-    url: "/company",
-    icon: Building2,
-    shortcut: "C",
+    title: "Teams",
+    url: "/teams",
+    icon: Users,
+    shortcut: "E",
+  },
+];
+
+// Knowledge section
+const knowledgeItems = [
+  {
+    title: "Handbook",
+    url: "/handbook",
+    icon: BookOpen,
+    shortcut: "H",
+  },
+  {
+    title: "Products",
+    url: "/products",
+    icon: Package,
+    shortcut: "U",
+  },
+  {
+    title: "Services",
+    url: "/services",
+    icon: Wrench,
+    shortcut: "V",
+  },
+  {
+    title: "Frameworks",
+    url: "/frameworks",
+    icon: Boxes,
+    shortcut: "R",
+  },
+  {
+    title: "Decisions",
+    url: "/decisions",
+    icon: Scale,
+    shortcut: "D",
+  },
+  {
+    title: "Playbooks",
+    url: "/playbooks",
+    icon: PlayCircle,
+    shortcut: "P",
+  },
+];
+
+// Fun section
+const funItems = [
+  {
+    title: "Wins",
+    url: "/wins",
+    icon: Trophy,
+    shortcut: "N",
+  },
+  {
+    title: "Lemon Prizes",
+    url: "/lemon-prizes",
+    icon: Citrus,
+    shortcut: "L",
+  },
+];
+
+// Admin section
+const adminItems = [
+  {
+    title: "Integrations",
+    url: "/admin/integrations",
+    icon: Plug,
+    shortcut: "I",
   },
 ];
 
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { userMemberships } = useOrganizationList({
-    userMemberships: {
-      infinite: true,
-    },
-  });
 
-  // Check if user is admin in any organization
-  const isAdmin =
-    userMemberships?.data?.some(
-      (membership) => membership.role === "org:admin"
-    ) ?? false;
+  const allItems = [
+    ...overviewItems,
+    ...performanceItems,
+    ...executionItems,
+    ...knowledgeItems,
+    ...funItems,
+    ...adminItems,
+  ];
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Only trigger if Option (Alt) is pressed and no other modifiers
       if (e.altKey && !e.metaKey && !e.ctrlKey && !e.shiftKey) {
-        // Use code instead of key to get the physical key pressed
-        // e.code is like "KeyD", "KeyM", etc.
         const code = e.code;
         if (code.startsWith("Key")) {
           const letter = code.replace("Key", "").toLowerCase();
-          const item = menuItems.find(
+          const item = allItems.find(
             (item) => item.shortcut.toLowerCase() === letter
           );
           if (item) {
@@ -112,6 +196,28 @@ export function AppSidebar() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [router]);
 
+  const renderMenuItem = (item: (typeof allItems)[0]) => {
+    const Icon = item.icon;
+    const isActive =
+      item.url === "/"
+        ? pathname === "/"
+        : pathname.startsWith(item.url);
+
+    return (
+      <SidebarMenuItem key={item.title}>
+        <SidebarMenuButton asChild isActive={isActive}>
+          <Link href={item.url}>
+            <Icon className="h-4 w-4" />
+            <span>{item.title}</span>
+            <span className="ml-auto text-xs text-muted-foreground">
+              ⌥{item.shortcut}
+            </span>
+          </Link>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    );
+  };
+
   return (
     <Sidebar>
       <SidebarHeader>
@@ -120,49 +226,64 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
       <SidebarContent>
+        {/* Overview */}
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menuItems.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={pathname === item.url}>
-                      <Link href={item.url}>
-                        <Icon className="h-4 w-4" />
-                        <span>{item.title}</span>
-                        <span className="ml-auto text-xs text-muted-foreground">
-                          ⌥{item.shortcut}
-                        </span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
+              {overviewItems.map(renderMenuItem)}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-        {isAdmin && (
-          <SidebarGroup>
-            <SidebarGroupLabel>Admin</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={pathname === "/settings/integrations"}
-                  >
-                    <Link href="/settings/integrations">
-                      <Plug className="h-4 w-4" />
-                      <span>Integrations</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
+
+        {/* Performance */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Performance</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {performanceItems.map(renderMenuItem)}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Execution */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Execution</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {executionItems.map(renderMenuItem)}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Knowledge */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Knowledge</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {knowledgeItems.map(renderMenuItem)}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Fun */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Fun</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {funItems.map(renderMenuItem)}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Admin */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Admin</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {adminItems.map(renderMenuItem)}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
         <SignedIn>
