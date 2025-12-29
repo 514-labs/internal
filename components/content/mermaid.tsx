@@ -30,7 +30,8 @@ export function Mermaid({ chart }: MermaidProps) {
             // Use CSS variables for better theme integration
             primaryColor: resolvedTheme === "dark" ? "#3b82f6" : "#2563eb",
             primaryTextColor: resolvedTheme === "dark" ? "#f8fafc" : "#1e293b",
-            primaryBorderColor: resolvedTheme === "dark" ? "#475569" : "#cbd5e1",
+            primaryBorderColor:
+              resolvedTheme === "dark" ? "#475569" : "#cbd5e1",
             lineColor: resolvedTheme === "dark" ? "#64748b" : "#94a3b8",
             secondaryColor: resolvedTheme === "dark" ? "#1e293b" : "#f1f5f9",
             tertiaryColor: resolvedTheme === "dark" ? "#334155" : "#e2e8f0",
@@ -40,7 +41,8 @@ export function Mermaid({ chart }: MermaidProps) {
             clusterBkg: resolvedTheme === "dark" ? "#1e293b" : "#f1f5f9",
             clusterBorder: resolvedTheme === "dark" ? "#475569" : "#cbd5e1",
             titleColor: resolvedTheme === "dark" ? "#f8fafc" : "#0f172a",
-            edgeLabelBackground: resolvedTheme === "dark" ? "#1e293b" : "#ffffff",
+            edgeLabelBackground:
+              resolvedTheme === "dark" ? "#1e293b" : "#ffffff",
             // Gantt specific
             gridColor: resolvedTheme === "dark" ? "#334155" : "#e2e8f0",
             todayLineColor: resolvedTheme === "dark" ? "#f59e0b" : "#d97706",
@@ -73,44 +75,46 @@ export function Mermaid({ chart }: MermaidProps) {
 
         // Render the chart
         const { svg: renderedSvg } = await mermaid.render(id, chart);
-        
+
         // Extract width and height values
         const widthMatch = renderedSvg.match(/width="([^"]+)"/);
         const heightMatch = renderedSvg.match(/height="([^"]+)"/);
-        
+
         // For inline display, keep original SVG
         setSvg(renderedSvg);
-        
+
         // Create fullscreen version with viewBox and responsive sizing
         if (widthMatch && heightMatch) {
           const width = parseFloat(widthMatch[1]);
           const height = parseFloat(heightMatch[1]);
-          
+
           let responsiveSvg = renderedSvg;
-          
+
           // Ensure viewBox exists
-          if (!renderedSvg.includes('viewBox')) {
+          if (!renderedSvg.includes("viewBox")) {
             responsiveSvg = responsiveSvg.replace(
               /<svg([^>]*)>/,
               `<svg$1 viewBox="0 0 ${width} ${height}" preserveAspectRatio="xMidYMid meet">`
             );
           }
-          
+
           // Remove fixed dimensions to allow container to control size
           responsiveSvg = responsiveSvg
-            .replace(/width="[^"]*"/, '')
-            .replace(/height="[^"]*"/, '')
-            .replace(/style="[^"]*"/, ''); // Remove inline styles that might override
-          
+            .replace(/width="[^"]*"/, "")
+            .replace(/height="[^"]*"/, "")
+            .replace(/style="[^"]*"/, ""); // Remove inline styles that might override
+
           setFullscreenSvg(responsiveSvg);
         } else {
           setFullscreenSvg(renderedSvg);
         }
-        
+
         setError(null);
       } catch (err) {
         console.error("Mermaid rendering error:", err);
-        setError(err instanceof Error ? err.message : "Failed to render diagram");
+        setError(
+          err instanceof Error ? err.message : "Failed to render diagram"
+        );
       }
     };
 
@@ -163,7 +167,7 @@ export function Mermaid({ chart }: MermaidProps) {
       {/* Inline diagram with hover button */}
       <div
         ref={containerRef}
-        className="group relative my-6 flex justify-center overflow-x-auto rounded-lg border bg-card p-4"
+        className="group relative my-6 flex justify-center overflow-x-auto rounded-lg border bg-card p-6"
       >
         {/* Fullscreen button - appears on hover */}
         <button
@@ -174,8 +178,19 @@ export function Mermaid({ chart }: MermaidProps) {
           <Maximize2 className="h-4 w-4" />
         </button>
 
-        {/* Diagram content */}
-        <div dangerouslySetInnerHTML={{ __html: svg }} />
+        {/* Diagram content - scaled up for better readability */}
+        <div
+          className="inline-mermaid w-full min-h-[300px] flex items-center justify-center"
+          dangerouslySetInnerHTML={{ __html: fullscreenSvg || svg }}
+        />
+        <style>{`
+          .inline-mermaid svg {
+            width: 100%;
+            height: auto;
+            min-height: 280px;
+            max-height: 600px;
+          }
+        `}</style>
       </div>
 
       {/* Fullscreen overlay */}
@@ -195,7 +210,11 @@ export function Mermaid({ chart }: MermaidProps) {
 
           {/* Hint text */}
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs text-muted-foreground">
-            Press <kbd className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">Esc</kbd> or click anywhere to close
+            Press{" "}
+            <kbd className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">
+              Esc
+            </kbd>{" "}
+            or click anywhere to close
           </div>
 
           {/* Fullscreen diagram container */}
@@ -221,4 +240,3 @@ export function Mermaid({ chart }: MermaidProps) {
     </>
   );
 }
-

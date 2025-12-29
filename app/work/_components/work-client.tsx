@@ -8,7 +8,7 @@ import type {
 } from "@/lib/analytics/linear/schemas";
 import { ActiveProjectsCard } from "./active-projects-card";
 import { ActiveInitiativesCard } from "./active-initiatives-card";
-import { RecentlyCompletedFeed } from "./recently-completed-feed";
+import { RecentlyCompletedSidebar } from "./recently-completed-sidebar";
 import { ContentLayout } from "@/components/layouts";
 
 interface WorkClientProps {
