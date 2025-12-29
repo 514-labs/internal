@@ -101,7 +101,7 @@ export const strategySchema = baseContentSchema.extend({
   status: z.enum(["draft", "active", "completed", "archived"]).optional(),
   owners: z.array(z.string()).optional(),
   category: z
-    .enum(["mission", "vision", "roadmap", "okrs", "initiative", "retrospective"])
+    .enum(["mission", "vision", "roadmap", "okrs", "initiative", "retrospective", "strategy"])
     .optional(),
 });
 

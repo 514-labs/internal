@@ -1,0 +1,248 @@
+---
+title: ICP Market Focus
+description: Ideal customer profile and market qualification criteria across three tiers
+date: 2025-01-01
+order: 2
+status: active
+category: strategy
+owners: [gtm-team]
+tags: [icp, targeting, customers, strategy, customer-development]
+---
+
+# ICP Market Focus
+
+Our ideal customer profile (ICP) framework categorizes potential customers across three tiers based on their fit for our platform and the appropriate go-to-market motion.
+
+---
+
+## Tier Overview
+
+| Tier | Name | Focus |
+|------|------|-------|
+| **Tier 1** | Core | Target with outbound and sales efforts |
+| **Tier 2** | Adjacent | Inbound only |
+| **Tier 3** | Self-Serve | Disqualify immediately / self-service |
+
+---
+
+## Qualification Matrix
+
+| Criteria | Tier 1/Core | Tier 2/Adjacent | Tier 3/Self-Serve |
+|----------|-------------|-----------------|-------------------|
+| **Employees** | 100 - 10K | 100 - 10K+ | Under 100 |
+| **Industry** | B2B SaaS (external analytics as secondary competency) | Scaled B2C (internal analytics and/or external analytics as core competency) | Any others |
+| **Location** | US/Canada | English (or bi-lingual) speaking countries | Non-english |
+| **Has developers** | Yes (app team - see User Persona) | Yes (app, platform or data eng) | No |
+| **Technology + Signal** | ClickHouse (explorer/adopter) ∥ MooseStack (explorer/adopter) | Other OLAP or scaled OLTP | No OLAP or scaled OLTP |
+| **Data Volumes** | 10m+ rows in OLTP, 100k+ customers | 1m+ rows in OLTP, 100k+ customers | No scale |
+
+---
+
+## Detailed Breakdown
+
+### Employees
+
+<ItemGroup className="my-4 gap-3 not-prose">
+
+<Item className="rounded-lg border border-green-500/30 bg-green-500/5">
+<ItemMedia variant="icon"><Building /></ItemMedia>
+<ItemContent>
+<ItemTitle>Tier 1: Core — 100 - 10K Employees</ItemTitle>
+<ItemDescription>Mid-market to enterprise companies with enough scale to benefit from our platform, but not so large that procurement and integration become prohibitively complex.</ItemDescription>
+</ItemContent>
+</Item>
+
+<Item className="rounded-lg border border-yellow-500/30 bg-yellow-500/5">
+<ItemMedia variant="icon"><Users /></ItemMedia>
+<ItemContent>
+<ItemTitle>Tier 2: Adjacent — 100 - 10K+ Employees</ItemTitle>
+<ItemDescription>Similar size range with potential extending to larger enterprises. These companies may have more complex needs or longer sales cycles.</ItemDescription>
+</ItemContent>
+</Item>
+
+<Item className="rounded-lg border border-red-500/30 bg-red-500/5">
+<ItemMedia variant="icon"><Minus /></ItemMedia>
+<ItemContent>
+<ItemTitle>Tier 3: Self-Serve — Under 100 Employees</ItemTitle>
+<ItemDescription>Small teams and startups. Self-service only—no outbound or sales effort. May convert through product-led growth.</ItemDescription>
+</ItemContent>
+</Item>
+
+</ItemGroup>
+
+---
+
+### Industry
+
+<ItemGroup className="my-4 gap-3 not-prose">
+
+<Item className="rounded-lg border border-green-500/30 bg-green-500/5">
+<ItemMedia variant="icon"><Target /></ItemMedia>
+<ItemContent>
+<ItemTitle>Tier 1: B2B SaaS</ItemTitle>
+<ItemDescription>B2B SaaS companies where external analytics is a secondary competency—they need analytics to power their product but it's not their core business.</ItemDescription>
+</ItemContent>
+</Item>
+
+<Item className="rounded-lg border border-yellow-500/30 bg-yellow-500/5">
+<ItemMedia variant="icon"><Users /></ItemMedia>
+<ItemContent>
+<ItemTitle>Tier 2: Scaled B2C</ItemTitle>
+<ItemDescription>Scaled B2C companies where internal analytics and/or external analytics is a core competency. They understand the problem deeply but may have different requirements.</ItemDescription>
+</ItemContent>
+</Item>
+
+<Item className="rounded-lg border border-red-500/30 bg-red-500/5">
+<ItemMedia variant="icon"><Minus /></ItemMedia>
+<ItemContent>
+<ItemTitle>Tier 3: Any Others</ItemTitle>
+<ItemDescription>Industries outside our primary focus areas.</ItemDescription>
+</ItemContent>
+</Item>
+
+</ItemGroup>
+
+---
+
+### Location
+
+<ItemGroup className="my-4 gap-3 not-prose">
+
+<Item className="rounded-lg border border-green-500/30 bg-green-500/5">
+<ItemMedia variant="icon"><Globe /></ItemMedia>
+<ItemContent>
+<ItemTitle>Tier 1: US/Canada</ItemTitle>
+<ItemDescription>Primary geographic focus with best timezone coverage and market understanding.</ItemDescription>
+</ItemContent>
+</Item>
+
+<Item className="rounded-lg border border-yellow-500/30 bg-yellow-500/5">
+<ItemMedia variant="icon"><Users /></ItemMedia>
+<ItemContent>
+<ItemTitle>Tier 2: English-Speaking Countries</ItemTitle>
+<ItemDescription>English (or bi-lingual) speaking countries. Good fit for inbound with manageable timezone differences.</ItemDescription>
+</ItemContent>
+</Item>
+
+<Item className="rounded-lg border border-red-500/30 bg-red-500/5">
+<ItemMedia variant="icon"><Minus /></ItemMedia>
+<ItemContent>
+<ItemTitle>Tier 3: Non-English</ItemTitle>
+<ItemDescription>Non-english speaking markets. Language barriers and timezone challenges make these lower priority.</ItemDescription>
+</ItemContent>
+</Item>
+
+</ItemGroup>
+
+---
+
+### Has Developers
+
+<ItemGroup className="my-4 gap-3 not-prose">
+
+<Item className="rounded-lg border border-green-500/30 bg-green-500/5">
+<ItemMedia variant="icon"><Code /></ItemMedia>
+<ItemContent>
+<ItemTitle>Tier 1: Yes — App Team</ItemTitle>
+<ItemDescription>Has an application development team matching our User Persona. These developers can integrate and champion our platform.</ItemDescription>
+</ItemContent>
+</Item>
+
+<Item className="rounded-lg border border-yellow-500/30 bg-yellow-500/5">
+<ItemMedia variant="icon"><Users /></ItemMedia>
+<ItemContent>
+<ItemTitle>Tier 2: Yes — Platform/Data Engineering</ItemTitle>
+<ItemDescription>Has app, platform, or data engineering teams. May have different workflows but can still derive value.</ItemDescription>
+</ItemContent>
+</Item>
+
+<Item className="rounded-lg border border-red-500/30 bg-red-500/5">
+<ItemMedia variant="icon"><Minus /></ItemMedia>
+<ItemContent>
+<ItemTitle>Tier 3: No Developers</ItemTitle>
+<ItemDescription>No in-house development capability. Cannot effectively adopt or integrate our platform.</ItemDescription>
+</ItemContent>
+</Item>
+
+</ItemGroup>
+
+---
+
+### Technology + Signal
+
+<ItemGroup className="my-4 gap-3 not-prose">
+
+<Item className="rounded-lg border border-green-500/30 bg-green-500/5">
+<ItemMedia variant="icon"><Database /></ItemMedia>
+<ItemContent>
+<ItemTitle>Tier 1: ClickHouse or MooseStack</ItemTitle>
+<ItemDescription>ClickHouse (explorer/adopter) or MooseStack (explorer/adopter). Strong buying signal—they're already invested in the ecosystem.</ItemDescription>
+</ItemContent>
+</Item>
+
+<Item className="rounded-lg border border-yellow-500/30 bg-yellow-500/5">
+<ItemMedia variant="icon"><Users /></ItemMedia>
+<ItemContent>
+<ItemTitle>Tier 2: Other OLAP or Scaled OLTP</ItemTitle>
+<ItemDescription>Using other OLAP solutions or scaled OLTP. Understands the problem space but may require migration or education.</ItemDescription>
+</ItemContent>
+</Item>
+
+<Item className="rounded-lg border border-red-500/30 bg-red-500/5">
+<ItemMedia variant="icon"><Minus /></ItemMedia>
+<ItemContent>
+<ItemTitle>Tier 3: No OLAP or Scaled OLTP</ItemTitle>
+<ItemDescription>No OLAP or scaled OLTP in their stack. Likely too early in their data journey for our platform.</ItemDescription>
+</ItemContent>
+</Item>
+
+</ItemGroup>
+
+---
+
+### Data Volumes
+
+<ItemGroup className="my-4 gap-3 not-prose">
+
+<Item className="rounded-lg border border-green-500/30 bg-green-500/5">
+<ItemMedia variant="icon"><TrendingUp /></ItemMedia>
+<ItemContent>
+<ItemTitle>Tier 1: 10m+ Rows, 100k+ Customers</ItemTitle>
+<ItemDescription>10m+ rows in OLTP and 100k+ customers. Scale where OLAP becomes necessary and valuable.</ItemDescription>
+</ItemContent>
+</Item>
+
+<Item className="rounded-lg border border-yellow-500/30 bg-yellow-500/5">
+<ItemMedia variant="icon"><Users /></ItemMedia>
+<ItemContent>
+<ItemTitle>Tier 2: 1m+ Rows, 100k+ Customers</ItemTitle>
+<ItemDescription>1m+ rows in OLTP and 100k+ customers. Growing toward the scale where they'll need our solution.</ItemDescription>
+</ItemContent>
+</Item>
+
+<Item className="rounded-lg border border-red-500/30 bg-red-500/5">
+<ItemMedia variant="icon"><Minus /></ItemMedia>
+<ItemContent>
+<ItemTitle>Tier 3: No Scale</ItemTitle>
+<ItemDescription>Insufficient data volume to justify OLAP investment. May be a fit in the future as they grow.</ItemDescription>
+</ItemContent>
+</Item>
+
+</ItemGroup>
+
+---
+
+## How to Use This Framework
+
+1. **Lead Qualification**: Use the tier criteria to quickly qualify or disqualify leads
+2. **GTM Motion**: Match the sales motion to the tier—outbound for Tier 1, inbound-only for Tier 2, self-serve for Tier 3
+3. **Resource Allocation**: Focus sales and success resources on Tier 1 accounts
+4. **Marketing**: Target Tier 1 ICP characteristics in advertising and content
+5. **Product-Led Growth**: Build self-serve paths for Tier 3 to convert without sales involvement
+
+---
+
+## Cross-Reference
+
+See [User Persona Qualification](/strategy/product-development/user-personas) for the individual user-level qualification criteria that complements this company-level ICP framework.
+
