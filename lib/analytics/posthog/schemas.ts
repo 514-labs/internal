@@ -10,7 +10,7 @@ import { z } from "zod";
 export const EventSchema = z.object({
   event: z.string(),
   distinct_id: z.string(),
-  properties: z.record(z.unknown()).optional(),
+  properties: z.record(z.string(), z.unknown()).optional(),
   timestamp: z.string().optional(),
   uuid: z.string().optional(),
 });
@@ -27,7 +27,7 @@ export const EventQueryOptionsSchema = z.object({
   endDate: z.string().datetime().optional(),
   eventName: z.string().optional(),
   distinctId: z.string().optional(),
-  properties: z.record(z.unknown()).optional(),
+  properties: z.record(z.string(), z.unknown()).optional(),
 });
 
 export type EventQueryOptions = z.infer<typeof EventQueryOptionsSchema>;
@@ -41,7 +41,7 @@ export const PageViewSchema = z.object({
   distinct_id: z.string(),
   session_id: z.string().optional(),
   duration: z.number().optional(),
-  properties: z.record(z.unknown()).optional(),
+  properties: z.record(z.string(), z.unknown()).optional(),
 });
 
 export type PageView = z.infer<typeof PageViewSchema>;
@@ -64,7 +64,7 @@ export type PageViewAggregate = z.infer<typeof PageViewAggregateSchema>;
 export const JourneyStepSchema = z.object({
   event: z.string(),
   timestamp: z.string(),
-  properties: z.record(z.unknown()).optional(),
+  properties: z.record(z.string(), z.unknown()).optional(),
 });
 
 export const JourneySchema = z.object({
@@ -106,7 +106,7 @@ export const HubspotContactSchema = z.object({
   lastmodifieddate: z.string().optional(),
   lifecyclestage: z.string().optional(),
   hs_lead_status: z.string().optional(),
-  properties: z.record(z.unknown()).optional(),
+  properties: z.record(z.string(), z.unknown()).optional(),
 });
 
 export type HubspotContact = z.infer<typeof HubspotContactSchema>;
@@ -124,7 +124,7 @@ export const HubspotDealSchema = z.object({
   pipeline: z.string().optional(),
   hs_deal_stage_probability: z.number().optional(),
   hubspot_owner_id: z.string().optional(),
-  properties: z.record(z.unknown()).optional(),
+  properties: z.record(z.string(), z.unknown()).optional(),
 });
 
 export type HubspotDeal = z.infer<typeof HubspotDealSchema>;
@@ -143,7 +143,7 @@ export const HubspotCompanySchema = z.object({
   state: z.string().optional(),
   country: z.string().optional(),
   website: z.string().optional(),
-  properties: z.record(z.unknown()).optional(),
+  properties: z.record(z.string(), z.unknown()).optional(),
 });
 
 export type HubspotCompany = z.infer<typeof HubspotCompanySchema>;
@@ -152,7 +152,7 @@ export type HubspotCompany = z.infer<typeof HubspotCompanySchema>;
  * HogQL Query Result Schema (generic)
  */
 export const HogQLQueryResultSchema = z.object({
-  results: z.array(z.record(z.unknown())),
+  results: z.array(z.record(z.string(), z.unknown())),
   columns: z.array(z.string()).optional(),
   types: z.array(z.string()).optional(),
   hasMore: z.boolean().optional(),
@@ -203,7 +203,7 @@ export const MetricCardDataSchema = z.object({
   trend: z.enum(["up", "down", "neutral"]),
   trendPercentage: z.number().optional(),
   comparisonValues: z.array(MetricValueSchema).optional(),
-  chartData: z.array(z.record(z.unknown())).optional(),
+  chartData: z.array(z.record(z.string(), z.unknown())).optional(),
 });
 
 export type MetricCardData = z.infer<typeof MetricCardDataSchema>;
@@ -218,8 +218,8 @@ export const ProductMetricsSchema = z.object({
   mau: z.number(),
   conversionRate: z.number(),
   engagementScore: z.number(),
-  specificMetrics: z.record(z.number()).optional(),
-  chartData: z.array(z.record(z.unknown())).optional(),
+  specificMetrics: z.record(z.string(), z.number()).optional(),
+  chartData: z.array(z.record(z.string(), z.unknown())).optional(),
 });
 
 export type ProductMetrics = z.infer<typeof ProductMetricsSchema>;

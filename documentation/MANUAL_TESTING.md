@@ -214,8 +214,8 @@ curl https://your-clerk-domain.clerk.accounts.dev/.well-known/openid-configurati
 # Should return 200 OK
 ```
 
-❌ **Check #5: Middleware isn't blocking OAuth endpoints**
-Check `middleware.ts` includes:
+❌ **Check #5: Proxy isn't blocking OAuth endpoints**
+Check `proxy.ts` includes:
 ```typescript
 const isPublicRoute = createRouteMatcher([
   "/.well-known/oauth-authorization-server(.*)",

@@ -231,12 +231,12 @@ function EndpointCard({ config }: EndpointCardProps) {
             <Icon className="h-5 w-5" />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-gray-900">{config.title}</h3>
-            <p className="text-sm text-gray-500 truncate">{config.description}</p>
+            <h3 className="font-semibold">{config.title}</h3>
+            <p className="text-sm text-muted-foreground truncate">{config.description}</p>
           </div>
           <div className="flex items-center gap-2">
             {count !== null && (
-              <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-sm font-medium">
+              <span className="px-2 py-1 bg-muted text-foreground rounded text-sm font-medium">
                 {count}
               </span>
             )}
@@ -252,15 +252,15 @@ function EndpointCard({ config }: EndpointCardProps) {
         </div>
 
         {error && (
-          <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-sm text-red-700">{error}</p>
+          <div className="mt-3 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
           </div>
         )}
 
         {expanded && data && (
           <div className="mt-4">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                 Response Data
               </span>
               <Button
@@ -272,8 +272,8 @@ function EndpointCard({ config }: EndpointCardProps) {
                 Refresh
               </Button>
             </div>
-            <div className="bg-gray-50 rounded-lg p-3 max-h-80 overflow-auto">
-              <pre className="text-xs text-gray-800 whitespace-pre-wrap break-words">
+            <div className="bg-muted rounded-lg p-3 max-h-80 overflow-auto">
+              <pre className="text-xs whitespace-pre-wrap break-words">
                 {JSON.stringify(data, null, 2)}
               </pre>
             </div>
@@ -325,19 +325,19 @@ export function RipplingApiExplorer() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Rippling API Explorer</h2>
-          <p className="text-gray-500">
+          <h2 className="text-2xl font-bold">Rippling API Explorer</h2>
+          <p className="text-muted-foreground">
             Test and explore all available Rippling API endpoints ({endpoints.length + jobBoardEndpoints.length} endpoints)
           </p>
         </div>
-        <div className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+        <div className="px-3 py-1 bg-green-500/10 text-green-600 dark:text-green-400 rounded-full text-sm font-medium">
           Connected
         </div>
       </div>
 
       {/* Core API Endpoints */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Core API</h3>
+        <h3 className="text-lg font-semibold mb-4">Core API</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {endpoints.map((endpoint) => (
             <EndpointCard key={endpoint.id} config={endpoint} />
@@ -349,12 +349,12 @@ export function RipplingApiExplorer() {
       <div>
         <div className="flex items-center gap-2 mb-4">
           <Megaphone className="h-5 w-5 text-rose-500" />
-          <h3 className="text-lg font-semibold text-gray-800">Job Board API</h3>
-          <span className="px-2 py-0.5 bg-rose-100 text-rose-700 rounded text-xs font-medium">
+          <h3 className="text-lg font-semibold">Job Board API</h3>
+          <span className="px-2 py-0.5 bg-rose-500/10 text-rose-600 dark:text-rose-400 rounded text-xs font-medium">
             Public
           </span>
         </div>
-        <p className="text-sm text-gray-500 mb-4">
+        <p className="text-sm text-muted-foreground mb-4">
           Job board configured via RIPPLING_JOB_BOARD_SLUG environment variable.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

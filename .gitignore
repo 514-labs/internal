@@ -20,6 +20,10 @@
 /.next/
 /out/
 
+# pagefind (generated at build time)
+/public/pagefind/
+/.search-index/
+
 # production
 /build
 

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { DateRange } from "react-day-picker";
-import { addDays, subDays } from "date-fns";
+import { subDays } from "date-fns";
 import { DateRangeSelector } from "./date-range-selector";
 import { OverviewMetricsCard } from "./overview-metrics-card";
 import { OSSInstallsCard } from "./oss-installs-card";
@@ -12,6 +12,7 @@ import { BorealMetricsCard } from "./boreal-metrics-card";
 import { MoosestackMetricsCard } from "./moosestack-metrics-card";
 import { BorealJourneysCard } from "./boreal-journeys-card";
 import { MoosestackJourneysCard } from "./moosestack-journeys-card";
+import { DashboardLayout } from "@/components/layouts";
 
 export function MetricsClient() {
   // Default to last 30 days
@@ -24,11 +25,10 @@ export function MetricsClient() {
   const endDate = dateRange?.to?.toISOString() || "";
 
   return (
-    <div className="flex-1 space-y-4 p-8 pt-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <DashboardLayout>
+      <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Metrics</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Metrics</h1>
           <p className="text-muted-foreground">
             Track key metrics across Boreal and Moosestack products
           </p>
@@ -77,6 +77,6 @@ export function MetricsClient() {
           <MoosestackJourneysCard startDate={startDate} endDate={endDate} />
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

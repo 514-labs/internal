@@ -1,10 +1,11 @@
 import { FinancialsClient } from "./_components/financials-client";
+import { DashboardLayout } from "@/components/layouts";
 
 export default function FinancialsPage() {
   return (
-    <main className="flex-1 p-6">
+    <DashboardLayout>
       <FinancialsClient />
-    </main>
+    </DashboardLayout>
   );
 }
 

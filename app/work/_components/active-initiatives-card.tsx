@@ -36,6 +36,13 @@ import {
   Cpu,
   type LucideIcon,
 } from "lucide-react";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { cn } from "@/lib/utils";
 import { useState, useMemo } from "react";
 
@@ -207,15 +214,15 @@ export function ActiveInitiativesCard({
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
       active:
-        "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300",
-      planned: "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300",
+        "bg-green-500/10 text-green-600 dark:text-green-400",
+      planned: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
       completed:
-        "bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300",
-      canceled: "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300",
+        "bg-muted text-muted-foreground",
+      canceled: "bg-red-500/10 text-red-600 dark:text-red-400",
     };
     return (
       colors[status.toLowerCase()] ||
-      "bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300"
+      "bg-muted text-muted-foreground"
     );
   };
 
@@ -347,9 +354,9 @@ export function ActiveInitiativesCard({
               key={i}
               className="rounded-lg border bg-card text-card-foreground shadow-sm p-6 animate-pulse"
             >
-              <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-3"></div>
-              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2"></div>
-              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
+              <div className="h-5 bg-muted rounded w-3/4 mb-3"></div>
+              <div className="h-3 bg-muted rounded w-full mb-2"></div>
+              <div className="h-3 bg-muted rounded w-2/3"></div>
             </div>
           ))}
         </div>
@@ -361,9 +368,17 @@ export function ActiveInitiativesCard({
     return (
       <div className="space-y-4">
         {renderFilters()}
-        <div className="rounded-lg border border-dashed bg-card text-card-foreground p-12 text-center">
-          <p className="text-sm text-muted-foreground">No initiatives found</p>
-        </div>
+        <Empty className="border">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <Target className="h-6 w-6" />
+            </EmptyMedia>
+            <EmptyTitle>No initiatives found</EmptyTitle>
+            <EmptyDescription>
+              Initiatives from Linear will appear here when available
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
       </div>
     );
   }
@@ -373,15 +388,20 @@ export function ActiveInitiativesCard({
       {renderFilters()}
 
       {filteredInitiatives.length === 0 ? (
-        <div className="rounded-lg border border-dashed bg-card text-card-foreground p-12 text-center">
-          <p className="text-sm text-muted-foreground mb-2">
-            No initiatives found matching the selected filters
-          </p>
+        <Empty className="border">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <Target className="h-6 w-6" />
+            </EmptyMedia>
+            <EmptyTitle>No initiatives found</EmptyTitle>
+            <EmptyDescription>
+              No initiatives match the selected filters
+            </EmptyDescription>
+          </EmptyHeader>
           {(selectedStatus || selectedDateFilter) && (
             <Button
               variant="ghost"
               size="sm"
-              className="mt-2"
               onClick={() => {
                 setSelectedStatus(null);
                 setSelectedDateFilter(null);
@@ -390,7 +410,7 @@ export function ActiveInitiativesCard({
               Clear filters
             </Button>
           )}
-        </div>
+        </Empty>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredInitiatives.map((initiative) => {

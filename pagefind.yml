@@ -1,0 +1,28 @@
+# Pagefind configuration
+# See: https://pagefind.app/docs/config-options/
+
+# Source the built Next.js output
+site: .next
+
+# Output directory for search assets
+output_path: public/pagefind
+
+# Glob patterns for files to index
+glob: "**/*.html"
+
+# Exclude patterns
+exclude_selectors:
+  - "[data-pagefind-ignore]"
+  - "nav"
+  - "footer"
+  - ".sidebar"
+
+# Root selector - only index content marked with data-pagefind-body
+root_selector: "[data-pagefind-body]"
+
+# Keep index files small
+keep_index_url: false
+
+# Verbose output during build
+verbose: false
+

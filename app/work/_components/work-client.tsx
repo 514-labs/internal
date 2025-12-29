@@ -9,6 +9,7 @@ import type {
 import { ActiveProjectsCard } from "./active-projects-card";
 import { ActiveInitiativesCard } from "./active-initiatives-card";
 import { RecentlyCompletedFeed } from "./recently-completed-feed";
+import { ContentLayout } from "@/components/layouts";
 
 interface WorkClientProps {
   initialProjects: Project[];
@@ -93,7 +94,12 @@ export function WorkClient({
   });
 
   return (
-    <div className="flex-1 space-y-6 p-8 pt-6">
+    <ContentLayout>
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold tracking-tight">Work</h1>
+        <p className="text-muted-foreground">Initiatives, projects, and recently completed work</p>
+      </div>
+
       {/* Initiatives section */}
       <div className="space-y-4">
         <ActiveInitiativesCard
@@ -103,7 +109,7 @@ export function WorkClient({
       </div>
 
       {/* Projects and Recently Completed section */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2 mt-4">
         <ActiveProjectsCard
           projects={projects || []}
           isLoading={projectsLoading}
@@ -113,6 +119,6 @@ export function WorkClient({
           isLoading={issuesLoading}
         />
       </div>
-    </div>
+    </ContentLayout>
   );
 }

@@ -1,8 +1,11 @@
+import { ContentLayout } from "@/components/layouts";
+
 export default function GoalsPage() {
   return (
-    <div className="flex-1 space-y-4 p-8 pt-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Goals</h1>
+    <ContentLayout>
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold tracking-tight">Goals</h1>
+        <p className="text-muted-foreground">Track progress toward organizational objectives</p>
       </div>
       <div className="space-y-4">
         <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
@@ -64,6 +67,6 @@ export default function GoalsPage() {
           </div>
         </div>
       </div>
-    </div>
+    </ContentLayout>
   );
 }

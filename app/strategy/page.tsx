@@ -1,16 +1,31 @@
-export default function StrategyPage() {
+import { getContentCollection } from "@/lib/content";
+import { ContentList, ContentNavigation } from "@/components/content";
+import { ContentLayout } from "@/components/layouts";
+
+export default async function StrategyPage() {
+  const collection = await getContentCollection("strategy");
+
   return (
-    <main className="flex-1 p-6">
-      <div className="max-w-4xl">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Strategy</h1>
-        <p className="text-gray-500 mb-8">
-          Company strategy, vision, and roadmap.
+    <ContentLayout
+      navigation={
+        <ContentNavigation
+          navigation={collection.navigation}
+          basePath="/strategy"
+        />
+      }
+    >
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold tracking-tight">Strategy</h1>
+        <p className="text-muted-foreground">
+          Company strategy, vision, and roadmap
         </p>
-        <div className="border rounded-lg p-8 bg-gray-50 text-center text-gray-500">
-          Coming soon
-        </div>
       </div>
-    </main>
+
+      <ContentList
+        items={collection.items}
+        basePath="/strategy"
+        emptyMessage="No strategy documents yet. Add markdown files to content/strategy/"
+      />
+    </ContentLayout>
   );
 }
-

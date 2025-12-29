@@ -1,26 +1,33 @@
 import { Trophy } from "lucide-react";
+import { ContentLayout } from "@/components/layouts";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 
 export default function WinsPage() {
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="p-2 bg-amber-100 rounded-lg">
-          <Trophy className="h-6 w-6 text-amber-600" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold">Wins</h1>
-          <p className="text-gray-500">Celebrate team achievements and victories</p>
-        </div>
+    <ContentLayout>
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold tracking-tight">Wins</h1>
+        <p className="text-muted-foreground">Celebrate team achievements and victories</p>
       </div>
 
-      <div className="p-8 border border-dashed border-gray-300 rounded-lg text-center">
-        <Trophy className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-        <p className="text-gray-500">No wins recorded yet</p>
-        <p className="text-sm text-gray-400 mt-1">
-          Start celebrating your team&apos;s achievements here
-        </p>
-      </div>
-    </div>
+      <Empty className="border">
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <Trophy className="h-6 w-6" />
+          </EmptyMedia>
+          <EmptyTitle>No wins recorded yet</EmptyTitle>
+          <EmptyDescription>
+            Start celebrating your team&apos;s achievements here
+          </EmptyDescription>
+        </EmptyHeader>
+      </Empty>
+    </ContentLayout>
   );
 }
 

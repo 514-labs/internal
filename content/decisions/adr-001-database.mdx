@@ -1,0 +1,63 @@
+---
+title: "ADR-001: PostgreSQL as Primary Database"
+description: Decision to use PostgreSQL as our primary database
+date: 2024-06-15
+status: accepted
+deciders: [engineering-lead, cto]
+context: Needed to select a primary database for the new platform
+tags: [database, architecture, infrastructure]
+---
+
+# ADR-001: PostgreSQL as Primary Database
+
+## Status
+
+Accepted
+
+## Context
+
+We need to select a primary database for our new platform. Requirements include:
+
+- ACID compliance for transactional data
+- Strong JSON support for flexible schemas
+- Good ecosystem and tooling
+- Scalability to millions of records
+- Team familiarity
+
+## Decision
+
+We will use **PostgreSQL** as our primary database.
+
+## Rationale
+
+### Considered Options
+
+1. **PostgreSQL** - Open-source relational database with excellent JSON support
+2. **MySQL** - Popular open-source relational database
+3. **MongoDB** - Document database with flexible schema
+
+### Why PostgreSQL
+
+- **JSON Support**: PostgreSQL's JSONB type provides excellent document storage while maintaining relational capabilities
+- **Ecosystem**: Extensive ecosystem including pg_vector for embeddings, PostGIS for geo, and Supabase for BaaS
+- **Performance**: Excellent query optimizer and indexing options
+- **Team Experience**: Most team members have PostgreSQL experience
+- **Scalability**: Can scale vertically and horizontally with read replicas
+
+## Consequences
+
+### Positive
+
+- Familiar technology for the team
+- Strong tooling and community support
+- Flexibility to use both relational and document patterns
+
+### Negative
+
+- Horizontal scaling requires more effort than some NoSQL options
+- Schema migrations need careful management
+
+## Related Decisions
+
+- ADR-002: Supabase as Database Platform
+

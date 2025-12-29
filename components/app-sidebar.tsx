@@ -3,7 +3,6 @@
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -11,9 +10,10 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarRail,
 } from "@/components/ui/sidebar";
-import { SignedIn, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import {
@@ -30,10 +30,10 @@ import {
   Scale,
   PlayCircle,
   Plug,
-  Trophy,
   Citrus,
   Package,
   Wrench,
+  Rss,
 } from "lucide-react";
 
 // Top-level items (before Performance group)
@@ -49,6 +49,12 @@ const overviewItems = [
     url: "/strategy",
     icon: Compass,
     shortcut: "S",
+  },
+  {
+    title: "Feed",
+    url: "/feed",
+    icon: Rss,
+    shortcut: "A",
   },
 ];
 
@@ -139,12 +145,6 @@ const knowledgeItems = [
 // Fun section
 const funItems = [
   {
-    title: "Wins",
-    url: "/wins",
-    icon: Trophy,
-    shortcut: "N",
-  },
-  {
     title: "Lemon Prizes",
     url: "/lemon-prizes",
     icon: Citrus,
@@ -199,17 +199,19 @@ export function AppSidebar() {
   const renderMenuItem = (item: (typeof allItems)[0]) => {
     const Icon = item.icon;
     const isActive =
-      item.url === "/"
-        ? pathname === "/"
-        : pathname.startsWith(item.url);
+      item.url === "/" ? pathname === "/" : pathname.startsWith(item.url);
 
     return (
       <SidebarMenuItem key={item.title}>
-        <SidebarMenuButton asChild isActive={isActive}>
-          <Link href={item.url}>
+        <SidebarMenuButton
+          asChild
+          isActive={isActive}
+          tooltip={`${item.title} (⌥${item.shortcut})`}
+        >
+          <Link href={item.url} prefetch={true}>
             <Icon className="h-4 w-4" />
             <span>{item.title}</span>
-            <span className="ml-auto text-xs text-muted-foreground">
+            <span className="ml-auto text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
               ⌥{item.shortcut}
             </span>
           </Link>
@@ -219,19 +221,36 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar>
-      <SidebarHeader>
-        <div className="flex items-center gap-2 px-2 py-4">
-          <span className="text-xl font-bold">Internal 514</span>
-        </div>
+    <Sidebar collapsible="icon">
+      <SidebarHeader className="h-16 flex items-center justify-center">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild className="hover:bg-transparent">
+              <Link href="/" className="flex items-center ">
+                <Image
+                  src="/logo-dark.png"
+                  alt="Logo"
+                  width={16}
+                  height={16}
+                  className="dark:hidden size-4 shrink-0"
+                />
+                <Image
+                  src="/logo-light.png"
+                  alt="Logo"
+                  width={16}
+                  height={16}
+                  className="hidden dark:block size-4 shrink-0"
+                />
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
         {/* Overview */}
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarMenu>
-              {overviewItems.map(renderMenuItem)}
-            </SidebarMenu>
+            <SidebarMenu>{overviewItems.map(renderMenuItem)}</SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
@@ -239,9 +258,7 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel>Performance</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
-              {performanceItems.map(renderMenuItem)}
-            </SidebarMenu>
+            <SidebarMenu>{performanceItems.map(renderMenuItem)}</SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
@@ -249,9 +266,7 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel>Execution</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
-              {executionItems.map(renderMenuItem)}
-            </SidebarMenu>
+            <SidebarMenu>{executionItems.map(renderMenuItem)}</SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
@@ -259,9 +274,7 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel>Knowledge</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
-              {knowledgeItems.map(renderMenuItem)}
-            </SidebarMenu>
+            <SidebarMenu>{knowledgeItems.map(renderMenuItem)}</SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
@@ -269,9 +282,7 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel>Fun</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
-              {funItems.map(renderMenuItem)}
-            </SidebarMenu>
+            <SidebarMenu>{funItems.map(renderMenuItem)}</SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
@@ -279,32 +290,11 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel>Admin</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
-              {adminItems.map(renderMenuItem)}
-            </SidebarMenu>
+            <SidebarMenu>{adminItems.map(renderMenuItem)}</SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter>
-        <SignedIn>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <div className="flex items-center gap-2 px-2">
-                  <UserButton
-                    appearance={{
-                      elements: {
-                        avatarBox: "h-8 w-8",
-                      },
-                    }}
-                  />
-                  <span className="text-sm font-medium">Profile</span>
-                </div>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SignedIn>
-      </SidebarFooter>
+      <SidebarRail />
     </Sidebar>
   );
 }

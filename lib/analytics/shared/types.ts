@@ -17,7 +17,7 @@ export const QueryOptionsSchema = z.object({
   endDate: z.string().datetime().optional(),
 
   // Filtering
-  filters: z.record(z.unknown()).optional(),
+  filters: z.record(z.string(), z.unknown()).optional(),
 
   // Sorting
   sortBy: z.string().optional(),
