@@ -419,9 +419,24 @@ export default function IntegrationsPage() {
                 )}
               </h2>
               <p className="text-muted-foreground mb-2">
-                Connect your Rippling account to access employee, team, and
-                department data.
+                Access employee, team, and department data for filtering and org structure.
               </p>
+              <div className="flex flex-wrap gap-2 text-xs mb-2">
+                <span className="px-2 py-1 bg-blue-500/10 text-blue-600 rounded font-medium">
+                  16 Entities
+                </span>
+                <span className="text-muted-foreground">
+                  User, Worker, Team, Department, Company...
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2 text-xs mb-2">
+                <span className="px-2 py-1 bg-amber-500/10 text-amber-600 rounded font-medium">
+                  3 Metrics
+                </span>
+                <span className="text-muted-foreground">
+                  headcount, teamSize, departmentSize
+                </span>
+              </div>
               <p className="text-sm text-amber-600 dark:text-amber-400 bg-amber-500/10 px-3 py-2 rounded mb-4">
                 <strong>Note:</strong> Your Rippling API token is personal and
                 provides access based on your Rippling permissions. It is stored
@@ -570,9 +585,24 @@ export default function IntegrationsPage() {
                 )}
               </h2>
               <p className="text-muted-foreground mb-2">
-                Connect your Mercury banking account to access accounts,
-                transactions, and financial data.
+                Access banking data for financial tracking and metrics.
               </p>
+              <div className="flex flex-wrap gap-2 text-xs mb-2">
+                <span className="px-2 py-1 bg-blue-500/10 text-blue-600 rounded font-medium">
+                  6 Entities
+                </span>
+                <span className="text-muted-foreground">
+                  Account, Transaction, Recipient, Organization, User, TreasuryAccount
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2 text-xs mb-2">
+                <span className="px-2 py-1 bg-amber-500/10 text-amber-600 rounded font-medium">
+                  3 Metrics
+                </span>
+                <span className="text-muted-foreground">
+                  cashBalance, mrr, runway
+                </span>
+              </div>
               <p className="text-sm text-amber-600 dark:text-amber-400 bg-amber-500/10 px-3 py-2 rounded mb-4">
                 <strong>Note:</strong> Your Mercury API token is personal and
                 provides access based on your Mercury permissions. It is stored
@@ -724,11 +754,25 @@ export default function IntegrationsPage() {
                     </span>
                   )}
                 </h2>
-                <p className="text-muted-foreground mb-4">
-                  Connect your Linear workspace to sync issues, projects, and
-                  initiatives. This is a workspace-wide integration managed by
-                  administrators.
+                <p className="text-muted-foreground mb-2">
+                  Access work tracking data for initiative linkage and progress.
                 </p>
+                <div className="flex flex-wrap gap-2 text-xs mb-2">
+                  <span className="px-2 py-1 bg-blue-500/10 text-blue-600 rounded font-medium">
+                    6 Entities
+                  </span>
+                  <span className="text-muted-foreground">
+                    Issue, Project, Initiative, Team, User, Cycle
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-2 text-xs mb-4">
+                  <span className="px-2 py-1 bg-amber-500/10 text-amber-600 rounded font-medium">
+                    3 Metrics
+                  </span>
+                  <span className="text-muted-foreground">
+                    issuesCompleted, projectProgress, initiativeProgress
+                  </span>
+                </div>
 
                 {linearStatus?.connected && (
                   <div className="text-sm text-muted-foreground space-y-1 mb-4">

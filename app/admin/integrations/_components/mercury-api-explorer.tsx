@@ -3,92 +3,117 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Landmark,
   ArrowLeftRight,
   Users,
   Building2,
-  CreditCard,
-  Wallet,
   PiggyBank,
+  Wallet,
+  Database,
+  BarChart3,
 } from "lucide-react";
 
-interface EndpointConfig {
+/**
+ * Entity endpoint - fetches raw data/records
+ */
+interface EntityEndpoint {
   id: string;
-  title: string;
+  entity: string;
   description: string;
   endpoint: string;
   icon: React.ElementType;
   color: string;
 }
 
-const endpoints: EndpointConfig[] = [
-  // Accounts
+/**
+ * Derived metric - computed from entity data
+ */
+interface DerivedMetric {
+  id: string;
+  name: string;
+  sourceEntity: string;
+  computation: string;
+}
+
+const entities: EntityEndpoint[] = [
   {
     id: "accounts",
-    title: "Accounts",
-    description: "List all bank accounts",
+    entity: "Account",
+    description: "Bank account records",
     endpoint: "/api/integrations/mercury/accounts",
     icon: Landmark,
     color: "bg-blue-500",
   },
-
-  // Transactions
   {
     id: "transactions",
-    title: "Transactions",
-    description: "List all transactions across accounts",
+    entity: "Transaction",
+    description: "Transaction records",
     endpoint: "/api/integrations/mercury/transactions",
     icon: ArrowLeftRight,
     color: "bg-green-500",
   },
-
-  // Recipients
   {
     id: "recipients",
-    title: "Recipients",
-    description: "Payment recipients and vendors",
+    entity: "Recipient",
+    description: "Payment recipient records",
     endpoint: "/api/integrations/mercury/recipients",
     icon: Users,
     color: "bg-purple-500",
   },
-
-  // Organization
   {
     id: "organization",
-    title: "Organization",
+    entity: "Organization",
     description: "Organization info, EIN, and DBAs",
     endpoint: "/api/integrations/mercury/organization",
     icon: Building2,
     color: "bg-indigo-500",
   },
-
-  // Users
   {
     id: "users",
-    title: "Users",
-    description: "Mercury account users",
+    entity: "User",
+    description: "Mercury account user records",
     endpoint: "/api/integrations/mercury/users",
-    icon: CreditCard,
+    icon: Users,
     color: "bg-amber-500",
   },
-
-  // Treasury
   {
     id: "treasury",
-    title: "Treasury",
-    description: "Treasury accounts and investments",
+    entity: "TreasuryAccount",
+    description: "Treasury account records",
     endpoint: "/api/integrations/mercury/treasury",
     icon: PiggyBank,
     color: "bg-emerald-500",
   },
 ];
 
-interface EndpointCardProps {
-  config: EndpointConfig;
+const derivedMetrics: DerivedMetric[] = [
+  {
+    id: "cash-balance",
+    name: "cashBalance",
+    sourceEntity: "Account",
+    computation: "Sum of all account balances",
+  },
+  {
+    id: "mrr",
+    name: "mrr",
+    sourceEntity: "Transaction",
+    computation: "Sum of recurring transactions in period",
+  },
+  {
+    id: "runway",
+    name: "runway",
+    sourceEntity: "Transaction",
+    computation: "Current balance / avg monthly burn rate",
+  },
+];
+
+interface EntityCardProps {
+  config: EntityEndpoint;
 }
 
-function EndpointCard({ config }: EndpointCardProps) {
+function EntityCard({ config }: EntityCardProps) {
   const [data, setData] = useState<Record<string, unknown> | unknown[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -97,18 +122,16 @@ function EndpointCard({ config }: EndpointCardProps) {
   const Icon = config.icon;
 
   const parseErrorMessage = (result: Record<string, unknown>, status: number): string => {
-    // Handle nested error structures from Mercury API
     const errors = result.errors as Record<string, unknown> | undefined;
     const nestedMessage = errors?.message as string | undefined;
     const directMessage = result.message as string | undefined;
     const directError = result.error as string | undefined;
 
-    // Map common errors to user-friendly messages
     if (status === 401) {
       return "Your API token is invalid or expired. Please reconnect Mercury.";
     }
     if (status === 403) {
-      return "Your Mercury account doesn't have access to this feature. Check your API token permissions.";
+      return "Your Mercury account doesn't have access to this feature.";
     }
     if (status === 404) {
       return "This resource was not found in your Mercury account.";
@@ -117,7 +140,6 @@ function EndpointCard({ config }: EndpointCardProps) {
       return "Too many requests. Please wait a moment and try again.";
     }
 
-    // Return the most specific message available
     return nestedMessage || directMessage || directError || `Request failed (${status})`;
   };
 
@@ -138,7 +160,6 @@ function EndpointCard({ config }: EndpointCardProps) {
       setData(result.data);
       setExpanded(true);
     } catch (err) {
-      // Network errors or JSON parse errors
       const error = err as Error;
       if (error.name === "TypeError" && error.message.includes("fetch")) {
         setError("Network error. Please check your connection.");
@@ -176,8 +197,19 @@ function EndpointCard({ config }: EndpointCardProps) {
             <Icon className="h-5 w-5" />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold">{config.title}</h3>
+            <div className="flex items-center gap-2">
+              <h3 className="font-semibold">{config.entity}</h3>
+              <Badge
+                variant="outline"
+                className="text-[10px] px-1.5 py-0 bg-blue-500/10 text-blue-600 border-blue-500/20"
+              >
+                ENTITY
+              </Badge>
+            </div>
             <p className="text-sm text-muted-foreground truncate">{config.description}</p>
+            <code className="text-xs text-muted-foreground mt-1 block truncate">
+              {config.endpoint}
+            </code>
           </div>
           <div className="flex items-center gap-2">
             {count !== null && (
@@ -209,12 +241,7 @@ function EndpointCard({ config }: EndpointCardProps) {
               <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                 Response Data
               </span>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={fetchData}
-                disabled={loading}
-              >
+              <Button size="sm" variant="ghost" onClick={fetchData} disabled={loading}>
                 Refresh
               </Button>
             </div>
@@ -230,14 +257,47 @@ function EndpointCard({ config }: EndpointCardProps) {
   );
 }
 
+interface DerivedMetricCardProps {
+  metric: DerivedMetric;
+}
+
+function DerivedMetricCard({ metric }: DerivedMetricCardProps) {
+  return (
+    <Card className="overflow-hidden border-amber-500/20">
+      <div className="p-4">
+        <div className="flex items-start gap-3">
+          <div className="p-2 rounded-lg bg-amber-500 text-white">
+            <BarChart3 className="h-5 w-5" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <h3 className="font-semibold font-mono">{metric.name}</h3>
+              <Badge
+                variant="outline"
+                className="text-[10px] px-1.5 py-0 bg-amber-500/10 text-amber-600 border-amber-500/20"
+              >
+                DERIVED
+              </Badge>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              <span className="text-blue-600">{metric.sourceEntity}</span> → {metric.computation}
+            </p>
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
 export function MercuryApiExplorer() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold">Mercury API Explorer</h2>
           <p className="text-muted-foreground">
-            Test and explore all available Mercury API endpoints ({endpoints.length} endpoints)
+            {entities.length} entities → {derivedMetrics.length} derived metrics
           </p>
         </div>
         <div className="px-3 py-1 bg-green-500/10 text-green-600 dark:text-green-400 rounded-full text-sm font-medium flex items-center gap-2">
@@ -246,12 +306,43 @@ export function MercuryApiExplorer() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {endpoints.map((endpoint) => (
-          <EndpointCard key={endpoint.id} config={endpoint} />
-        ))}
-      </div>
+      {/* Entity Endpoints - Primary */}
+      <section>
+        <div className="flex items-center gap-2 mb-4">
+          <Database className="h-5 w-5 text-blue-500" />
+          <h3 className="text-lg font-semibold">Entities</h3>
+          <Badge variant="outline" className="bg-blue-500/10 text-blue-600 border-blue-500/20">
+            Raw Data
+          </Badge>
+        </div>
+        <p className="text-sm text-muted-foreground mb-4">
+          Fetch structured records. All metrics are derived from these entities.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {entities.map((entity) => (
+            <EntityCard key={entity.id} config={entity} />
+          ))}
+        </div>
+      </section>
+
+      {/* Derived Metrics - Secondary */}
+      <section>
+        <div className="flex items-center gap-2 mb-4">
+          <BarChart3 className="h-5 w-5 text-amber-500" />
+          <h3 className="text-lg font-semibold">Derived Metrics</h3>
+          <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/20">
+            Computed from Entities
+          </Badge>
+        </div>
+        <p className="text-sm text-muted-foreground mb-4">
+          Metrics computed by aggregating entity data. Used for key result tracking in goals.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {derivedMetrics.map((metric) => (
+            <DerivedMetricCard key={metric.id} metric={metric} />
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
-

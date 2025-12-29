@@ -3,6 +3,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Link2 } from "lucide-react";
 import Link from "next/link";
+import { getAllGoals } from "@/lib/goals";
+import { GoalsSummary, GoalsCompactList } from "@/components/goals";
 
 interface EmptyMetricCardProps {
   label: string;
@@ -88,7 +90,10 @@ function EmptyActivityCard() {
   );
 }
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  // Fetch goals for the dashboard widget
+  const goals = await getAllGoals({ status: "active" });
+
   return (
     <DashboardLayout>
       <div className="mb-8">
@@ -99,17 +104,31 @@ export default function DashboardPage() {
         <EmptyMetricCard label="Total Revenue" source="QuickBooks" />
         <EmptyMetricCard label="Active Users" source="PostHog" />
         <EmptyMetricCard label="Active Teams" source="Rippling" />
-        <EmptyMetricCard label="Goals Progress" source="Linear" />
+        <EmptyMetricCard label="Project Completion" source="Linear" />
       </div>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7 mt-4">
         <EmptyActivityCard />
-        <div className="col-span-3 rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-          <h3 className="text-lg font-semibold mb-4">Quick Stats</h3>
-          <div className="space-y-4">
-            <EmptyStatCard label="Team Capacity" source="Rippling" />
-            <EmptyStatCard label="Customer Satisfaction" source="Intercom" />
-            <EmptyStatCard label="Project Completion" source="Linear" />
-          </div>
+        <div className="col-span-3 space-y-4">
+          {/* Goals Summary Widget */}
+          <GoalsSummary goals={goals} title="Goals Progress" />
+          
+          {/* Active Goals List */}
+          {goals.length > 0 && (
+            <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
+              <h3 className="text-lg font-semibold mb-4">Active Goals</h3>
+              <GoalsCompactList goals={goals} limit={4} />
+            </div>
+          )}
+          
+          {goals.length === 0 && (
+            <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
+              <h3 className="text-lg font-semibold mb-4">Quick Stats</h3>
+              <div className="space-y-4">
+                <EmptyStatCard label="Team Capacity" source="Rippling" />
+                <EmptyStatCard label="Customer Satisfaction" source="Intercom" />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </DashboardLayout>

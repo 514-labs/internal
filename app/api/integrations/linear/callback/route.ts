@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
       const errorDescription = searchParams.get("error_description");
       return NextResponse.redirect(
         new URL(
-          `/settings/integrations?error=${encodeURIComponent(
+          `/admin/integrations?error=${encodeURIComponent(
             error
           )}&error_description=${encodeURIComponent(errorDescription || "")}`,
           request.url
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
 
     if (!code) {
       return NextResponse.redirect(
-        new URL("/settings/integrations?error=missing_code", request.url)
+        new URL("/admin/integrations?error=missing_code", request.url)
       );
     }
 
@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
 
     if (!storedState || storedState !== state) {
       return NextResponse.redirect(
-        new URL("/settings/integrations?error=invalid_state", request.url)
+        new URL("/admin/integrations?error=invalid_state", request.url)
       );
     }
 
@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
 
     if (!codeVerifier) {
       return NextResponse.redirect(
-        new URL("/settings/integrations?error=missing_verifier", request.url)
+        new URL("/admin/integrations?error=missing_verifier", request.url)
       );
     }
 
@@ -109,7 +109,7 @@ export async function GET(request: NextRequest) {
       console.error("Linear token exchange failed:", errorText);
       return NextResponse.redirect(
         new URL(
-          `/settings/integrations?error=token_exchange_failed&details=${encodeURIComponent(
+          `/admin/integrations?error=token_exchange_failed&details=${encodeURIComponent(
             errorText
           )}`,
           request.url
@@ -131,14 +131,14 @@ export async function GET(request: NextRequest) {
 
     // Redirect to settings page with success message
     return NextResponse.redirect(
-      new URL("/settings/integrations?success=linear_connected", request.url)
+      new URL("/admin/integrations?success=linear_connected", request.url)
     );
   } catch (error) {
     console.error("Linear OAuth callback error:", error);
 
     return NextResponse.redirect(
       new URL(
-        `/settings/integrations?error=callback_failed&details=${encodeURIComponent(
+        `/admin/integrations?error=callback_failed&details=${encodeURIComponent(
           (error as Error).message
         )}`,
         request.url

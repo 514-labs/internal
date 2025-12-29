@@ -1,72 +1,65 @@
-import { ContentLayout } from "@/components/layouts";
+import { Suspense } from "react";
+import { getAllGoals } from "@/lib/goals";
+import { GoalsPageContent } from "./_components/goals-page-content";
+import { Skeleton } from "@/components/ui/skeleton";
 
-export default function GoalsPage() {
+export const metadata = {
+  title: "Goals",
+  description: "Track progress toward organizational objectives",
+};
+
+export default async function GoalsPage() {
+  const goals = await getAllGoals();
+
+  // Extract unique timeframes for filter dropdown
+  const timeframes = [...new Set(goals.map((g) => g.frontmatter.timeframe))].sort();
+
   return (
-    <ContentLayout>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold tracking-tight">Goals</h1>
-        <p className="text-muted-foreground">Track progress toward organizational objectives</p>
-      </div>
-      <div className="space-y-4">
-        <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold">Q1 2025 Revenue Target</h3>
-            <span className="text-sm font-medium text-green-600">On Track</span>
-          </div>
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span>Progress</span>
-              <span>75%</span>
-            </div>
-            <div className="w-full bg-secondary rounded-full h-2">
-              <div
-                className="bg-primary h-2 rounded-full"
-                style={{ width: "75%" }}
-              ></div>
-            </div>
-          </div>
-        </div>
+    <Suspense fallback={<GoalsLoadingSkeleton />}>
+      <GoalsPageContent goals={goals} timeframes={timeframes} />
+    </Suspense>
+  );
+}
 
-        <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold">
-              Customer Satisfaction Score
-            </h3>
-            <span className="text-sm font-medium text-green-600">Achieved</span>
-          </div>
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span>Progress</span>
-              <span>100%</span>
-            </div>
-            <div className="w-full bg-secondary rounded-full h-2">
-              <div
-                className="bg-primary h-2 rounded-full"
-                style={{ width: "100%" }}
-              ></div>
-            </div>
+function GoalsLoadingSkeleton() {
+  return (
+    <div className="flex flex-1">
+      {/* Sidebar skeleton */}
+      <aside className="w-64 shrink-0 p-4 space-y-6">
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-16" />
+          <div className="flex gap-2">
+            <Skeleton className="h-9 flex-1" />
+            <Skeleton className="h-9 flex-1" />
           </div>
         </div>
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-12" />
+          <Skeleton className="h-9 w-full" />
+          <Skeleton className="h-9 w-full" />
+          <Skeleton className="h-9 w-full" />
+        </div>
+      </aside>
 
-        <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold">Product Launch Timeline</h3>
-            <span className="text-sm font-medium text-yellow-600">At Risk</span>
+      {/* Main content skeleton */}
+      <main className="flex-1 p-6">
+        <div className="max-w-4xl mx-auto space-y-6">
+          <div>
+            <Skeleton className="h-8 w-32 mb-2" />
+            <Skeleton className="h-5 w-64" />
           </div>
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span>Progress</span>
-              <span>45%</span>
-            </div>
-            <div className="w-full bg-secondary rounded-full h-2">
-              <div
-                className="bg-primary h-2 rounded-full"
-                style={{ width: "45%" }}
-              ></div>
-            </div>
+
+          <Skeleton className="h-[140px] rounded-lg" />
+
+          <Skeleton className="h-10 w-[300px]" />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Skeleton key={i} className="h-[280px] rounded-lg" />
+            ))}
           </div>
         </div>
-      </div>
-    </ContentLayout>
+      </main>
+    </div>
   );
 }

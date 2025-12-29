@@ -8,7 +8,7 @@ import type {
 } from "@/lib/analytics/linear/schemas";
 import { ActiveProjectsCard } from "./active-projects-card";
 import { ActiveInitiativesCard } from "./active-initiatives-card";
-import { RecentlyCompletedFeed } from "./recently-completed-feed";
+import { RecentlyCompletedSidebar } from "./recently-completed-sidebar";
 import { ContentLayout } from "@/components/layouts";
 
 interface WorkClientProps {
@@ -94,7 +94,14 @@ export function WorkClient({
   });
 
   return (
-    <ContentLayout>
+    <ContentLayout
+      tableOfContents={
+        <RecentlyCompletedSidebar
+          issues={issues || []}
+          isLoading={issuesLoading}
+        />
+      }
+    >
       <div className="mb-8">
         <h1 className="text-2xl font-bold tracking-tight">Work</h1>
         <p className="text-muted-foreground">Initiatives, projects, and recently completed work</p>
@@ -108,15 +115,11 @@ export function WorkClient({
         />
       </div>
 
-      {/* Projects and Recently Completed section */}
-      <div className="grid gap-4 md:grid-cols-2 mt-4">
+      {/* Projects section */}
+      <div className="mt-4">
         <ActiveProjectsCard
           projects={projects || []}
           isLoading={projectsLoading}
-        />
-        <RecentlyCompletedFeed
-          issues={issues || []}
-          isLoading={issuesLoading}
         />
       </div>
     </ContentLayout>

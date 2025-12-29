@@ -108,6 +108,91 @@ export const strategySchema = baseContentSchema.extend({
 export type StrategyFrontmatter = z.infer<typeof strategySchema>;
 
 /**
+ * Metric source configuration for key results
+ * Defines where to fetch the current value for a key result
+ */
+export const metricSourceSchema = z.discriminatedUnion("source", [
+  z.object({
+    source: z.literal("posthog"),
+    type: z.enum(["dau", "mau", "events", "conversions", "journeyCompletion"]),
+    config: z
+      .object({
+        eventName: z.string().optional(),
+        journeyId: z.string().optional(),
+        product: z.enum(["boreal", "moosestack"]).optional(),
+      })
+      .optional(),
+  }),
+  z.object({
+    source: z.literal("linear"),
+    type: z.enum(["issuesCompleted", "projectProgress", "initiativeProgress"]),
+    config: z
+      .object({
+        projectId: z.string().optional(),
+        initiativeId: z.string().optional(),
+        teamId: z.string().optional(),
+      })
+      .optional(),
+  }),
+  z.object({
+    source: z.literal("mercury"),
+    type: z.enum(["revenue", "cashBalance", "mrr"]),
+    config: z
+      .object({
+        accountId: z.string().optional(),
+      })
+      .optional(),
+  }),
+  z.object({
+    source: z.literal("hubspot"),
+    type: z.enum(["deals", "contacts", "pipelineValue"]),
+    config: z
+      .object({
+        stage: z.string().optional(),
+      })
+      .optional(),
+  }),
+  z.object({
+    source: z.literal("manual"),
+    type: z.literal("value"),
+  }),
+]);
+
+export type MetricSource = z.infer<typeof metricSourceSchema>;
+
+/**
+ * Key Result schema - Individual measurable outcomes for a goal
+ */
+export const keyResultSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  target: z.number(),
+  baseline: z.number().default(0),
+  current: z.number().optional(), // Manual value or override
+  unit: z.string().optional(),
+  metric: metricSourceSchema.optional(),
+  overrideMetric: z.boolean().default(false), // When true, use current instead of fetching
+});
+
+export type KeyResult = z.infer<typeof keyResultSchema>;
+
+/**
+ * Goals schema - OKR-based goal tracking with key results
+ */
+export const goalSchema = baseContentSchema.extend({
+  status: z.enum(["draft", "active", "completed", "archived"]).default("draft"),
+  strategicDomain: z.enum(["product-development", "customer-development"]),
+  team: z.string(),
+  owner: z.string(),
+  timeframe: z.string(),
+  progress: z.number().min(0).max(100).optional(), // Manual override
+  initiatives: z.array(z.string()).optional(), // Linear initiative IDs
+  keyResults: z.array(keyResultSchema).optional(),
+});
+
+export type GoalFrontmatter = z.infer<typeof goalSchema>;
+
+/**
  * Content type to schema mapping
  */
 export const contentSchemas = {
@@ -118,6 +203,7 @@ export const contentSchemas = {
   decisions: decisionSchema,
   playbooks: playbookSchema,
   strategy: strategySchema,
+  goals: goalSchema,
 } as const;
 
 export type ContentType = keyof typeof contentSchemas;

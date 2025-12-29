@@ -1,0 +1,70 @@
+---
+title: "Improve Developer Experience"
+description: "Streamline development workflows and reduce friction for the engineering team"
+status: active
+strategicDomain: product-development
+team: engineering
+owner: cto
+timeframe: Q1 2025
+initiatives:
+  - "init_dev_tooling"
+  - "init_ci_optimization"
+keyResults:
+  - id: kr1
+    title: "Build time reduction"
+    target: 50
+    baseline: 0
+    current: 35
+    unit: "%"
+  - id: kr2
+    title: "Test suite pass rate"
+    target: 98
+    baseline: 85
+    current: 94
+    unit: "%"
+  - id: kr3
+    title: "Developer satisfaction score"
+    target: 8
+    baseline: 6
+    current: 7.2
+    unit: "/10"
+  - id: kr4
+    title: "Documentation coverage"
+    target: 80
+    baseline: 40
+    current: 65
+    unit: "%"
+---
+
+## Objective
+
+Create a world-class developer experience that enables fast iteration and high-quality output.
+
+## Context
+
+As we scale our team, we need to invest in developer productivity. Current pain points include:
+
+- Slow build times affecting iteration speed
+- Flaky tests reducing confidence in deployments
+- Incomplete documentation slowing onboarding
+
+## Key Initiatives
+
+### CI/CD Optimization
+Reduce build times by 50% through:
+- Incremental builds with Turborepo
+- Parallelized test execution
+- Build caching improvements
+
+### Test Infrastructure
+Improve test reliability:
+- Replace flaky integration tests
+- Add retry logic for network-dependent tests
+- Implement better test isolation
+
+### Documentation
+Increase documentation coverage:
+- Auto-generate API docs
+- Add architecture decision records
+- Create onboarding playbooks
+

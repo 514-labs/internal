@@ -1,0 +1,78 @@
+---
+title: "Achieve Product-Market Fit"
+description: "Validate core value proposition with paying customers"
+status: active
+strategicDomain: customer-development
+team: product
+owner: ceo
+timeframe: Q1 2025
+initiatives:
+  - "init_customer_interviews"
+  - "init_pricing_validation"
+keyResults:
+  - id: kr1
+    title: "Paying customers"
+    target: 10
+    baseline: 0
+    current: 6
+    unit: "customers"
+    metric:
+      source: hubspot
+      type: deals
+      config:
+        stage: "closed-won"
+  - id: kr2
+    title: "Monthly Recurring Revenue"
+    target: 50000
+    baseline: 0
+    current: 32000
+    overrideMetric: true
+    unit: "$"
+    metric:
+      source: mercury
+      type: mrr
+  - id: kr3
+    title: "User activation rate"
+    target: 40
+    baseline: 15
+    current: 28
+    unit: "%"
+    metric:
+      source: posthog
+      type: journeyCompletion
+      config:
+        journeyId: "user-activation"
+        product: "boreal"
+  - id: kr4
+    title: "Customer interviews completed"
+    target: 20
+    baseline: 0
+    current: 12
+    unit: "interviews"
+---
+
+## Objective
+
+Validate that our core product solves a real problem customers will pay for.
+
+## Context
+
+We are targeting early-stage startups who need better internal tooling and documentation systems. Our goal is to prove that:
+
+1. The problem is real and painful enough to pay for
+2. Our solution is compelling compared to alternatives
+3. We can acquire customers at a sustainable cost
+
+## Success Criteria
+
+- At least 10 paying customers by end of Q1
+- $50K MRR demonstrates willingness to pay
+- 40% activation rate shows product delivers value
+- Customer interviews inform product roadmap
+
+## Risks
+
+- Market timing during economic uncertainty
+- Competition from well-funded alternatives
+- Need to balance feature development with sales
+
