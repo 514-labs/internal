@@ -10,6 +10,7 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
+import { CodeBlock } from "./code-block";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -423,6 +424,7 @@ const mdxComponents = {
   ChevronRight,
   // Override default HTML elements
   a: CustomLink,
+  pre: CodeBlock,
 };
 
 interface MDXContentServerProps {
