@@ -9,6 +9,19 @@ import {
   AnalyticsError,
 } from "@/lib/analytics/shared/errors";
 import { ConfigurationError } from "./_components/configuration-error";
+import { ContentLayout } from "@/components/layouts";
+
+function WorkErrorLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <ContentLayout>
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold tracking-tight">Work</h1>
+        <p className="text-muted-foreground">Initiatives, projects, and recently completed work</p>
+      </div>
+      {children}
+    </ContentLayout>
+  );
+}
 
 export default async function WorkPage() {
   // Fetch initial data server-side for better initial page load
@@ -31,7 +44,11 @@ export default async function WorkPage() {
   } catch (error) {
     // Display configuration errors prominently
     if (error instanceof ConfigError) {
-      return <ConfigurationError message={error.message} />;
+      return (
+        <WorkErrorLayout>
+          <ConfigurationError message={error.message} />
+        </WorkErrorLayout>
+      );
     }
 
     // Handle any analytics errors (including wrapped configuration errors)
@@ -44,7 +61,11 @@ export default async function WorkPage() {
         error.message.includes("LINEAR_API_KEY");
 
       if (isConfigError) {
-        return <ConfigurationError message={error.message} />;
+        return (
+          <WorkErrorLayout>
+            <ConfigurationError message={error.message} />
+          </WorkErrorLayout>
+        );
       }
     }
 
@@ -58,7 +79,11 @@ export default async function WorkPage() {
         error.message.includes("CLERK_SECRET_KEY");
 
       if (isConfigError) {
-        return <ConfigurationError message={error.message} />;
+        return (
+          <WorkErrorLayout>
+            <ConfigurationError message={error.message} />
+          </WorkErrorLayout>
+        );
       }
     }
 
@@ -67,11 +92,13 @@ export default async function WorkPage() {
 
     // Display a generic error UI instead of crashing
     return (
-      <ConfigurationError
-        message={`An unexpected error occurred: ${
-          error instanceof Error ? error.message : String(error)
-        }`}
-      />
+      <WorkErrorLayout>
+        <ConfigurationError
+          message={`An unexpected error occurred: ${
+            error instanceof Error ? error.message : String(error)
+          }`}
+        />
+      </WorkErrorLayout>
     );
   }
 }

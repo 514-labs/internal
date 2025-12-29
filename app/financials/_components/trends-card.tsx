@@ -283,14 +283,14 @@ function HistoricalBurnCard({ monthlyBurn, avgBurn }: HistoricalBurnCardProps) {
             </div>
             <div>
               <CardTitle className="text-base">Historical Burn</CardTitle>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted-foreground">
                 Monthly expenses over the last {monthlyBurn.length} months
               </p>
             </div>
           </div>
           <div className="text-right">
-            <p className="text-xs text-gray-500">Average</p>
-            <p className="text-lg font-semibold text-gray-900">
+            <p className="text-xs text-muted-foreground">Average</p>
+            <p className="text-lg font-semibold">
               {formatCurrency(avgBurn)}/mo
             </p>
           </div>
@@ -300,16 +300,16 @@ function HistoricalBurnCard({ monthlyBurn, avgBurn }: HistoricalBurnCardProps) {
         {/* Trend Summary */}
         <div className="flex items-center gap-4 mb-4 pb-4 border-b">
           <div>
-            <p className="text-sm text-gray-500">Latest Month</p>
-            <p className="text-xl font-bold text-gray-900">
+            <p className="text-sm text-muted-foreground">Latest Month</p>
+            <p className="text-xl font-bold">
               {formatFullCurrency(latestBurn)}
             </p>
           </div>
           <div
             className={`px-2 py-1 rounded-full text-xs font-medium ${
               trendDirection === "down"
-                ? "bg-green-100 text-green-700"
-                : "bg-red-100 text-red-700"
+                ? "bg-green-500/10 text-green-600 dark:text-green-400"
+                : "bg-red-500/10 text-red-600 dark:text-red-400"
             }`}
           >
             {trendDirection === "down" ? "↓" : "↑"} {trendPercent.toFixed(0)}%
@@ -367,38 +367,38 @@ function HistoricalBurnCard({ monthlyBurn, avgBurn }: HistoricalBurnCardProps) {
         <div
           className={`mt-4 p-4 rounded-lg border ${
             insight.type === "positive"
-              ? "bg-emerald-50 border-emerald-200"
+              ? "bg-emerald-500/5 border-emerald-500/20"
               : insight.type === "warning"
-                ? "bg-amber-50 border-amber-200"
-                : "bg-slate-50 border-slate-200"
+                ? "bg-amber-500/5 border-amber-500/20"
+                : "bg-muted/50 border-border"
           }`}
         >
           <div className="flex items-start gap-3">
             <div
               className={`p-2 rounded-lg ${
                 insight.type === "positive"
-                  ? "bg-emerald-100"
+                  ? "bg-emerald-500/10"
                   : insight.type === "warning"
-                    ? "bg-amber-100"
-                    : "bg-slate-100"
+                    ? "bg-amber-500/10"
+                    : "bg-muted"
               }`}
             >
               {insight.type === "positive" ? (
-                <TrendingDown className="h-4 w-4 text-emerald-600" />
+                <TrendingDown className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
               ) : insight.type === "warning" ? (
-                <TrendingUp className="h-4 w-4 text-amber-600" />
+                <TrendingUp className="h-4 w-4 text-amber-600 dark:text-amber-400" />
               ) : (
-                <Lightbulb className="h-4 w-4 text-slate-600" />
+                <Lightbulb className="h-4 w-4 text-muted-foreground" />
               )}
             </div>
             <div className="flex-1">
               <h4
                 className={`font-semibold text-sm ${
                   insight.type === "positive"
-                    ? "text-emerald-800"
+                    ? "text-emerald-600 dark:text-emerald-400"
                     : insight.type === "warning"
-                      ? "text-amber-800"
-                      : "text-slate-800"
+                      ? "text-amber-600 dark:text-amber-400"
+                      : ""
                 }`}
               >
                 {insight.title}
@@ -406,10 +406,10 @@ function HistoricalBurnCard({ monthlyBurn, avgBurn }: HistoricalBurnCardProps) {
               <p
                 className={`text-sm mt-1 ${
                   insight.type === "positive"
-                    ? "text-emerald-700"
+                    ? "text-emerald-600/80 dark:text-emerald-400/80"
                     : insight.type === "warning"
-                      ? "text-amber-700"
-                      : "text-slate-600"
+                      ? "text-amber-600/80 dark:text-amber-400/80"
+                      : "text-muted-foreground"
                 }`}
               >
                 {insight.description}
@@ -481,26 +481,26 @@ export function TrendsCard() {
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-orange-100 rounded-lg">
-            <TrendingUp className="h-5 w-5 text-orange-600" />
+          <div className="p-2 bg-orange-500/10 rounded-lg">
+            <TrendingUp className="h-5 w-5 text-orange-600 dark:text-orange-400" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold">
               Financial Trends
             </h2>
-            <p className="text-gray-500">
+            <p className="text-muted-foreground">
               Historical patterns and insights from your financial data
             </p>
           </div>
         </div>
         <Card>
-          <CardContent className="flex items-center gap-3 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-            <AlertCircle className="h-5 w-5 text-amber-600" />
+          <CardContent className="flex items-center gap-3 p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+            <AlertCircle className="h-5 w-5 text-amber-500" />
             <div>
-              <p className="font-medium text-amber-800">
+              <p className="font-medium text-amber-600 dark:text-amber-400">
                 Unable to load trends
               </p>
-              <p className="text-sm text-amber-700">
+              <p className="text-sm text-amber-600/80 dark:text-amber-400/80">
                 {error instanceof Error
                   ? error.message
                   : "Please check Mercury connection"}
@@ -520,21 +520,21 @@ export function TrendsCard() {
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-orange-100 rounded-lg">
-            <TrendingUp className="h-5 w-5 text-orange-600" />
+          <div className="p-2 bg-orange-500/10 rounded-lg">
+            <TrendingUp className="h-5 w-5 text-orange-600 dark:text-orange-400" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold">
               Financial Trends
             </h2>
-            <p className="text-gray-500">
+            <p className="text-muted-foreground">
               Historical patterns and insights from your financial data
             </p>
           </div>
         </div>
         <Card>
           <CardContent className="p-8 text-center">
-            <p className="text-gray-500">
+            <p className="text-muted-foreground">
               Not enough transaction data to display trends
             </p>
           </CardContent>
@@ -550,14 +550,14 @@ export function TrendsCard() {
     <div className="space-y-4">
       {/* Section Header */}
       <div className="flex items-center gap-3">
-        <div className="p-2 bg-orange-100 rounded-lg">
-          <TrendingUp className="h-5 w-5 text-orange-600" />
+        <div className="p-2 bg-orange-500/10 rounded-lg">
+          <TrendingUp className="h-5 w-5 text-orange-600 dark:text-orange-400" />
         </div>
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className="text-xl font-semibold">
             Financial Trends
           </h2>
-          <p className="text-gray-500">
+          <p className="text-muted-foreground">
             Historical patterns and insights from your financial data
           </p>
         </div>

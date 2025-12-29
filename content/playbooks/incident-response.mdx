@@ -1,0 +1,88 @@
+---
+title: Incident Response
+description: Step-by-step guide for handling production incidents
+date: 2025-01-01
+order: 1
+difficulty: intermediate
+duration: "Varies by severity"
+category: operations
+prerequisites: [on-call-training]
+tags: [incidents, on-call, operations]
+---
+
+# Incident Response Playbook
+
+This playbook outlines our process for handling production incidents.
+
+## Severity Levels
+
+| Level | Description | Response Time | Examples |
+|-------|-------------|---------------|----------|
+| SEV1 | Complete outage | 5 minutes | Site down, data loss |
+| SEV2 | Major degradation | 15 minutes | Core feature broken |
+| SEV3 | Minor issue | 1 hour | Non-critical bug |
+| SEV4 | Low impact | Next business day | UI glitch |
+
+## Response Process
+
+### 1. Acknowledge (5 minutes)
+
+- Acknowledge the alert in PagerDuty
+- Join the incident Slack channel (#incidents)
+- Announce you are investigating
+
+```
+🔍 Investigating alert: [Alert Name]
+Status: Looking at metrics and logs
+```
+
+### 2. Assess (10 minutes)
+
+- Determine severity level
+- Identify affected systems
+- Estimate customer impact
+- Decide if escalation needed
+
+### 3. Communicate
+
+- Update status page for SEV1/SEV2
+- Notify stakeholders via Slack
+- Keep updates flowing every 15-30 minutes
+
+### 4. Mitigate
+
+- Focus on restoring service first
+- Document actions taken
+- Consider rollback if recent deploy
+
+### 5. Resolve
+
+- Confirm service is restored
+- Update status page
+- Send all-clear notification
+
+### 6. Follow Up
+
+- Schedule post-mortem for SEV1/SEV2
+- Create follow-up tickets
+- Update this playbook if needed
+
+## Useful Commands
+
+```bash
+# Check service health
+kubectl get pods -n production
+
+# View recent logs
+kubectl logs -f deployment/api -n production
+
+# Quick rollback
+kubectl rollout undo deployment/api -n production
+```
+
+## Contacts
+
+- On-call schedule: PagerDuty
+- Escalation: #eng-leads
+- External comms: #marketing
+

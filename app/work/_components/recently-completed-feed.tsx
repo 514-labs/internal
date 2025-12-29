@@ -2,6 +2,14 @@
 
 import type { Issue } from "@/lib/analytics/linear/schemas";
 import { formatDistanceToNow } from "date-fns";
+import { CheckCircle } from "lucide-react";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 
 interface RecentlyCompletedFeedProps {
   issues: Issue[];
@@ -19,10 +27,10 @@ export function RecentlyCompletedFeed({
         <div className="space-y-3">
           {[1, 2, 3, 4, 5].map((i) => (
             <div key={i} className="flex items-start gap-3 animate-pulse">
-              <div className="w-2 h-2 mt-2 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+              <div className="w-2 h-2 mt-2 rounded-full bg-muted"></div>
               <div className="flex-1">
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
-                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+                <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
+                <div className="h-3 bg-muted rounded w-1/2"></div>
               </div>
             </div>
           ))}
@@ -35,9 +43,17 @@ export function RecentlyCompletedFeed({
     return (
       <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
         <h3 className="text-lg font-semibold mb-4">Recently Completed</h3>
-        <p className="text-sm text-muted-foreground">
-          No recently completed issues
-        </p>
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <CheckCircle className="h-6 w-6" />
+            </EmptyMedia>
+            <EmptyTitle>No recently completed issues</EmptyTitle>
+            <EmptyDescription>
+              Completed issues from Linear will appear here
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
       </div>
     );
   }

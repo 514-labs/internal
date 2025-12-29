@@ -1,16 +1,31 @@
-export default function FrameworksPage() {
+import { getContentCollection } from "@/lib/content";
+import { ContentList, ContentNavigation } from "@/components/content";
+import { ContentLayout } from "@/components/layouts";
+
+export default async function FrameworksPage() {
+  const collection = await getContentCollection("frameworks");
+
   return (
-    <main className="flex-1 p-6">
-      <div className="max-w-4xl">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Frameworks</h1>
-        <p className="text-gray-500 mb-8">
-          Mental models, methodologies, and thinking tools.
+    <ContentLayout
+      navigation={
+        <ContentNavigation
+          navigation={collection.navigation}
+          basePath="/frameworks"
+        />
+      }
+    >
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold tracking-tight">Frameworks</h1>
+        <p className="text-muted-foreground">
+          Mental models, methodologies, and thinking tools
         </p>
-        <div className="border rounded-lg p-8 bg-gray-50 text-center text-gray-500">
-          Coming soon
-        </div>
       </div>
-    </main>
+
+      <ContentList
+        items={collection.items}
+        basePath="/frameworks"
+        emptyMessage="No frameworks documented yet. Add markdown files to content/frameworks/"
+      />
+    </ContentLayout>
   );
 }
-

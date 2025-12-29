@@ -225,13 +225,13 @@ export function KPIsCard() {
   // Determine runway health status
   const getRunwayStatus = () => {
     if (runwayMonths === Infinity || runwayMonths > 18) {
-      return { color: "text-emerald-600", bg: "bg-emerald-100", status: "Healthy" };
+      return { color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-500/10", status: "Healthy" };
     } else if (runwayMonths > 12) {
-      return { color: "text-blue-600", bg: "bg-blue-100", status: "Good" };
+      return { color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-500/10", status: "Good" };
     } else if (runwayMonths > 6) {
-      return { color: "text-amber-600", bg: "bg-amber-100", status: "Caution" };
+      return { color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-500/10", status: "Caution" };
     } else {
-      return { color: "text-red-600", bg: "bg-red-100", status: "Critical" };
+      return { color: "text-red-600 dark:text-red-400", bg: "bg-red-500/10", status: "Critical" };
     }
   };
 
@@ -248,7 +248,7 @@ export function KPIsCard() {
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-lg font-semibold">Financial KPIs</CardTitle>
-        <p className="text-sm text-gray-500">Key performance indicators based on recent activity</p>
+        <p className="text-sm text-muted-foreground">Key performance indicators based on recent activity</p>
       </CardHeader>
       <CardContent>
         {isLoading ? (
@@ -259,20 +259,20 @@ export function KPIsCard() {
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
             {/* Burn Rate Card */}
-            <div className="p-4 border rounded-lg bg-gradient-to-br from-orange-50 to-white border-orange-200">
+            <div className="p-4 border rounded-lg bg-orange-500/5 border-orange-500/20">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-orange-100 rounded-lg">
-                    <Flame className="h-5 w-5 text-orange-600" />
+                  <div className="p-2 bg-orange-500/10 rounded-lg">
+                    <Flame className="h-5 w-5 text-orange-600 dark:text-orange-400" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900">Monthly Burn</h3>
-                    <p className="text-xs text-gray-500">Last 3 months of expenses</p>
+                    <h3 className="font-semibold">Monthly Burn</h3>
+                    <p className="text-xs text-muted-foreground">Last 3 months of expenses</p>
                   </div>
                 </div>
                 {burnChange !== 0 && (
                   <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
-                    burnChange < 0 ? "bg-emerald-100 text-emerald-600" : "bg-red-100 text-red-600"
+                    burnChange < 0 ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : "bg-red-500/10 text-red-600 dark:text-red-400"
                   }`}>
                     {burnChange > 0 ? "+" : ""}{burnChange.toFixed(0)}%
                   </span>
@@ -282,31 +282,31 @@ export function KPIsCard() {
                 {burnData.months.map((month, index) => (
                   <div
                     key={month.label}
-                    className={index === 0 ? "" : "pt-2 border-t border-orange-100"}
+                    className={index === 0 ? "" : "pt-2 border-t border-orange-500/10"}
                   >
                     <div className="flex items-baseline justify-between">
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-muted-foreground">
                         {month.label}
                         {index === 0 && " (Current)"}
                       </span>
-                      <span className={`font-semibold ${index === 0 ? "text-lg text-orange-600" : "text-sm text-gray-700"}`}>
+                      <span className={`font-semibold ${index === 0 ? "text-lg text-orange-600 dark:text-orange-400" : "text-sm"}`}>
                         {formatCurrency(month.amount)}
                       </span>
                     </div>
                   </div>
                 ))}
                 {burnData.months.length === 0 && (
-                  <p className="text-sm text-gray-500">No expense data available</p>
+                  <p className="text-sm text-muted-foreground">No expense data available</p>
                 )}
               </div>
             </div>
 
             {/* Runway Card */}
-            <div className={`p-4 border rounded-lg bg-gradient-to-br ${
-              runwayMonths > 18 ? "from-emerald-50 to-white border-emerald-200" :
-              runwayMonths > 12 ? "from-blue-50 to-white border-blue-200" :
-              runwayMonths > 6 ? "from-amber-50 to-white border-amber-200" :
-              "from-red-50 to-white border-red-200"
+            <div className={`p-4 border rounded-lg ${
+              runwayMonths > 18 ? "bg-emerald-500/5 border-emerald-500/20" :
+              runwayMonths > 12 ? "bg-blue-500/5 border-blue-500/20" :
+              runwayMonths > 6 ? "bg-amber-500/5 border-amber-500/20" :
+              "bg-red-500/5 border-red-500/20"
             }`}>
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
@@ -314,8 +314,8 @@ export function KPIsCard() {
                     <Clock className={`h-5 w-5 ${runwayStatus.color}`} />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900">Runway</h3>
-                    <p className="text-xs text-gray-500">Based on 3-month average burn</p>
+                    <h3 className="font-semibold">Runway</h3>
+                    <p className="text-xs text-muted-foreground">Based on 3-month average burn</p>
                   </div>
                 </div>
                 <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${runwayStatus.bg} ${runwayStatus.color}`}>
@@ -326,14 +326,14 @@ export function KPIsCard() {
                 <p className={`text-2xl font-bold ${runwayStatus.color}`}>
                   {runwayMonths === Infinity ? "∞" : formatMonths(runwayMonths)}
                 </p>
-                <div className="pt-2 border-t border-gray-100 space-y-1">
+                <div className="pt-2 border-t border-border space-y-1">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-500">Cash position</span>
-                    <span className="font-medium text-gray-700">{formatCurrency(totalCash)}</span>
+                    <span className="text-muted-foreground">Cash position</span>
+                    <span className="font-medium">{formatCurrency(totalCash)}</span>
                   </div>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-500">Avg. monthly burn</span>
-                    <span className="font-medium text-gray-700">{formatCurrency(monthlyBurnForRunway)}/mo</span>
+                    <span className="text-muted-foreground">Avg. monthly burn</span>
+                    <span className="font-medium">{formatCurrency(monthlyBurnForRunway)}/mo</span>
                   </div>
                 </div>
               </div>

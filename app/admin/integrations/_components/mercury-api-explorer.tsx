@@ -176,12 +176,12 @@ function EndpointCard({ config }: EndpointCardProps) {
             <Icon className="h-5 w-5" />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-gray-900">{config.title}</h3>
-            <p className="text-sm text-gray-500 truncate">{config.description}</p>
+            <h3 className="font-semibold">{config.title}</h3>
+            <p className="text-sm text-muted-foreground truncate">{config.description}</p>
           </div>
           <div className="flex items-center gap-2">
             {count !== null && (
-              <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-sm font-medium">
+              <span className="px-2 py-1 bg-muted text-foreground rounded text-sm font-medium">
                 {count}
               </span>
             )}
@@ -197,16 +197,16 @@ function EndpointCard({ config }: EndpointCardProps) {
         </div>
 
         {error && (
-          <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-            <p className="text-sm text-amber-800 font-medium">Unable to fetch data</p>
-            <p className="text-sm text-amber-700 mt-1">{error}</p>
+          <div className="mt-3 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+            <p className="text-sm text-amber-600 dark:text-amber-400 font-medium">Unable to fetch data</p>
+            <p className="text-sm text-amber-600/80 dark:text-amber-400/80 mt-1">{error}</p>
           </div>
         )}
 
         {expanded && data && (
           <div className="mt-4">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                 Response Data
               </span>
               <Button
@@ -218,8 +218,8 @@ function EndpointCard({ config }: EndpointCardProps) {
                 Refresh
               </Button>
             </div>
-            <div className="bg-gray-50 rounded-lg p-3 max-h-80 overflow-auto">
-              <pre className="text-xs text-gray-800 whitespace-pre-wrap break-words">
+            <div className="bg-muted rounded-lg p-3 max-h-80 overflow-auto">
+              <pre className="text-xs whitespace-pre-wrap break-words">
                 {JSON.stringify(data, null, 2)}
               </pre>
             </div>
@@ -235,12 +235,12 @@ export function MercuryApiExplorer() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Mercury API Explorer</h2>
-          <p className="text-gray-500">
+          <h2 className="text-2xl font-bold">Mercury API Explorer</h2>
+          <p className="text-muted-foreground">
             Test and explore all available Mercury API endpoints ({endpoints.length} endpoints)
           </p>
         </div>
-        <div className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium flex items-center gap-2">
+        <div className="px-3 py-1 bg-green-500/10 text-green-600 dark:text-green-400 rounded-full text-sm font-medium flex items-center gap-2">
           <Wallet className="h-4 w-4" />
           Connected
         </div>

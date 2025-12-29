@@ -55,11 +55,11 @@ export function MetricCard({
   const getTrendColor = () => {
     switch (trend) {
       case "up":
-        return "text-green-600";
+        return "text-green-600 dark:text-green-400";
       case "down":
-        return "text-red-600";
+        return "text-red-600 dark:text-red-400";
       default:
-        return "text-gray-600";
+        return "text-muted-foreground";
     }
   };
 
@@ -109,7 +109,7 @@ export function MetricCard({
                     <span
                       className={cn(
                         "ml-1",
-                        comp.change > 0 ? "text-green-600" : "text-red-600"
+                        comp.change > 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
                       )}
                     >
                       ({comp.change > 0 ? "+" : ""}

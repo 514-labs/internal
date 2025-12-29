@@ -126,12 +126,12 @@ export function AccountsCard() {
             Accounts
           </CardTitle>
           {!isLoading && !error && (
-            <span className="text-2xl font-bold text-gray-900">
+            <span className="text-2xl font-bold">
               {formatCurrency(totalBalance)}
             </span>
           )}
         </div>
-        <p className="text-sm text-gray-500">Mercury banking & treasury accounts</p>
+        <p className="text-sm text-muted-foreground">Mercury banking & treasury accounts</p>
       </CardHeader>
       <CardContent>
         {isLoading ? (
@@ -141,11 +141,11 @@ export function AccountsCard() {
             <AccountSkeleton />
           </div>
         ) : error ? (
-          <div className="flex items-center gap-3 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-            <AlertCircle className="h-5 w-5 text-amber-600" />
+          <div className="flex items-center gap-3 p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+            <AlertCircle className="h-5 w-5 text-amber-500" />
             <div>
-              <p className="font-medium text-amber-800">Unable to load accounts</p>
-              <p className="text-sm text-amber-700">
+              <p className="font-medium text-amber-600 dark:text-amber-400">Unable to load accounts</p>
+              <p className="text-sm text-amber-600/80 dark:text-amber-400/80">
                 {error instanceof Error ? error.message : "Please check Mercury connection"}
               </p>
             </div>
@@ -156,23 +156,23 @@ export function AccountsCard() {
             {treasuryData?.accounts?.map((account) => (
               <div
                 key={account.id}
-                className="p-4 border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white rounded-lg hover:border-emerald-300 transition-colors"
+                className="p-4 border border-emerald-500/20 bg-emerald-500/5 rounded-lg hover:border-emerald-500/30 transition-colors"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-emerald-100 rounded-lg">
-                      <PiggyBank className="h-5 w-5 text-emerald-600" />
+                    <div className="p-2 bg-emerald-500/10 rounded-lg">
+                      <PiggyBank className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900">Treasury</h3>
-                      <p className="text-xs text-gray-500">Investment account</p>
+                      <h3 className="font-semibold">Treasury</h3>
+                      <p className="text-xs text-muted-foreground">Investment account</p>
                     </div>
                   </div>
                   <span
                     className={`px-2 py-0.5 text-xs font-medium rounded-full ${
                       account.status === "active"
-                        ? "bg-emerald-100 text-emerald-700"
-                        : "bg-gray-100 text-gray-600"
+                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                        : "bg-muted text-muted-foreground"
                     }`}
                   >
                     {account.status}
@@ -180,14 +180,14 @@ export function AccountsCard() {
                 </div>
                 <div className="space-y-1">
                   <div className="flex items-baseline justify-between">
-                    <span className="text-sm text-gray-500">Current Balance</span>
-                    <span className="text-lg font-bold text-emerald-700">
+                    <span className="text-sm text-muted-foreground">Current Balance</span>
+                    <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
                       {formatCurrency(account.currentBalance)}
                     </span>
                   </div>
                   <div className="flex items-baseline justify-between">
-                    <span className="text-sm text-gray-500">Available</span>
-                    <span className="text-sm font-medium text-gray-700">
+                    <span className="text-sm text-muted-foreground">Available</span>
+                    <span className="text-sm font-medium">
                       {formatCurrency(account.availableBalance)}
                     </span>
                   </div>
@@ -199,16 +199,16 @@ export function AccountsCard() {
             {accountsData?.accounts?.map((account) => (
               <div
                 key={account.id}
-                className="p-4 border rounded-lg hover:border-blue-200 hover:bg-blue-50/30 transition-colors"
+                className="p-4 border rounded-lg hover:border-blue-500/30 hover:bg-blue-500/5 transition-colors"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-100 rounded-lg">
-                      <Landmark className="h-5 w-5 text-blue-600" />
+                    <div className="p-2 bg-blue-500/10 rounded-lg">
+                      <Landmark className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900">{account.name}</h3>
-                      <p className="text-xs text-gray-500 capitalize">
+                      <h3 className="font-semibold">{account.name}</h3>
+                      <p className="text-xs text-muted-foreground capitalize">
                         {account.type?.toLowerCase()} • ****{account.accountNumber?.slice(-4)}
                       </p>
                     </div>
@@ -216,8 +216,8 @@ export function AccountsCard() {
                   <span
                     className={`px-2 py-0.5 text-xs font-medium rounded-full ${
                       account.status === "active"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-gray-100 text-gray-600"
+                        ? "bg-green-500/10 text-green-600 dark:text-green-400"
+                        : "bg-muted text-muted-foreground"
                     }`}
                   >
                     {account.status}
@@ -225,14 +225,14 @@ export function AccountsCard() {
                 </div>
                 <div className="space-y-1">
                   <div className="flex items-baseline justify-between">
-                    <span className="text-sm text-gray-500">Current Balance</span>
-                    <span className="text-lg font-bold text-gray-900">
+                    <span className="text-sm text-muted-foreground">Current Balance</span>
+                    <span className="text-lg font-bold">
                       {formatCurrency(account.currentBalance)}
                     </span>
                   </div>
                   <div className="flex items-baseline justify-between">
-                    <span className="text-sm text-gray-500">Available</span>
-                    <span className="text-sm font-medium text-gray-700">
+                    <span className="text-sm text-muted-foreground">Available</span>
+                    <span className="text-sm font-medium">
                       {formatCurrency(account.availableBalance)}
                     </span>
                   </div>

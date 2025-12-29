@@ -16,7 +16,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Check, ChevronDown } from "lucide-react";
+import { Check, ChevronDown, FolderKanban } from "lucide-react";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { cn } from "@/lib/utils";
 import { useState, useMemo } from "react";
 
@@ -54,8 +61,8 @@ export function ActiveProjectsCard({
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
             <div key={i} className="animate-pulse">
-              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
-              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+              <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
+              <div className="h-3 bg-muted rounded w-1/2"></div>
             </div>
           ))}
         </div>
@@ -129,9 +136,17 @@ export function ActiveProjectsCard({
             </Popover>
           )}
         </div>
-        <p className="text-sm text-muted-foreground">
-          No {selectedState || "projects"} found
-        </p>
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <FolderKanban className="h-6 w-6" />
+            </EmptyMedia>
+            <EmptyTitle>No {selectedState || "projects"} found</EmptyTitle>
+            <EmptyDescription>
+              Projects from Linear will appear here when available
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
       </div>
     );
   }

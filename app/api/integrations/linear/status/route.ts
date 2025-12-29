@@ -3,20 +3,27 @@
  * Returns connection status and token information for admin users
  */
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { requireAdmin } from "@/lib/auth/api-keys";
 import { getLinearTokens } from "@/lib/integrations/linear-oauth";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
+  let userId: string | null = null;
+
   try {
-    // Verify user is authenticated and is an admin
-    const { userId } = await auth();
+    const authResult = await auth();
+    userId = authResult.userId;
+  } catch (error) {
+    console.error("Linear status auth error:", (error as Error).message);
+    return NextResponse.json({ error: "Authentication failed" }, { status: 401 });
+  }
 
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
+  try {
     await requireAdmin(userId);
 
     // Get token information
@@ -38,7 +45,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Linear status check error:", error);
-
     return NextResponse.json(
       {
         error: "Status check failed",

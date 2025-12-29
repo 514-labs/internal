@@ -1,0 +1,60 @@
+---
+title: "ADR-002: Next.js as Frontend Framework"
+description: Decision to use Next.js for our web application
+date: 2024-06-20
+status: accepted
+deciders: [engineering-lead, frontend-lead]
+context: Needed to select a frontend framework for the new platform
+tags: [frontend, framework, architecture]
+---
+
+# ADR-002: Next.js as Frontend Framework
+
+## Status
+
+Accepted
+
+## Context
+
+We need to select a frontend framework for our web application. Requirements include:
+
+- Server-side rendering for SEO and performance
+- Static site generation for content pages
+- API routes for backend functionality
+- TypeScript support
+- Strong developer experience
+
+## Decision
+
+We will use **Next.js** as our frontend framework.
+
+## Rationale
+
+### Considered Options
+
+1. **Next.js** - React framework with SSR, SSG, and API routes
+2. **Remix** - Full-stack React framework
+3. **Astro** - Content-focused framework with island architecture
+4. **SvelteKit** - Svelte-based full-stack framework
+
+### Why Next.js
+
+- **Ecosystem**: Largest ecosystem and community in React space
+- **Vercel Integration**: Excellent deployment experience with Vercel
+- **Flexibility**: Supports SSR, SSG, ISR, and client-side rendering
+- **API Routes**: Built-in backend capabilities
+- **App Router**: Modern routing with React Server Components
+
+## Consequences
+
+### Positive
+
+- Unified frontend and API development
+- Excellent performance with server components
+- Large talent pool familiar with Next.js
+
+### Negative
+
+- Tight coupling with Vercel for some features
+- Learning curve for new React Server Components paradigm
+

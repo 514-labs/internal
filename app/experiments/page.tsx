@@ -1,14 +1,17 @@
+import { DashboardLayout } from "@/components/layouts";
+
 export default function ExperimentsPage() {
   return (
-    <div className="flex-1 space-y-4 p-8 pt-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Experiments</h1>
+    <DashboardLayout>
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold tracking-tight">Experiments</h1>
+        <p className="text-muted-foreground">A/B tests, feature flags, and experiment results</p>
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold">A/B Test - Homepage</h3>
-            <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
+            <span className="px-2 py-1 text-xs rounded-full bg-green-500/10 text-green-600 dark:text-green-400">
               Running
             </span>
           </div>
@@ -27,7 +30,7 @@ export default function ExperimentsPage() {
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Confidence</span>
-              <span className="font-medium text-green-600">95%</span>
+                    <span className="font-medium text-green-600 dark:text-green-400">95%</span>
             </div>
           </div>
         </div>
@@ -35,7 +38,7 @@ export default function ExperimentsPage() {
         <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold">Feature Flag - Dark Mode</h3>
-            <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+            <span className="px-2 py-1 text-xs rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400">
               Active
             </span>
           </div>
@@ -56,7 +59,7 @@ export default function ExperimentsPage() {
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Error Rate</span>
-              <span className="font-medium text-green-600">0.2%</span>
+                    <span className="font-medium text-green-600 dark:text-green-400">0.2%</span>
             </div>
           </div>
         </div>
@@ -64,7 +67,7 @@ export default function ExperimentsPage() {
         <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold">Multivariate - Checkout</h3>
-            <span className="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300">
+            <span className="px-2 py-1 text-xs rounded-full bg-yellow-500/10 text-yellow-600 dark:text-yellow-400">
               Analyzing
             </span>
           </div>
@@ -79,7 +82,7 @@ export default function ExperimentsPage() {
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Improvement</span>
-              <span className="font-medium text-green-600">+12.5%</span>
+                    <span className="font-medium text-green-600 dark:text-green-400">+12.5%</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Duration</span>
@@ -100,7 +103,7 @@ export default function ExperimentsPage() {
                   Completed 3 days ago
                 </p>
               </div>
-              <span className="text-sm font-medium text-green-600">
+              <span className="text-sm font-medium text-green-600 dark:text-green-400">
                 +8.3% CTR
               </span>
             </div>
@@ -111,7 +114,7 @@ export default function ExperimentsPage() {
                   Completed 1 week ago
                 </p>
               </div>
-              <span className="text-sm font-medium text-green-600">
+              <span className="text-sm font-medium text-green-600 dark:text-green-400">
                 +15.2% completion
               </span>
             </div>
@@ -122,7 +125,7 @@ export default function ExperimentsPage() {
                   Completed 2 weeks ago
                 </p>
               </div>
-              <span className="text-sm font-medium text-green-600">
+              <span className="text-sm font-medium text-green-600 dark:text-green-400">
                 +22.1% open rate
               </span>
             </div>
@@ -133,7 +136,7 @@ export default function ExperimentsPage() {
                   Completed 3 weeks ago
                 </p>
               </div>
-              <span className="text-sm font-medium text-red-600">
+              <span className="text-sm font-medium text-red-600 dark:text-red-400">
                 -2.4% conversions
               </span>
             </div>
@@ -179,7 +182,7 @@ export default function ExperimentsPage() {
                 <span className="text-sm text-muted-foreground">12</span>
               </div>
               <div className="flex gap-1">
-                <div className="h-2 w-full bg-gray-500 rounded"></div>
+                <div className="h-2 w-full bg-muted rounded"></div>
               </div>
             </div>
           </div>
@@ -207,6 +210,6 @@ export default function ExperimentsPage() {
           </div>
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

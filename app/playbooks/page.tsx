@@ -1,16 +1,31 @@
-export default function PlaybooksPage() {
+import { getContentCollection } from "@/lib/content";
+import { ContentList, ContentNavigation } from "@/components/content";
+import { ContentLayout } from "@/components/layouts";
+
+export default async function PlaybooksPage() {
+  const collection = await getContentCollection("playbooks");
+
   return (
-    <main className="flex-1 p-6">
-      <div className="max-w-4xl">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Playbooks</h1>
-        <p className="text-gray-500 mb-8">
-          Step-by-step guides for common workflows.
+    <ContentLayout
+      navigation={
+        <ContentNavigation
+          navigation={collection.navigation}
+          basePath="/playbooks"
+        />
+      }
+    >
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold tracking-tight">Playbooks</h1>
+        <p className="text-muted-foreground">
+          Step-by-step guides for common workflows
         </p>
-        <div className="border rounded-lg p-8 bg-gray-50 text-center text-gray-500">
-          Coming soon
-        </div>
       </div>
-    </main>
+
+      <ContentList
+        items={collection.items}
+        basePath="/playbooks"
+        emptyMessage="No playbooks yet. Add markdown files to content/playbooks/"
+      />
+    </ContentLayout>
   );
 }
-

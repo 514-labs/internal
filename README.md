@@ -42,12 +42,12 @@ const nextConfig: NextConfig = {
 
 Without this, Next.js will attempt to load assets from the iframe's URL, causing 404 errors.
 
-### 3. CORS Middleware (`middleware.ts`)
+### 3. CORS Proxy (`proxy.ts`)
 
 Handles browser OPTIONS preflight requests required for cross-origin RSC (React Server Components) fetching during client-side navigation:
 
 ```typescript
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   if (request.method === "OPTIONS") {
     // Return 204 with CORS headers
   }
@@ -120,7 +120,7 @@ app/
 ├── layout.tsx            # Root layout with SDK bootstrap
 ├── page.tsx              # Homepage content
 └── globals.css           # Global styles
-middleware.ts             # CORS handling for RSC
+proxy.ts                  # CORS handling for RSC
 next.config.ts            # Asset prefix configuration
 ```
 

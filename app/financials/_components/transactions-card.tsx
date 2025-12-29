@@ -223,7 +223,7 @@ export function TransactionsCard() {
             Transactions
           </CardTitle>
           {transactions.length > 0 && (
-            <span className="text-sm text-gray-500 flex items-center gap-2">
+            <span className="text-sm text-muted-foreground flex items-center gap-2">
               {isFetching && !isLoading && (
                 <Loader2 className="h-3 w-3 animate-spin" />
               )}
@@ -292,7 +292,7 @@ export function TransactionsCard() {
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 text-xs text-gray-500 hover:text-gray-700"
+              className="h-8 text-xs text-muted-foreground hover:text-foreground"
               onClick={clearFilters}
             >
               <X className="h-3 w-3 mr-1" />
@@ -333,18 +333,18 @@ export function TransactionsCard() {
             ))}
           </div>
         ) : error ? (
-          <div className="flex items-center gap-3 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-            <AlertCircle className="h-5 w-5 text-amber-600" />
+          <div className="flex items-center gap-3 p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+            <AlertCircle className="h-5 w-5 text-amber-500" />
             <div>
-              <p className="font-medium text-amber-800">Unable to load transactions</p>
-              <p className="text-sm text-amber-700">
+              <p className="font-medium text-amber-600 dark:text-amber-400">Unable to load transactions</p>
+              <p className="text-sm text-amber-600/80 dark:text-amber-400/80">
                 {error instanceof Error ? error.message : "Please check Mercury connection"}
               </p>
             </div>
           </div>
         ) : transactions.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-gray-500">No transactions found</p>
+            <p className="text-muted-foreground">No transactions found</p>
             {hasFilters && (
               <Button variant="link" className="mt-2" onClick={clearFilters}>
                 Clear filters
@@ -366,14 +366,14 @@ export function TransactionsCard() {
                 return (
                   <div
                     key={tx.id}
-                    className="flex items-center justify-between py-3 hover:bg-gray-50 -mx-4 px-4 transition-colors"
+                    className="flex items-center justify-between py-3 hover:bg-accent/50 -mx-4 px-4 transition-colors"
                   >
                     <div className="flex items-center gap-3">
                       <div
                         className={`p-2 rounded-full ${
                           isCredit
-                            ? "bg-green-100 text-green-600"
-                            : "bg-red-100 text-red-600"
+                            ? "bg-green-500/10 text-green-600 dark:text-green-400"
+                            : "bg-red-500/10 text-red-600 dark:text-red-400"
                         }`}
                       >
                         {isCredit ? (
@@ -383,10 +383,10 @@ export function TransactionsCard() {
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="font-medium text-gray-900 line-clamp-1">
+                        <p className="font-medium line-clamp-1">
                           {displayName}
                         </p>
-                        <p className="text-xs text-gray-500 line-clamp-1">
+                        <p className="text-xs text-muted-foreground line-clamp-1">
                           {formatDate(tx.postedAt || tx.createdAt)}
                           {description && ` • ${description}`}
                         </p>
@@ -395,7 +395,7 @@ export function TransactionsCard() {
                     <div className="text-right shrink-0 ml-4">
                       <p
                         className={`font-semibold ${
-                          isCredit ? "text-green-600" : "text-gray-900"
+                          isCredit ? "text-green-600 dark:text-green-400" : ""
                         }`}
                       >
                         {isCredit ? "+" : "-"}
@@ -404,10 +404,10 @@ export function TransactionsCard() {
                       <p
                         className={`text-xs capitalize ${
                           tx.status === "pending"
-                            ? "text-amber-600"
+                            ? "text-amber-600 dark:text-amber-400"
                             : tx.status === "sent" || tx.status === "completed"
-                            ? "text-green-600"
-                            : "text-gray-500"
+                            ? "text-green-600 dark:text-green-400"
+                            : "text-muted-foreground"
                         }`}
                       >
                         {tx.status}
@@ -431,7 +431,7 @@ export function TransactionsCard() {
                   <ChevronLeft className="h-4 w-4" />
                   Previous
                 </Button>
-                <span className="text-sm text-gray-500">
+                <span className="text-sm text-muted-foreground">
                   Page {pageNumber}
                 </span>
                 <Button

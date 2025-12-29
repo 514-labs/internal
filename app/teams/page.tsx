@@ -1,8 +1,11 @@
+import { ContentLayout } from "@/components/layouts";
+
 export default function TeamsPage() {
   return (
-    <div className="flex-1 space-y-4 p-8 pt-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Teams</h1>
+    <ContentLayout>
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold tracking-tight">Teams</h1>
+        <p className="text-muted-foreground">Your organization&apos;s team structure</p>
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
@@ -36,6 +39,6 @@ export default function TeamsPage() {
           <p className="text-sm mt-4">Keeping everything running smoothly</p>
         </div>
       </div>
-    </div>
+    </ContentLayout>
   );
 }
