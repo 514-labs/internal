@@ -1,0 +1,111 @@
+---
+title: "Win Developers Through Product-Led Marketing"
+description: "Make Boreal easy to find, try, and differentiate through the product itself as the primary growth channel"
+status: active
+strategicDomain: plm
+team: product
+owner: cpo
+timeframe: FY 2026
+keyResults:
+  - id: kr1
+    title: "Time-to-First-Value"
+    target: 5
+    baseline: 30
+    current: 30
+    unit: "minutes"
+    metric:
+      source: posthog
+      type: journeyCompletion
+      config:
+        journeyId: "first-value"
+        product: "boreal"
+  - id: kr2
+    title: "Week 1 Activation Rate"
+    target: 40
+    baseline: 15
+    current: 15
+    unit: "%"
+    metric:
+      source: posthog
+      type: journeyCompletion
+      config:
+        journeyId: "week-1-activation"
+        product: "boreal"
+  - id: kr3
+    title: "Self-Serve Upgrade Rate"
+    target: 8
+    baseline: 0
+    current: 0
+    unit: "%"
+    metric:
+      source: posthog
+      type: conversions
+      config:
+        eventName: "self_serve_upgrade"
+        product: "boreal"
+  - id: kr4
+    title: "Organic Signups via Product Sharing"
+    target: 25
+    baseline: 0
+    current: 0
+    unit: "%"
+    metric:
+      source: posthog
+      type: conversions
+      config:
+        eventName: "signup_from_share"
+        product: "boreal"
+  - id: kr5
+    title: "30-Day Retention"
+    target: 50
+    baseline: 20
+    current: 20
+    unit: "%"
+    metric:
+      source: posthog
+      type: journeyCompletion
+      config:
+        journeyId: "day-30-retention"
+        product: "boreal"
+---
+
+## Objective
+
+Make Boreal easy for developers to find, easy to try, and clearly differentiated — using the product itself as the primary marketing and growth channel.
+
+## Context
+
+Product-Led Marketing (PLM) flips the traditional marketing funnel. Instead of content → demo → trial → value, developers experience value first and upgrade when they hit natural expansion triggers.
+
+The best developer tools (Stripe, Vercel, Supabase) achieve this through:
+
+- Frictionless self-serve onboarding
+- Immediate "aha" moments
+- Shareable outputs that bring in new users
+- Natural upgrade paths that don't interrupt flow
+
+## Key Results Rationale
+
+### Time-to-First-Value (5 minutes)
+The most critical PLM metric. Best-in-class developer tools deliver first value in under 5 minutes. Every minute of friction compounds into abandonment.
+
+### Week 1 Activation Rate (40%)
+Percentage of signups who complete the core activation action within 7 days. This is the moment developers understand why Boreal exists.
+
+### Self-Serve Upgrade Rate (8%)
+Free-to-paid conversion without sales touch. Higher than the 5% company target because PLM-engaged users have stronger intent.
+
+### Organic Signups via Product Sharing (25%)
+Measures virality and shareability of outputs. When developers share their work, it becomes natural product marketing.
+
+### 30-Day Retention (50%)
+Retention is the multiplier for all acquisition. A 50% 30-day retention rate indicates genuine product-market fit with developers.
+
+## Success Criteria
+
+- Developers can go from zero to first value in under 5 minutes
+- The product teaches itself — minimal documentation required
+- Sharing is natural and brings new users
+- Upgrades feel like unlocking, not paywalling
+
+

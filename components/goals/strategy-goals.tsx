@@ -39,6 +39,11 @@ export function StrategyGoals({
   const domainLabels: Record<StrategicDomain, string> = {
     "product-development": "Product Development Goals",
     "customer-development": "Customer Development Goals",
+    "company": "Company Goals",
+    "plm": "Product-Led Marketing Goals",
+    "slg": "Sales-Led Growth Goals",
+    "awareness": "Awareness Goals",
+    "platform": "Platform Goals",
   };
 
   const overallProgress =

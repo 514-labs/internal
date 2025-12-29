@@ -8,7 +8,7 @@ import type {
 } from "@/lib/analytics/linear/schemas";
 import { ActiveProjectsCard } from "./active-projects-card";
 import { ActiveInitiativesCard } from "./active-initiatives-card";
-import { RecentlyCompletedSidebar } from "./recently-completed-sidebar";
+import { RecentlyCompletedFeed } from "./recently-completed-feed";
 import { ContentLayout } from "@/components/layouts";
 
 interface WorkClientProps {
@@ -104,7 +104,9 @@ export function WorkClient({
     >
       <div className="mb-8">
         <h1 className="text-2xl font-bold tracking-tight">Work</h1>
-        <p className="text-muted-foreground">Initiatives, projects, and recently completed work</p>
+        <p className="text-muted-foreground">
+          Initiatives, projects, and recently completed work
+        </p>
       </div>
 
       {/* Initiatives section */}

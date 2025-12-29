@@ -93,6 +93,11 @@ export function GoalFiltersBar({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Domains</SelectItem>
+            <SelectItem value="company">Company</SelectItem>
+            <SelectItem value="plm">PLM</SelectItem>
+            <SelectItem value="slg">SLG</SelectItem>
+            <SelectItem value="awareness">Awareness</SelectItem>
+            <SelectItem value="platform">Platform</SelectItem>
             <SelectItem value="product-development">Product Dev</SelectItem>
             <SelectItem value="customer-development">Customer Dev</SelectItem>
           </SelectContent>

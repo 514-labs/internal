@@ -37,15 +37,25 @@ export function GoalCard({
     archived: "bg-muted text-muted-foreground",
   };
 
-  const domainLabels = {
+  const domainLabels: Record<string, string> = {
     "product-development": "Product",
     "customer-development": "Customer",
+    company: "Company",
+    plm: "PLM",
+    slg: "SLG",
+    awareness: "Awareness",
+    platform: "Platform",
   };
 
-  const domainColors = {
+  const domainColors: Record<string, string> = {
     "product-development":
       "bg-purple-500/10 text-purple-600 border-purple-500/20",
     "customer-development": "bg-cyan-500/10 text-cyan-600 border-cyan-500/20",
+    company: "bg-amber-500/10 text-amber-600 border-amber-500/20",
+    plm: "bg-green-500/10 text-green-600 border-green-500/20",
+    slg: "bg-blue-500/10 text-blue-600 border-blue-500/20",
+    awareness: "bg-pink-500/10 text-pink-600 border-pink-500/20",
+    platform: "bg-violet-500/10 text-violet-600 border-violet-500/20",
   };
 
   if (compact) {
@@ -200,15 +210,25 @@ function GoalListRow({ goal, showDomain = true }: GoalListRowProps) {
     archived: "bg-muted text-muted-foreground",
   };
 
-  const domainLabels = {
+  const domainLabels: Record<string, string> = {
     "product-development": "Product",
     "customer-development": "Customer",
+    company: "Company",
+    plm: "PLM",
+    slg: "SLG",
+    awareness: "Awareness",
+    platform: "Platform",
   };
 
-  const domainColors = {
+  const domainColors: Record<string, string> = {
     "product-development":
       "bg-purple-500/10 text-purple-600 border-purple-500/20",
     "customer-development": "bg-cyan-500/10 text-cyan-600 border-cyan-500/20",
+    company: "bg-amber-500/10 text-amber-600 border-amber-500/20",
+    plm: "bg-green-500/10 text-green-600 border-green-500/20",
+    slg: "bg-blue-500/10 text-blue-600 border-blue-500/20",
+    awareness: "bg-pink-500/10 text-pink-600 border-pink-500/20",
+    platform: "bg-violet-500/10 text-violet-600 border-violet-500/20",
   };
 
   return (
@@ -294,7 +314,7 @@ export function GoalListView({
   }
 
   return (
-    <div className={cn("space-y-3", className)}>
+    <div className={cn("flex flex-col gap-4", className)}>
       {goals.map((goal) => (
         <GoalListRow key={goal.slug} goal={goal} showDomain={showDomain} />
       ))}

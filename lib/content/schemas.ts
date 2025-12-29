@@ -181,7 +181,15 @@ export type KeyResult = z.infer<typeof keyResultSchema>;
  */
 export const goalSchema = baseContentSchema.extend({
   status: z.enum(["draft", "active", "completed", "archived"]).default("draft"),
-  strategicDomain: z.enum(["product-development", "customer-development"]),
+  strategicDomain: z.enum([
+    "product-development",
+    "customer-development",
+    "company",    // Anchor company-level goals
+    "plm",        // Product-Led Marketing
+    "slg",        // Sales-Led Growth
+    "awareness",  // Partner-led awareness
+    "platform",   // Platform & execution
+  ]),
   team: z.string(),
   owner: z.string(),
   timeframe: z.string(),

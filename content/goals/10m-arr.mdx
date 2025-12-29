@@ -1,0 +1,95 @@
+---
+title: "Reach $10M ARR"
+description: "Build a repeatable growth engine combining PLM and SLG to reach $10M ARR in 12 months"
+status: active
+strategicDomain: company
+team: executive
+owner: ceo
+timeframe: FY 2026
+keyResults:
+  - id: kr1
+    title: "Annual Recurring Revenue"
+    target: 10000000
+    baseline: 0
+    current: 0
+    unit: "$"
+    metric:
+      source: mercury
+      type: mrr
+  - id: kr2
+    title: "Net Revenue Retention"
+    target: 120
+    baseline: 100
+    current: 100
+    unit: "%"
+  - id: kr3
+    title: "PLM-to-Paid Conversion Rate"
+    target: 5
+    baseline: 0
+    current: 0
+    unit: "%"
+    metric:
+      source: posthog
+      type: conversions
+      config:
+        eventName: "subscription_started"
+        product: "boreal"
+  - id: kr4
+    title: "Sales-Qualified Pipeline Coverage"
+    target: 3
+    baseline: 0
+    current: 0
+    unit: "x"
+    metric:
+      source: hubspot
+      type: pipelineValue
+  - id: kr5
+    title: "Monthly Active Developers"
+    target: 50000
+    baseline: 0
+    current: 0
+    unit: "developers"
+    metric:
+      source: posthog
+      type: mau
+      config:
+        product: "boreal"
+---
+
+## Objective
+
+Build a repeatable growth engine that combines Product-Led Marketing (PLM) for developers and Sales-Led Growth (SLG) for buyers to reach a $10M ARR run rate within 12 months.
+
+## Context
+
+This is the anchor company goal that all other objectives ladder up to. Success requires:
+
+- **Product creates demand** — Developers discover, try, and adopt Boreal through the product itself
+- **Partners create trust** — Technical ecosystem partners amplify reach and credibility
+- **Sales accelerates revenue** — Activated usage converts to mid-market and enterprise contracts
+
+## Key Results Rationale
+
+### ARR ($10M)
+The primary outcome metric. All other KRs are leading indicators that support this target.
+
+### Net Revenue Retention (120%)
+Top-quartile SaaS benchmark (Snowflake, Twilio). High NRR indicates product stickiness and expansion potential, reducing reliance on new logo acquisition.
+
+### PLM-to-Paid Conversion (5%)
+Industry benchmark for developer self-serve products ranges from 2-7%. At 5% conversion with 50K MAD, this supports the revenue math for $10M ARR.
+
+### Pipeline Coverage (3x)
+Standard enterprise sales benchmark. 3x coverage ensures revenue predictability even with normal deal slippage.
+
+### Monthly Active Developers (50K)
+Leading indicator for the funnel. Supports the conversion math: 50K × 5% = 2,500 paid accounts, enabling $10M ARR at $4K average.
+
+## Success Criteria
+
+- Repeatable, measurable growth engine (not heroics)
+- Balanced contribution from PLM and SLG motions
+- Healthy unit economics (LTV:CAC > 3:1)
+- Clear path to continued growth beyond $10M
+
+

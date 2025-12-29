@@ -79,5 +79,12 @@ export interface GoalFilters {
 /**
  * Strategic domain type
  */
-export type StrategicDomain = "product-development" | "customer-development";
+export type StrategicDomain =
+  | "product-development"
+  | "customer-development"
+  | "company"    // Anchor company-level goals
+  | "plm"        // Product-Led Marketing
+  | "slg"        // Sales-Led Growth
+  | "awareness"  // Partner-led awareness
+  | "platform";  // Platform & execution
 

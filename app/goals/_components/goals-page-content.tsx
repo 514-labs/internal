@@ -80,7 +80,7 @@ export function GoalsPageContent({
       </div>
 
       {/* Summary */}
-      <GoalsSummary goals={filteredGoals} showLink={false} className="mb-6" />
+      <GoalsSummary goals={filteredGoals} showLink={false} className="mb-4" />
 
       {/* Goals display */}
       {viewMode === "grid" ? (
