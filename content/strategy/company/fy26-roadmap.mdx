@@ -12,10 +12,59 @@ linkedGoals: [10m-arr, plm-developers, slg-buyers, partner-awareness, platform-e
 
 The path to $10M ARR in 12 months. This roadmap breaks down our five strategic goals into aggressive quarterly initiatives with clear ownership and measurable targets.
 
+## Strategic Diagnosis
+
+Developer infrastructure markets are crowded and buyer trust is earned bottom-up, not top-down. The fastest path to $10M ARR is to make Boreal undeniable through developer adoption (fast time-to-first-value, high activation, and shareable outputs), then convert that proof into revenue via product-qualified sales and technical ecosystem partners. This strategy explicitly prioritizes product evidence over outbound persuasion.
+
+## Guiding Policy (Focus + Tradeoffs)
+
+**Primary Growth Wedge:** Product-Led Marketing (PLM) powered by self-serve onboarding and OSS distribution.
+
+**Secondary Accelerators:** Sales-Led Growth (SLG) converts product evidence into mid-market and enterprise contracts; Partners amplify trusted distribution and pipeline.
+
+**Tie-break rule:** When initiatives compete, we prioritize changes that improve discoverability → activation → conversion (especially time-to-first-value and Week 1 activation) over bespoke features, one-off campaigns, or top-down persuasion. In practice, this means we ship value primarily through **Guides + Templates** (below), not ad-hoc docs or one-off implementations.
+
+## Guides + Templates (The Delivery Mechanism)
+
+To reduce time-to-first-value (TTFV) and (more importantly) **time-to-realized-value (TTRV)**, we introduce **Guides** and **Templates** as the default way work ships to users:
+
+- **Guides**: guided, instrumented journeys that take a developer from “new” to a working outcome (and later, a production outcome)
+- **Templates**: opinionated starting points (implementation patterns, integrations, configs) that make success repeatable
+- **AI-based implementation**: AI can only be reliable when it composes from known-good building blocks; **templates are the building blocks** and guides are the orchestration layer
+
+**Non-negotiable rule:** New onboarding flows, partner content, and POC motions must land a user in a guide and/or template. If work can’t be expressed as a guide/template, it is suspect (likely bespoke, hard to self-serve, and hard to scale).
+
+**Key Guide/Template Metrics (leading indicators):**
+- Guide start rate (of new signups)
+- Guide completion rate (core “first value” journey)
+- Template adoption rate (per guide)
+- **TTRV**: median time from signup → **first production-grade implementation** (target: reduce from weeks to days)
+
+**Definition (TTRV / production-grade):** The user has a working implementation running in their real environment (not a demo): configured from a template, connected to real data/systems, and producing persistent outputs suitable for ongoing use.
+
+## What “Good $10M ARR” Means (Constraints)
+
+Reaching $10M ARR is not the only objective — *how* we get there determines whether FY27 is durable.
+
+- **Retention first**: Net Revenue Retention (NRR) at **120%** by Q4
+- **Demand base**: **50K Monthly Active Developers** as the top-of-funnel leading indicator
+- **Self-serve conversion**: **5% PLM-to-paid conversion** as the conversion floor for the PLM motion
+- **Sales predictability**: **3x sales-qualified pipeline coverage** to avoid end-of-quarter heroics
+- **Balanced engine**: material contribution from both PLM and SLG (not a single-motion spike)
+- **Evidence before pressure**: sales scales on PQL signals (instrumentation + activation), not intuition
+- **Partner leverage, not placebo**: partner work must show measurable downstream action (signups, qualified opportunities, pipeline)
+
+## What We Will Not Do
+
+- We will not pursue outbound-led growth as the primary motion.
+- We will not build bespoke enterprise features without PLM validation (clear activation/expansion triggers).
+- We will not optimize awareness without an activation path (content/campaigns must connect to onboarding and measurement).
+- We will not chase revenue that undermines retention, expansion, or repeatability.
+
 
 ## Strategic Pillars
 
-The five pillars work together to create a reinforcing growth engine:
+The five pillars work together to create a reinforcing growth engine. **Partners** run as two distinct motions (developer distribution + buyer pipeline influence) to keep ownership and metrics unambiguous.
 
 ```mermaid
 flowchart TB
@@ -28,9 +77,10 @@ flowchart TB
         PLM[Product-Led Marketing]
     end
     
-    subgraph revenue [Revenue Conversion]
+    subgraph revenue [Revenue Conversion + Trust]
         SLG[Sales-Led Growth]
-        PARTNERS[Partner Ecosystem]
+        P_DEV[Developer Partners]
+        P_BUY[Buyer Partners]
     end
     
     subgraph outcome [Outcome]
@@ -41,10 +91,13 @@ flowchart TB
     PLATFORM --> PLM
     OSS --> PLM
     PLM --> SLG
-    OSS --> PARTNERS
-    PARTNERS --> SLG
+    OSS --> P_DEV
+    P_DEV --> PLM
+    P_BUY --> SLG
     SLG --> ARR
     PLM --> ARR
+    P_DEV --> ARR
+    P_BUY --> ARR
 ```
 
 ---
@@ -89,6 +142,25 @@ flowchart LR
 
 ---
 
+## Partner Strategy (Two Motions, One Principle)
+
+Partners do two distinct jobs and are measured differently. We explicitly separate these motions so “partner success” doesn’t become ambiguous.
+See [Build Awareness Through Technical Partners](/goals/partner-awareness).
+
+### Developer Partners (PLM-Focused)
+
+- **Job**: trusted distribution + credibility that drives self-serve onboarding
+- **Primary KPIs**: partner content pieces; content → signup rate; partner-driven onboarding starts; activation rate from partner cohorts
+
+### Buyer Partners (SLG-Focused)
+
+- **Job**: influence pipeline and deals through partner sales/technical teams
+- **Primary KPIs**: partner-sourced qualified opportunities; partner-influenced pipeline; partner-influenced ARR
+
+**Rule:** Not every partner does both. We track, enable, and iterate on these motions independently.
+
+---
+
 ## Quarterly Progression
 
 Each quarter builds on the last, with aggressive front-loading of targets:
@@ -127,18 +199,19 @@ flowchart LR
 | Pillar | Initiative | Target | Owner |
 |--------|------------|--------|-------|
 | **Platform** | **Lightning Foundation** | P95 latency to 300ms (40% reduction); 75% onboarding completion; 12 deploys/week | CTO |
-| **PLM** | **Five-Minute Magic** | Time-to-first-value under 10 minutes; 25% Week 1 activation; Full activation instrumentation live | Head of Product |
-| **PLM/OSS** | **Open the Gates** | 5,000 GitHub stars; 50 external contributors; MooseStack docs revamp live; First 10K OSS installs/month | CTO |
+| **PLM** | **Five-Minute Magic** | Time-to-first-value under 10 minutes; 25% Week 1 activation; **Guides + Templates v1 live** (first-value guide + starter templates); full activation instrumentation live; **TTRV (production guide cohort) under 7 days** | Head of Product |
+| **PLM/OSS** | **Open the Gates** | 5,000 GitHub stars; 50 external contributors; MooseStack docs revamp live; first 10K OSS installs/month; **first 5 OSS templates published** | CTO |
 | **SLG** | **Signal Lock** | PQL scoring live in HubSpot; First 10 PQL-to-SQL conversions; Sales team trained on product-led motion | Head of Sales |
-| **Partners** | **First Fleet** | 5 anchor partners signed; 6 co-created content pieces shipped; First partner webinar with 500+ registrants | Chief of Staff |
+| **Partners** | **First Fleet**<br/>**(Dev Partners + Buyer Partners)** | **Dev partners:** 5 anchor partners signed; 6 co-created content pieces shipped; first partner webinar with 500+ registrants; **100% of partner content routes into a guide/template**<br/>**Buyer partners:** partner-qualified stage live in HubSpot; 5 partner-sourced qualified opportunities; 3 partner enablement sessions; **POC template pack v1** | Chief of Staff<br/>Head of Sales |
 
 ### Q1 Success Criteria
 
 - Platform foundation supports 10x growth without rearchitecture
 - Developers can experience value in their first session
+- Guides and templates become the default path to value (measurable, repeatable, and self-serve)
 - OSS community shows early signs of self-sustaining growth
 - Sales has the tools and training to work product-qualified leads
-- First partner relationships established with clear co-marketing plans
+- Partner motions are separated and measurable (developer distribution vs buyer pipeline)
 
 ### Q1 Initiative Dependencies
 
@@ -148,8 +221,9 @@ flowchart TD
     LF --> OTG[Open the Gates]
     OTG --> FMM
     FMM --> SL[Signal Lock]
-    OTG --> FF[First Fleet]
-    FF --> SL
+    OTG --> DP[Dev Partners]
+    DP --> FMM
+    SP[Buyer Partners] --> SL
 ```
 
 ---
@@ -161,10 +235,10 @@ flowchart TD
 | Pillar | Initiative | Target | Owner |
 |--------|------------|--------|-------|
 | **Platform** | **Ship Daily** | P95 latency to 200ms (target achieved); 18 deploys/week; Change failure rate under 8%; MTTR under 60 minutes | CTO |
-| **PLM** | **Activation Avalanche** | TTFV under 7 minutes; 35% Week 1 activation; 4% self-serve upgrade rate; 15% viral signups | Head of Product |
+| **PLM** | **Activation Avalanche** | TTFV under 7 minutes; 35% Week 1 activation; 4% self-serve upgrade rate; 15% viral signups; **Guides + Templates library v2** (10+ guides, 25+ templates); **TTRV (production guide cohort) under 3 days** | Head of Product |
 | **PLM/OSS** | **Community Ignition** | 12,000 GitHub stars; 150 contributors; First community-led feature shipped; 25K OSS installs/month; Discord at 2,000 members | CTO |
 | **SLG** | **Pipeline Pressure** | 20% PQL-to-SQL conversion; Sales cycle under 60 days; First $75K+ deal closed; 15 enterprise POCs active | Head of Sales |
-| **Partners** | **Content Blitz** | 14 cumulative content pieces; 12% content-to-signup rate; 20 partner-sourced opportunities; $1.5M pipeline | Chief of Staff |
+| **Partners** | **Content Blitz**<br/>**(Dev Partners + Buyer Partners)** | **Dev partners:** 14 cumulative content pieces; 12% content-to-signup rate; partner cohorts tracking live; **partner content uses standard guide/template landing pages**<br/>**Buyer partners:** 20 partner-sourced opportunities; $1.5M partner-influenced pipeline; **POCs run on templates (measured)** | Chief of Staff<br/>Head of Sales |
 
 ### Q2 Success Criteria
 
@@ -172,7 +246,7 @@ flowchart TD
 - Activation funnel optimized with clear conversion paths
 - OSS community actively contributing, not just consuming
 - First major enterprise deal closed, proving SLG motion works
-- Partner content engine running at cadence
+- Partner engine running at cadence with measurable outputs for both motions
 
 ---
 
@@ -183,10 +257,10 @@ flowchart TD
 | Pillar | Initiative | Target | Owner |
 |--------|------------|--------|-------|
 | **Platform** | **Zero Friction** | 82% onboarding completion; 20 deploys/week; 5% change failure rate; 35-minute MTTR | CTO |
-| **PLM** | **Viral Loop** | TTFV under 5 minutes (target achieved); 40% Week 1 activation (target achieved); 6% self-serve; 20% viral; 45% retention | Head of Product |
+| **PLM** | **Viral Loop** | TTFV under 5 minutes (target achieved); 40% Week 1 activation (target achieved); 6% self-serve; 20% viral; 45% retention; **AI-assisted implementation v1 built on templates**; **TTRV (production guide cohort) under 48 hours** | Head of Product |
 | **PLM/OSS** | **Ecosystem Expansion** | 20,000 GitHub stars; 300 contributors; 3 major community plugins; 40K OSS installs/month; OSS-to-Boreal conversion at 3% | CTO |
 | **SLG** | **Land and Expand** | 25% PQL-to-SQL (target achieved); 50-day sales cycle; $65K ACV; 20% expansion revenue; 35% PQL win rate | Head of Sales |
-| **Partners** | **Ecosystem Flywheel** | 20 content pieces; 15% content-to-signup (target achieved); 40 partner opportunities; $3.5M pipeline | Chief of Staff |
+| **Partners** | **Ecosystem Flywheel**<br/>**(Dev Partners + Buyer Partners)** | **Dev partners:** 20 content pieces; 15% content-to-signup (target achieved)<br/>**Buyer partners:** 40 partner opportunities; $3.5M partner-influenced pipeline | Chief of Staff<br/>Head of Sales |
 
 ### Q3 Success Criteria
 
@@ -194,7 +268,7 @@ flowchart TD
 - Product-led growth is self-sustaining with viral mechanics working
 - OSS ecosystem has independent momentum with community plugins
 - Sales motion is repeatable and predictable
-- Partners are actively driving pipeline
+- Partners are driving both measurable developer distribution and pipeline influence
 
 ### Q3 Growth Flywheel
 
@@ -237,10 +311,10 @@ flowchart TD
 | Pillar | Initiative | Target | Owner |
 |--------|------------|--------|-------|
 | **Platform** | **Elite Operations** | 85% onboarding (target achieved); 20+ deploys/week; 5% CFR; 30-minute MTTR (all targets achieved) | CTO |
-| **PLM** | **Growth Engine** | All targets achieved + buffer: 8%+ self-serve upgrade; 25%+ viral signups; 50%+ retention | Head of Product |
+| **PLM** | **Growth Engine** | All targets achieved + buffer: 8%+ self-serve upgrade; 25%+ viral signups; 50%+ retention; **Guides + Templates are the default user path**; **TTRV (production guide cohort) under 24 hours** | Head of Product |
 | **PLM/OSS** | **Open Source Flywheel** | 30,000+ GitHub stars; 500+ contributors; MooseStack as category leader; 50K+ OSS installs/month; 5% OSS-to-Boreal conversion | CTO |
 | **SLG** | **Revenue Machine** | All targets achieved: 40% PQL win rate; 45-day cycle; $75K ACV; 30% expansion; NRR at 120% | Head of Sales |
-| **Partners** | **Full Ecosystem** | All targets achieved: 24 pieces; 50 opportunities; $5M pipeline; Partners actively selling Boreal | Chief of Staff |
+| **Partners** | **Full Ecosystem**<br/>**(Dev Partners + Buyer Partners)** | **Dev partners:** 24 pieces; 15%+ content-to-signup; partner cohorts show comparable activation/retention<br/>**Buyer partners:** 50 opportunities; $5M partner-influenced pipeline; partners actively introducing Boreal in live deals | Chief of Staff<br/>Head of Sales |
 
 ### Q4 Success Criteria
 
@@ -317,7 +391,8 @@ gantt
     Elite Operations (sustain)       :p4, after p3, 3M
     
     section PLM
-    Five-Minute Magic (10min TTFV)   :crit, plm1, 2025-01, 3M
+    Guides + Templates v1 (journeys)  :crit, gt1, 2025-01, 3M
+    Five-Minute Magic (10min TTFV)   :crit, plm1, after gt1, 3M
     Activation Avalanche (35% W1)    :crit, plm2, after plm1, 3M
     Viral Loop (targets achieved)    :plm3, after plm2, 3M
     Growth Engine (exceed)           :plm4, after plm3, 3M
@@ -335,10 +410,16 @@ gantt
     Revenue Machine ($10M)           :milestone, slg4, after slg3, 3M
     
     section Partners
-    First Fleet (5 partners)         :ptr1, 2025-01, 3M
-    Content Blitz (14 pieces)        :ptr2, after ptr1, 3M
-    Ecosystem Flywheel ($3.5M)       :ptr3, after ptr2, 3M
-    Full Ecosystem ($5M)             :ptr4, after ptr3, 3M
+    Dev Partners - First Fleet (5)     :ptrd1, 2025-01, 3M
+    Dev Partners - Content Blitz (14)  :ptrd2, after ptrd1, 3M
+    Dev Partners - Flywheel (20 / 15%) :ptrd3, after ptrd2, 3M
+    Dev Partners - Full Ecosystem (24) :ptrd4, after ptrd3, 3M
+
+    section Buyer Partners
+    Buyer Partners - Stage + Enablement :ptrb1, 2025-01, 3M
+    Buyer Partners - Sourced Opps (20)  :ptrb2, after ptrb1, 3M
+    Buyer Partners - Pipeline ($3.5M)   :ptrb3, after ptrb2, 3M
+    Buyer Partners - Pipeline ($5M)     :ptrb4, after ptrb3, 3M
 ```
 
 ---
@@ -350,6 +431,6 @@ This roadmap drives progress toward these strategic objectives:
 - [Reach $10M ARR](/goals/10m-arr) — The anchor company goal
 - [Win Developers Through PLM](/goals/plm-developers) — Product-led growth for developers
 - [Convert Usage Into Revenue](/goals/slg-buyers) — Sales-led growth for buyers
-- [Build Awareness Through Partners](/goals/partner-awareness) — Partner-driven distribution
+- [Build Awareness Through Technical Partners](/goals/partner-awareness) — Developer distribution + buyer pipeline influence
 - [Build a Platform That Scales](/goals/platform-execution) — Infrastructure and execution excellence
 
