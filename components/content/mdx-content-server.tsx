@@ -14,6 +14,7 @@ import { CodeBlock } from "./code-block";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Item,
   ItemContent,
@@ -380,12 +381,19 @@ const mdxComponents = {
   Grid,
   LinkButton,
   Badge,
+  Alert,
+  AlertTitle,
+  AlertDescription,
   Card,
   CardContent,
   CardHeader,
   CardTitle,
   CardDescription,
   Button,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
   CardGroup,
   ContentCard,
   // Item components
