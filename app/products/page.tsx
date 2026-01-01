@@ -4,7 +4,13 @@ import { ContentList, ContentNavigation } from "@/components/content";
 import { ContentLayout } from "@/components/layouts";
 import { Mermaid } from "@/components/content/mermaid";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 export default async function ProductsPage() {
@@ -26,7 +32,8 @@ export default async function ProductsPage() {
         </div>
         <h1 className="text-2xl font-bold tracking-tight">Products</h1>
         <p className="text-muted-foreground">
-          MooseStack is the open-source framework. Boreal is the managed platform to deploy and operate it in production.
+          MooseStack is the open-source framework. Boreal is the managed
+          platform to deploy and operate it in production.
         </p>
       </div>
 
@@ -51,13 +58,16 @@ export default async function ProductsPage() {
             <div>
               <div className="font-medium">When to lead with MooseStack</div>
               <div className="text-sm text-muted-foreground">
-                You’re selling the developer experience: code-first analytics backend, local parity, strong typing, modular infra.
+                You’re selling the developer experience: code-first analytics
+                backend, local parity, strong typing, modular infra.
               </div>
             </div>
             <div>
               <div className="font-medium">When to lead with Boreal</div>
               <div className="text-sm text-muted-foreground">
-                You’re selling production readiness: environments, scaling, observability, and enterprise controls without running the stack.
+                You’re selling production readiness: environments, scaling,
+                observability, and enterprise controls without running the
+                stack.
               </div>
             </div>
           </div>
@@ -73,7 +83,8 @@ export default async function ProductsPage() {
             </div>
             <CardTitle>MooseStack</CardTitle>
             <CardDescription>
-              Build real-time analytical backends as code (tables, streams, workflows, APIs).
+              Build real-time analytical backends as code (tables, streams,
+              workflows, APIs).
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -98,7 +109,8 @@ export default async function ProductsPage() {
             </div>
             <CardTitle>Boreal</CardTitle>
             <CardDescription>
-              Deploy and operate MooseStack in production with environments, scaling, observability, and controls.
+              Deploy and operate MooseStack in production with environments,
+              scaling, observability, and controls.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -117,7 +129,9 @@ export default async function ProductsPage() {
       </div>
 
       <div className="mb-4 not-prose">
-        <h2 className="text-lg font-semibold tracking-tight">All product docs</h2>
+        <h2 className="text-lg font-semibold tracking-tight">
+          All product docs
+        </h2>
         <p className="text-sm text-muted-foreground">
           Canonical pages used by navigation and search.
         </p>
