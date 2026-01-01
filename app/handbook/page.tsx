@@ -11,6 +11,7 @@ export default async function HandbookPage() {
         <ContentNavigation
           navigation={collection.navigation}
           basePath="/handbook"
+          showHome
         />
       }
     >

@@ -10,9 +10,11 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
+import { CodeBlock } from "./code-block";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Item,
   ItemContent,
@@ -21,6 +23,9 @@ import {
   ItemHeader,
   ItemMedia,
   ItemTitle,
+  ItemActions,
+  ItemSeparator,
+  ItemFooter,
 } from "@/components/ui/item";
 import {
   AlertCircle,
@@ -28,6 +33,23 @@ import {
   Info,
   AlertTriangle,
   ExternalLink,
+  Star,
+  Users,
+  Minus,
+  Zap,
+  Target,
+  Sparkles,
+  TrendingUp,
+  Shield,
+  Code,
+  Server,
+  Cloud,
+  Trophy,
+  Building,
+  Globe,
+  Database,
+  ChevronRight,
+  type LucideIcon,
 } from "lucide-react";
 
 /**
@@ -166,7 +188,7 @@ interface StatItemProps {
 
 function StatItem({ stat, title, children }: StatItemProps) {
   return (
-    <Item variant="muted">
+    <Item variant="outline" className="not-prose">
       <ItemHeader>
         <span className="text-4xl font-black tracking-tight text-primary">
           {stat}
@@ -174,7 +196,7 @@ function StatItem({ stat, title, children }: StatItemProps) {
       </ItemHeader>
       <ItemContent>
         <ItemTitle className="text-lg font-semibold">{title}</ItemTitle>
-        <div>{children}</div>
+        <ItemDescription className="text-balance">{children}</ItemDescription>
       </ItemContent>
     </Item>
   );
@@ -186,6 +208,138 @@ interface StatGroupProps {
 
 function StatGroup({ children }: StatGroupProps) {
   return <ItemGroup className="gap-4 my-6">{children}</ItemGroup>;
+}
+
+interface CardGroupProps {
+  cols?: 1 | 2 | 3 | 4;
+  children: React.ReactNode;
+}
+
+function CardGroup({ cols = 3, children }: CardGroupProps) {
+  const colClasses = {
+    1: "grid-cols-1",
+    2: "grid-cols-1 md:grid-cols-2",
+    3: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3",
+    4: "grid-cols-1 md:grid-cols-2 lg:grid-cols-4",
+  };
+
+  return (
+    <div className={`grid ${colClasses[cols]} gap-4 my-6 not-prose`}>
+      {children}
+    </div>
+  );
+}
+
+type ContentCardIcon =
+  | "star"
+  | "users"
+  | "minus"
+  | "check"
+  | "alert"
+  | "info"
+  | "zap"
+  | "target"
+  | "sparkles"
+  | "trending"
+  | "shield"
+  | "code"
+  | "server"
+  | "cloud"
+  | "trophy"
+  | "building"
+  | "globe"
+  | "database";
+
+type ContentCardVariant = "default" | "primary" | "secondary" | "muted";
+
+interface ContentCardProps {
+  title: string;
+  icon?: ContentCardIcon;
+  variant?: ContentCardVariant;
+  children?: React.ReactNode;
+}
+
+function ContentCard({
+  title,
+  icon,
+  variant = "default",
+  children,
+}: ContentCardProps) {
+  const iconMap: Record<ContentCardIcon, LucideIcon> = {
+    star: Star,
+    users: Users,
+    minus: Minus,
+    check: CheckCircle,
+    alert: AlertTriangle,
+    info: Info,
+    zap: Zap,
+    target: Target,
+    sparkles: Sparkles,
+    trending: TrendingUp,
+    shield: Shield,
+    code: Code,
+    server: Server,
+    cloud: Cloud,
+    trophy: Trophy,
+    building: Building,
+    globe: Globe,
+    database: Database,
+  };
+
+  const variantStyles: Record<
+    ContentCardVariant,
+    { card: string; icon: string; title: string }
+  > = {
+    default: {
+      card: "border-border/50 bg-card hover:border-border hover:shadow-md transition-all duration-200",
+      icon: "text-muted-foreground",
+      title: "text-foreground",
+    },
+    primary: {
+      card: "border-primary/20 bg-primary/5 hover:border-primary/40 hover:bg-primary/10 hover:shadow-md transition-all duration-200",
+      icon: "text-primary",
+      title: "text-foreground",
+    },
+    secondary: {
+      card: "border-secondary/30 bg-secondary/10 hover:border-secondary/50 hover:shadow-md transition-all duration-200",
+      icon: "text-secondary-foreground/70",
+      title: "text-foreground",
+    },
+    muted: {
+      card: "border-muted/50 bg-muted/30 hover:border-muted hover:shadow-sm transition-all duration-200",
+      icon: "text-muted-foreground/60",
+      title: "text-muted-foreground",
+    },
+  };
+
+  const Icon = icon ? iconMap[icon] : null;
+  const styles = variantStyles[variant];
+
+  return (
+    <Card className={`h-full ${styles.card}`}>
+      <CardHeader className="pb-3">
+        <div className="flex flex-col gap-3">
+          {Icon && (
+            <div
+              className={`shrink-0 rounded-lg bg-muted/50 p-2.5 w-fit ${styles.icon}`}
+            >
+              <Icon className="h-5 w-5" strokeWidth={2} />
+            </div>
+          )}
+          <CardTitle
+            className={`text-base font-semibold leading-tight ${styles.title}`}
+          >
+            {title}
+          </CardTitle>
+        </div>
+      </CardHeader>
+      {children && (
+        <CardContent className="pt-0 text-sm text-muted-foreground leading-relaxed [&>ul]:mt-2 [&>ul]:space-y-1 [&>p]:mt-0 [&>p>strong]:text-foreground [&>p>strong]:font-medium">
+          {children}
+        </CardContent>
+      )}
+    </Card>
+  );
 }
 
 // Custom anchor component for links
@@ -227,12 +381,21 @@ const mdxComponents = {
   Grid,
   LinkButton,
   Badge,
+  Alert,
+  AlertTitle,
+  AlertDescription,
   Card,
   CardContent,
   CardHeader,
   CardTitle,
   CardDescription,
   Button,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+  CardGroup,
+  ContentCard,
   // Item components
   Item,
   ItemContent,
@@ -240,10 +403,36 @@ const mdxComponents = {
   ItemGroup,
   ItemMedia,
   ItemTitle,
+  ItemActions,
+  ItemSeparator,
+  ItemFooter,
+  ItemHeader,
   StatItem,
   StatGroup,
+  // Lucide icons for direct use in MDX
+  Star,
+  Users,
+  Minus,
+  Zap,
+  Target,
+  Sparkles,
+  TrendingUp,
+  Shield,
+  Code,
+  Server,
+  Cloud,
+  Trophy,
+  CheckCircle,
+  AlertCircle,
+  AlertTriangle,
+  Info,
+  Building,
+  Globe,
+  Database,
+  ChevronRight,
   // Override default HTML elements
   a: CustomLink,
+  pre: CodeBlock,
 };
 
 interface MDXContentServerProps {

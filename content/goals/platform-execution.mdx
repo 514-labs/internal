@@ -1,0 +1,104 @@
+---
+title: "Build a Platform That Scales to $10M ARR"
+description: "Ensure product, onboarding, and infrastructure scale with growth without rewrites, heroics, or bespoke solutions"
+status: active
+strategicDomain: platform
+team: engineering
+owner: cto
+timeframe: FY 2026
+keyResults:
+  - id: kr1
+    title: "Core Workflow P95 Latency"
+    target: 200
+    baseline: 500
+    current: 500
+    unit: "ms"
+    metric:
+      source: posthog
+      type: events
+      config:
+        eventName: "core_workflow_latency"
+        product: "boreal"
+  - id: kr2
+    title: "Onboarding Flow Completion Rate"
+    target: 85
+    baseline: 60
+    current: 60
+    unit: "%"
+    metric:
+      source: posthog
+      type: journeyCompletion
+      config:
+        journeyId: "onboarding-complete"
+        product: "boreal"
+  - id: kr3
+    title: "Weekly Deployment Frequency"
+    target: 20
+    baseline: 5
+    current: 5
+    unit: "deploys"
+  - id: kr4
+    title: "Change Failure Rate"
+    target: 5
+    baseline: 15
+    current: 15
+    unit: "%"
+  - id: kr5
+    title: "Time to Restore Service"
+    target: 30
+    baseline: 120
+    current: 120
+    unit: "minutes"
+---
+
+## Objective
+
+Ensure Boreal's product, onboarding, and infrastructure scale with growth — without rewrites, heroics, or bespoke solutions.
+
+## Context
+
+Platform excellence is the foundation that makes PLM and SLG possible:
+
+- **Fast, reliable onboarding** — PLM requires sub-5-minute time-to-value
+- **Observable, scalable infrastructure** — Growth can't break the product
+- **High engineering velocity** — Ship fast without breaking things
+- **One platform, two motions** — PLM and SLG run on the same foundation
+
+This goal focuses on DORA metrics and user-facing performance — the leading indicators that predict whether the platform can support $10M ARR.
+
+## Key Results Rationale
+
+### Core Workflow P95 Latency (200ms)
+User-facing performance at scale. The 95th percentile must be under 200ms to maintain the snappy experience developers expect.
+
+### Onboarding Flow Completion Rate (85%)
+Measures friction in the self-serve path. If 15%+ of users drop off during onboarding, PLM can't succeed.
+
+### Weekly Deployment Frequency (20 deploys)
+Engineering velocity indicator from DORA research. High-performing teams deploy multiple times per day. 20/week indicates healthy velocity.
+
+### Change Failure Rate (5%)
+DORA metric for reliability. Elite performers maintain under 5% change failure rate. This ensures deploys don't break production.
+
+### Time to Restore Service (30 minutes)
+Operational maturity indicator. When things break (and they will), elite teams restore in under 30 minutes. This maintains user trust.
+
+## Success Criteria
+
+- Onboarding and core workflows are fast, reliable, and observable
+- Product decisions favor leverage and repeatability
+- Engineering effort compounds over time
+- One platform cleanly supports PLM and SLG
+
+## DORA Metrics Context
+
+These KRs align with the four DORA metrics that predict software delivery performance:
+
+| Metric | Elite | Our Target |
+|--------|-------|------------|
+| Deployment Frequency | Multiple per day | 20/week |
+| Lead Time for Changes | < 1 hour | Not tracked here |
+| Change Failure Rate | < 5% | 5% |
+| Time to Restore | < 1 hour | 30 minutes |
+
+

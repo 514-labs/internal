@@ -6,6 +6,9 @@ import {
   TableOfContents,
 } from "@/components/content";
 import { ContentLayout } from "@/components/layouts";
+import { getAllGoals } from "@/lib/goals";
+import { StrategyGoals } from "@/components/goals";
+import type { StrategicDomain } from "@/lib/goals";
 
 interface StrategyArticlePageProps {
   params: Promise<{ slug: string[] }>;
@@ -35,6 +38,19 @@ export async function generateMetadata({ params }: StrategyArticlePageProps) {
   };
 }
 
+/**
+ * Map strategy paths to strategic domains for goal filtering
+ */
+function getStrategicDomain(slugPath: string): StrategicDomain | null {
+  if (slugPath.startsWith("product-development")) {
+    return "product-development";
+  }
+  if (slugPath.startsWith("customer-development")) {
+    return "customer-development";
+  }
+  return null;
+}
+
 export default async function StrategyArticlePage({
   params,
 }: StrategyArticlePageProps) {
@@ -47,6 +63,12 @@ export default async function StrategyArticlePage({
   }
 
   const collection = await getContentCollection("strategy");
+
+  // Get the strategic domain based on the path
+  const strategicDomain = getStrategicDomain(slugPath);
+
+  // Fetch goals for this domain if applicable
+  const goals = strategicDomain ? await getAllGoals({ strategicDomain }) : [];
 
   return (
     <ContentLayout
@@ -66,6 +88,11 @@ export default async function StrategyArticlePage({
         backPath="/strategy"
         backLabel="Back to Strategy"
       />
+
+      {/* Show related goals for product-development and customer-development sections */}
+      {strategicDomain && goals.length > 0 && (
+        <StrategyGoals goals={goals} domain={strategicDomain} />
+      )}
     </ContentLayout>
   );
 }
