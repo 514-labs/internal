@@ -55,6 +55,7 @@ export default async function HandbookArticlePage({
           navigation={collection.navigation}
           basePath="/handbook"
           currentSlug={slugPath}
+          showHome
         />
       }
       tableOfContents={

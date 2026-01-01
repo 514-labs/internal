@@ -140,6 +140,11 @@ export async function getAllContent<T extends ContentType>(
 
       const slug = filePathToSlug(file, type);
 
+      // Skip root index files - they're rendered by page.tsx, not as separate articles
+      if (slug === "index") {
+        continue;
+      }
+
       items.push({
         type,
         slug,

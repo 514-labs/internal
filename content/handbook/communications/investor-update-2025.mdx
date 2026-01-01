@@ -1,0 +1,182 @@
+---
+title: "Investor Update: 2025 Year in Review"
+description: A reflection on our year of focus—narrowing ICP, refining product, and setting up for execution in 2025.
+date: 2025-12-31
+order: 1
+category: general
+tags: [investors, update, strategy, year-2025]
+audience: [leadership, investors]
+---
+
+# Investor Update: 2025 Year in Review
+
+If I had to pick a single word that best represents the past year it would be **focus**.
+
+We started the year with bold ambitions. Ambitions of tackling multiple use cases with our products, ambitions of integrating the full data stack into a single framework, ambitions of building incredible and new AI products. In pursuit of those ambitions we built a diverse pipeline filled with companies of varying industries, sizes and stacks.
+
+The scale of those ambitions, paired with our work ethic, hubris and tenacity turned into lots of code, lots of marketing materials, lots of sales activity and—most importantly—lots of learnings. The most important of which being that breadth of our offering was confusing, brittle and failed to capture the imagination of the most important user cohort that we have—**developers who want to build kickass data-intensive experiences into their apps but are operating at a scale where their existing transactional data systems aren't performing enough and they now need to move towards OLAP technologies.**
+
+Hence, we spent the better part of the year focusing, simplifying, refactoring, all the while building on top of the incredible core technology that our engineering team had been building since the inception of the company and making sure that we meet users where they are.
+
+---
+
+## Narrowing ICP
+
+<Badge variant="secondary">GTM Focus</Badge>
+
+We started the year looking for teams that needed to build operational data warehouses or user facing analytics. Unfortunately, searching for these teams means you take meetings with companies like Amazon, Cox, Diageo, Charter, Nike, "those midmarket enterprises" and "that one startup in your investor's portfolio." As cool as these companies are to sell to, the problems they have don't all map to a single use case that we could execute around.
+
+**Now, we focus on B2B SaaS companies whose core competency is NOT to deliver insights to their customers.** We'll also take meetings with B2C companies that have a key user facing analytics feature such as the biometric reports that F45 built on MooseStack but we are very selective with our outreach and approach to those companies.
+
+### Case Study: Commvault
+
+A good example for B2B SaaS companies is Commvault, they are a public backup management service. But like B2B SaaS companies, Commvault's users expect to be able to slice and dice their data. Commvault has had dashboarding and reporting features in their products for years. These dashboards have been built on OLTP technologies and take 45+ seconds to load.
+
+We showed them that using MooseStack + ClickHouse they could create sub-second experiences for their users and ship their features entirely in code, while using their existing engineering best practices. We're now in the final stages of a POC where they are integrating their production environments with our managed hosting. All signs point to a successful outcome and we're excited to see where it all goes.
+
+<Callout type="success" title="Customer Voice">
+"I'm telling you, I don't know about Archana but I'm literally going to have tears in my eyes when I'm going to see those things coming in less than three seconds. You have no clue."
+— **VP of Engineering, Commvault**
+</Callout>
+
+<Callout type="success" title="Customer Voice">
+"I was really surprised that… in a couple of hours he said that the basic version of the [stored procedure] logic is in place… personally, I'm feeling confident."
+— **Archana Aathithan, Senior Development Manager, Commvault**
+</Callout>
+
+---
+
+## OLAP in Your App
+
+<Badge variant="secondary">Use Case Focus</Badge>
+
+B2B SaaS companies and scaled B2C companies with a data-intensive feature live and die by the apps and services they ship to their users. What great apps look like is subjective but, for a given market, typically comes down to feature set, performance and quality. The experiences users have with other products and services heavily influences the quality/performance bar that must be hit for a given feature set. And the quality standards set for most users now is that things need to be fast, not just visually fast, but with AI, **performance must be conversationally-fast.**
+
+And to hit that performance bar OLAP is the name of the game. Once B2B SaaS companies hit a certain level of data volumes (usually starting at ~1M records), most insights turn from transactional to analytical, requiring large table scans and multiple data sources to be truly valuable. OLAP systems were designed for this though, most were originally built for large scale data warehousing use cases. ClickHouse, on the other hand, was designed to scale from a developer's laptop to the large scale cloud and that's the main reason why MooseStack was designed with OLAP and ClickHouse at its heart.
+
+### Key Features We Help Teams Ship
+
+<Grid cols={2}>
+  <Card className="not-prose">
+    <CardHeader>
+      <CardTitle>Performant Dashboards</CardTitle>
+    </CardHeader>
+    <CardContent className="text-sm">
+      Scaled dashboards and metrics that load in sub-second times
+    </CardContent>
+  </Card>
+  <Card className="not-prose">
+    <CardHeader>
+      <CardTitle>In-App Chat</CardTitle>
+    </CardHeader>
+    <CardContent className="text-sm">
+      Chat experiences that rely on analytical queries
+    </CardContent>
+  </Card>
+  <Card className="not-prose">
+    <CardHeader>
+      <CardTitle>Event Feeds</CardTitle>
+    </CardHeader>
+    <CardContent className="text-sm">
+      High cardinality event feeds with real-time updates
+    </CardContent>
+  </Card>
+  <Card className="not-prose">
+    <CardHeader>
+      <CardTitle>On-Demand Reports</CardTitle>
+    </CardHeader>
+    <CardContent className="text-sm">
+      "Spotify Wrapped" style reports, compliance reports, scheduled exports
+    </CardContent>
+  </Card>
+</Grid>
+
+This focus on the apps and the features that benefit from OLAP technologies has meant sharper positioning, sharper messaging, and sharper product focus.
+
+<Callout type="success" title="Customer Voice">
+"He was able to just jump on the chat, ask those questions, pull out some analysis… It definitely looks like it's providing… interesting analysis. And so we're definitely optimistic about what we're able to do with this."
+— **Joe Romriell, BeyondPulse**
+</Callout>
+
+### ClickHouse Partnership
+
+The focus on OLAP in your app and the ICP refinement led us to explore more formal relationships with ClickHouse, the leading provider of OLAP technologies that have a lightweight enough footprint to enable developers to build locally. We've had a series of joint marketing posts that we published on the ClickHouse blog. Several of our posts made it to the Hacker News front page driving up traffic and inbound community members.
+
+<Callout type="success" title="Partner Voice">
+"That's really compelling. I think that kind of story to me is one that I love to tell from a Clickhouse perspective is like, you were able to deliver something that you weren't able to before, thanks to the amazing sort of set of analytical toolkits that 514 has provided, the developer toolkit for analytic backends and the power of Clickhouse."
+— **Tyler Hannan, Dev Rel @ ClickHouse**
+</Callout>
+
+---
+
+## OLAP Module
+
+<Badge variant="secondary">Product Focus</Badge>
+
+We started the year with a bold bet. We decided to break a tightly coupled set of capabilities in Moose into separate modules that could be leveraged independently. We made this bet based on some early customer discovery work that showed users wanted to have different entry points into the product and based on some direct feedback we'd gotten from some of our design partners:
+
+<Callout type="info" title="Design Partner Feedback">
+"I found myself frustrated that I couldn't just go to the ClickHouse UI and see my tables and really easily blow things away and kind of recreate… I wish I could see the call stacks. I wish I could see traces in Datadog."
+— **Mike Marinaccio, VP Engineering Loyalsnap**
+</Callout>
+
+<Callout type="info" title="Design Partner Feedback">
+"We actually don't need that much to make this work… Fastify API, ClickHouse Client, and ClickHouse Cloud… It felt like a breath of fresh air where suddenly it's like, okay, now I'm in control… I can just go drop the table."
+— **Mike Marinaccio, VP Engineering Loyalsnap**
+</Callout>
+
+### What We Learned
+
+It became clear as we worked with our own product and with users that we needed Moose to be lighter, easier to integrate into the existing development stack and more declarative (less auto magical). The modules were already essentially built into the tightly integrated framework and hence it made sense to break them into their own separate modules that users could derive value from.
+
+**That turned out to be a mistake on two fronts:**
+
+1. The increased surface area of the product meant more surface area for bugs
+2. Users always started with the OLAP module—the thesis that they'd start with other modules turned out to be wrong
+
+Instead of a pure modularization of the parts that could be used independently to derive value, users needed the framework to be **composable and integratable** into their stack.
+
+### The Pivot That Worked
+
+Today, everything we do from a product perspective starts with the OLAP module driving users to adopt the technology into their applications and the user conversation has drastically changed:
+
+<Callout type="success" title="Customer Voice">
+"I think the product so far is pretty solid, you guys have done a good job overall [...] definitely solves a lot of problems where I had to create a lot of boilerplate code and glueing things together"
+— **Oliver Naaris, Co-Founder Tranthor**
+</Callout>
+
+<Callout type="success" title="Customer Voice">
+"This [setting up my infrastructure] would've taken me weeks to get here so I am happy."
+— **Mike Klein, Head of Engineering District Cannabis**
+</Callout>
+
+<Callout type="success" title="Customer Voice">
+"I just think you all have really delivered on empowering regular developers that might not be super well-versed in the Data-engineering field to be effective and safely.
+
+I know doing what I have done with Moose and Boreal would've taken me months and months to accomplish. I was able to get a working Dashboard for our sales team in roughly a month and a half of work and laid a solid foundation for the rest of the work. The ergonomics of Moose are great from defining models to local development. It just works and is is easy to grok. My only issue has been trying to keep up with the features you all have lol."
+— **Mike Klein, Head of Engineering District Cannabis**
+</Callout>
+
+We've started to have community members help each other in our growing slack community, we've had people reach out, ask good questions and give us great feedback to help us improve. There's still much to do when it comes to delivering the value we want to users but ultimately the combination of our focus on OLAP and being focused on integrating it the developer stack has turned blocked users into happy ones.
+
+<Callout type="info" title="Team Pride">
+I'm incredibly proud of the culture we've built to get from where we were to where we are now. We placed the modularization bet based on the fact that a 27 yr old PM on the team had conviction and a team of engineers many times her elder and experience showed up day-in and day-out to deliver on the bold bet and vision.
+</Callout>
+
+---
+
+## The Year Ahead
+
+<Badge variant="secondary">Execution</Badge>
+
+Now that we've found our focus. Our main goal for the year ahead will be to turn that focus into concrete results.
+
+### 2026 Priorities
+
+| Priority | Description |
+|----------|-------------|
+| **Partner Content** | Doubling down on our partner content strategy to drive developer adoption and awareness |
+| **Time to First Value** | Simplifying our story and reducing the time to first value that developers get from our products |
+| **Commercial Value** | Ensuring that our commercial products deliver value to our users as or even more so than our open source ones |
+| **Lead Generation** | Finding and executing on the right lead generation and conversion strategy that specifically focus on getting more engagement from our ICP |
+
