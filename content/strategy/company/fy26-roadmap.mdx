@@ -1,6 +1,6 @@
 ---
-title: FY 26 Roadmap
-description: Quarter-by-quarter path to $10M ARR
+title: FY26 Roadmap
+description: Strategy memo — making Boreal undeniable in the first session
 date: 2025-01-01
 status: active
 category: roadmap
@@ -8,118 +8,149 @@ owners: [executive-team]
 linkedGoals: [10m-arr, plm-developers, slg-buyers, partner-awareness, platform-execution]
 ---
 
-# FY26 Roadmap
+# FY26 Roadmap — Strategy Memo
 
-## What we're solving
-
-Developer infrastructure is crowded. Trust is earned **bottom-up** via fast proof, not top-down persuasion. Our fastest path to $10M ARR is to make Boreal **undeniable in a developer's first session**, then convert that evidence into revenue through **product-qualified sales** and **partners**.
-
-This roadmap is a simplification: fewer goals, fewer initiatives, clearer ownership, and a hard tie-break rule.
+**Bottom line:** FY26 is about making Boreal *undeniable in the first session*, then scaling that proof through OSS/partners and converting it through product-qualified sales. We will win by shipping **Guides + Templates** as our core product surface, measuring everything through **discoverability → activation → conversion**, and using **evidence-led outbound** to drive attention to that proof (not to sell promises).
 
 ---
 
-## FY26 goals
+## 1) The Strategy Kernel
 
-**Company outcomes (3)**
+### Diagnosis: what's happening and why
 
-- **$10M ARR run-rate** (acceptable slip: +2 quarters "good", +4 quarters "passable")
+- **Developer infrastructure is crowded.** Buyers are skeptical and overwhelmed.
+- **Trust is earned bottom-up.** Developers adopt what works quickly; then teams standardize.
+- **Our biggest risk is friction.** If time-to-first-value is slow or unclear, distribution and sales won't matter.
+- **Our second risk is unscalable work.** Bespoke enterprise requests can look like progress but don't compound.
+
+### Guiding policy: how we will win
+
+We will make Boreal easy to try, easy to prove, and easy to repeat.
+
+- **Guides + Templates are the default delivery mechanism.**
+  - Guides create a measured path from "new" → "working outcome" → "production outcome."
+  - Templates make success repeatable and shareable.
+- **We run the business on three reinforcing loops:**
+  - Activation (PLM): reduce TTFV/TTPV, raise Week 1 activation
+  - Distribution (OSS + Partners): drive qualified entrants into guides/templates
+  - Revenue (Sales): convert product evidence into contracts via PQL signals
+- **Outbound exists, but it serves evidence.**
+  - Sales does not create demand through pressure.
+  - Sales routes accounts into proof and follows up when signals indicate readiness.
+
+### Coherent actions: what we will do (and when)
+
+- Q1: Prove fast value (TTFV + instrumentation + v1 guides/templates)
+- Q2: Scale distribution (OSS + partners reliably feed guides)
+- Q3: Make revenue repeatable (predictable PQL→SQL + production value)
+- Q4: Scale what works (remove bottlenecks + throughput)
+
+---
+
+## 2) FY26 Goals and Decision Rules
+
+### Annual outcomes (3)
+
+- **$10M ARR run-rate**
+  - Acceptable slip: +2 quarters ("good"), +4 quarters ("passable")
 - **Maintain 12+ months runway**
-- **OSS traction: 20K GitHub stars** (paired with usage signals, not vanity alone)
+- **OSS traction: 20K GitHub stars**
+  - Paired with usage signals (stars alone aren't enough)
 
-**Tie-break rule**
-When initiatives compete, we prioritize improvements that increase **discoverability → activation → conversion**, especially **TTFV/TTPV and Week 1 activation**, over bespoke work and top-down persuasion.
+### Tie-break rule (used in every planning meeting)
 
----
-
-## The strategy in one paragraph
-
-We ship value through **Guides + Templates** as the default delivery mechanism: measurable, repeatable, composable paths from "new" → "working outcome" → "production outcome." Distribution comes from **OSS + partner content** that routes into those guides/templates. Sales converts **product evidence** into contracts using **PQL signals** and **evidence-led outbound** that drives guided product interaction—not pressure.
+When initiatives compete, we prioritize changes that increase **discoverability → activation → conversion**, especially **TTFV/TTPV and Week 1 activation**, over bespoke work and top-down persuasion.
 
 ---
 
-## The operating model: three reinforcing loops
+## 3) Operating Model: Three Loops
 
-- **Activation Loop (PLM):** Guides + Templates reduce TTFV/TTPV and raise Week 1 activation
-- **Distribution Loop (OSS + Partners):** credible channels increase the number of developers entering guides
-- **Revenue Loop (SLG):** sales converts activated usage into ARR and expansion using PQL signals
+### The three loops we build everything around
+
+- **Activation loop (PLM):** guides/templates reduce friction and create "first proof"
+- **Distribution loop (OSS + Partners):** credible channels increase guide starts
+- **Revenue loop (Sales):** sales converts activated usage into ARR and expansion
 
 ```mermaid
-flowchart LR
-  %% Distribution
-  subgraph D[Distribution Loop - OSS and Partners]
-    A[OSS discovery<br/>stars, content, community] --> B[Installs / Trials]
-    P[Partner content<br/>webinars, integrations, co-marketing] --> C[Guide starts]
-    B --> C
+flowchart TB
+  subgraph dist["🌐 DISTRIBUTION"]
+    direction LR
+    d1["OSS Discovery"] --> d2["Installs"] --> d3["Guide Starts"]
+    d4["Partner Content"] --> d2
   end
 
-  %% Activation
-  subgraph V[Activation Loop - Guides and Templates]
-    C --> E[Guide completion<br/>first value]
-    E --> F[Week 1 activation<br/>repeat usage]
-    F --> G[Production value - TTPV<br/>real env + real data]
+  subgraph act["⚡ ACTIVATION"]
+    direction LR
+    a1["Guide Completion"] --> a2["Week 1 Activation"] --> a3["Production Value"]
   end
 
-  %% Revenue
-  subgraph R[Revenue Loop - Sales]
-    F --> H[PQL signals<br/>instrumented usage]
-    H --> I[SQL + evaluation]
-    I --> J[Closed won]
-    J --> K[Expansion]
+  subgraph rev["💰 REVENUE"]
+    direction LR
+    r1["PQL Signals"] --> r2["SQL Eval"] --> r3["Closed Won"] --> r4["Expansion"]
   end
 
-  K -->|proof, templates, case studies| A
+  dist ==> act ==> rev
 ```
 
----
-
-## Guides + Templates (the delivery mechanism)
-
-**Non-negotiable rule:** new onboarding flows, partner content, and POC motions must land a user in a **guide and/or template**. If work can't be expressed as a guide/template, it's suspect (bespoke, hard to self-serve, hard to scale).
-
-**Definitions**
-
-- **Guide:** instrumented journey from "new" → working outcome → production outcome
-- **Template:** opinionated starting point (patterns, configs, integrations) that makes success repeatable
-- **Production value (TTPV):** running in the user's real environment, connected to real systems, producing persistent outputs
+*The loops reinforce each other: expansion success (proof, templates, case studies) feeds back into distribution.*
 
 ---
 
-## Evidence-Led Outbound (Sales-Assisted PLM)
+## 4) Our Primary Product Surface: Guides + Templates
 
-We have a sales team. The question is not "outbound vs no outbound." The question is whether outbound **reinforces product proof**.
+### Non-negotiable rule
 
-**Outbound's job**
+New onboarding flows, partner content, and POC motions must land a user in a **guide and/or template**.
+If work cannot be expressed as a guide/template, it is likely bespoke and hard to scale.
 
-- Trigger **product interaction with measurable outcomes**
-- Route prospects into **guides/templates**
-- Use **PQL evidence** to time and shape sales engagement
+### Definitions (so we don't drift)
 
-**Guardrails**
+- **Guide:** instrumented journey from "new" → "working outcome" → "production outcome"
+- **Template:** opinionated starting point (patterns/config/integrations) that makes success repeatable
+- **Production value (TTPV):** running in the customer's environment with real systems/data, producing persistent outputs
+
+---
+
+## 5) Evidence-Led Outbound (Sales-Assisted PLM)
+
+### What outbound is for
+
+Outbound exists to **trigger product interaction with measurable outcomes**, not to sell promises.
+
+### Guardrails (how we prevent "classic outbound rot")
 
 - Every outbound touch routes to an **instrumented guide/template**
 - Measured end-to-end: **source → guide start → completion → activation → PQL**
-- Evaluated on **activation outcomes**, not outbound volume
+- Evaluated primarily on **activation outcomes**, not outbound volume or meetings booked
 
 ---
 
-## Metrics: simplify to what we will actually steer by
+## 6) Metrics: what we will actually steer by
 
-**Company steering metrics (6)**
+### Company steering metrics (6)
+
+**Product**
 
 1. **TTFV**
 2. **Week 1 activation rate**
 3. **# active Boreal projects** (usage depth)
+
+**Revenue**
+
 4. **PQL volume + PQL→SQL conversion**
-5. **ARR (and NRR once we have a meaningful base)**
+5. **ARR** (add NRR once we have a meaningful base)
+
+**OSS / Distribution**
+
 6. **GitHub stars** (plus one usage proxy like OSS installs/month as supporting)
 
-Everything else (booked meetings, total pipeline, community members, plan mix) is **supporting**, owned by functions—not "company KPIs."
+Everything else (booked meetings, total pipeline, community members, plan mix) is supporting—owned by functions, not "company KPIs."
 
 ---
 
-## FY26 quarterly plan (simplified)
+## 7) FY26 Quarterly Plan
 
-We will run FY26 on four themes. Each quarter should have **3–5 goals** and **3–5 initiatives max**.
+### Quarter themes
 
 ```mermaid
 flowchart LR
@@ -133,14 +164,14 @@ flowchart LR
 
 **Outcomes**
 
-- TTFV is reliably under 10 minutes
-- Activation and PQL instrumentation is live and trusted
-- Guides + Templates v1 becomes the default path
+- TTFV reliably **< 10 minutes**
+- Activation + PQL instrumentation live and trusted
+- Guides + Templates v1 is the default path
 
 **Initiatives**
 
 - **Guides + Templates v1:** flagship "first value" guide + starter templates
-- **Golden Path onboarding:** remove friction, raise completion
+- **Golden path onboarding:** remove friction, increase completion
 - **Instrumentation:** activation events + PQL scoring live (CRM + product)
 - **Evidence-led outbound v1:** sales distributes guides, measured on activation
 
@@ -148,72 +179,84 @@ flowchart LR
 
 **Outcomes**
 
-- Guide starts scale (more qualified developers entering the activation loop)
-- Partner/OSS channels are measurable and repeatable
+- Guide starts scale (more qualified developers enter activation loop)
+- OSS/partner channels are measurable and repeatable
 - First consistent PQL→SQL motion
 
 **Initiatives**
 
 - **Guides + Templates library v2:** expand to a menu of high-intent outcomes
 - **Partner content engine:** standard landing pages + tracking + cadence
-- **OSS docs/install loop:** discovery → install → guide start improvements
-- **Sales playbook v1:** tight follow-up sequences aligned to guide outcomes
+- **OSS docs/install loop:** improve discovery → install → guide start
+- **Sales playbook v1:** follow-up sequences aligned to guide outcomes
 
 ### Q3 — Make Revenue Repeatable
 
 **Outcomes**
 
-- PQL→SQL conversion predictable; cycles compress
+- PQL→SQL conversion becomes predictable; cycles compress
 - Clear path from activation → production value (TTPV drops materially)
 - Expansion motion becomes provable (not hypothetical)
 
 **Initiatives**
 
-- **Production guides:** production-grade outcomes, fewer POCs that stall
-- **Packaging/pricing tuning:** reduce confusion, align with usage/projects
-- **Sales process hardening:** stages with exit criteria; no "vibes" pipeline
+- **Production guides:** production-grade outcomes; fewer stalled POCs
+- **Packaging/pricing tuning:** reduce confusion; align with usage/projects
+- **Sales process hardening:** stage exit criteria; no "vibes pipeline"
 - **Buyer partners:** influence pipeline with measurable downstream action
 
 ### Q4 — Scale What Works
 
 **Outcomes**
 
-- Growth engine is documented and repeatable
+- Growth engine documented and repeatable
 - Activation holds under higher volume
 - ARR run-rate achieved or clearly within the slip window
 
 **Initiatives**
 
-- **Platform excellence:** performance + reliability as growth constraints vanish
-- **Activation optimization:** conversion rate and retention improvements
-- **Partner flywheel:** both motions operating at cadence (dev + buyer)
-- **Sales capacity scaling:** only after the playbook is proven
+- **Platform excellence:** performance + reliability stop being constraints
+- **Activation optimization:** improve conversion and retention
+- **Partner flywheel:** dev + buyer partners operating at cadence
+- **Sales capacity scaling:** only after playbook is proven
 
 ---
 
-## What we will not do
+## 8) What we will not do (to protect focus)
 
-- We will not pursue **outbound-led growth as the primary motion**
-- We will not build **bespoke enterprise features** without PLM validation
-- We will not optimize **awareness without an activation path** (every campaign routes into a guide/template)
-- We will not chase revenue that undermines retention, expansion, or repeatability
+- We will not pursue **outbound-led growth** as the primary motion.
+- We will not build **bespoke enterprise features** without PLM validation.
+- We will not run awareness campaigns without an **activation path** (every campaign routes into a guide/template).
+- We will not chase revenue that undermines **retention, expansion, or repeatability**.
 
 ---
 
-## How we plan and execute (quarterly planning)
+## 9) How we execute: quarterly planning output
 
-Each initiative must specify:
+### Required output each quarter
 
-- **Who:** initiative owner + project owners
-- **What:** what ships (specific, not vibes)
-- **How:** weekly check-ins + leading indicators
-- **When:** delivery + reflection dates
-- **Why:** which loop it strengthens + which KPI it moves
-
-Quarterly planning output:
-
-1. Goals (3–5)
-2. Initiatives (3–5)
+1. Goals (3–5 max)
+2. Initiatives (3–5 max)
 3. Starter project list (1–3 weeks each)
-4. 1-page narrative
-5. Explicit "killed work" list
+4. One-page narrative (this memo style)
+5. "Killed work" list (explicit)
+
+### Initiative template (copy/paste)
+
+- **Owner:**
+- **Goal (metric):**
+- **What ships (deliverables):**
+- **How we measure success (leading + lagging):**
+- **Dependencies / risks:**
+- **Weekly check-in:** Goal / Progress / Blockers / Next step
+- **Kill criteria (when we stop):**
+
+---
+
+## Next steps (so this turns into action)
+
+- Pick **Q1 goals (3–5)** and lock them.
+- Choose **Q1 initiatives (max 4)** and name owners.
+- Define the **flagship "first value" guide** and the **2–3 templates** that support it.
+- Instrument: confirm the exact events for **guide start, completion, Week 1 activation, and PQL**.
+- Publish the **evidence-led outbound rules** and update sales scorecards to reflect them.
