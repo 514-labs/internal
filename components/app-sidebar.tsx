@@ -34,6 +34,7 @@ import {
   Package,
   Wrench,
   Rss,
+  Calendar,
 } from "lucide-react";
 
 // Top-level items (before Performance group)
@@ -55,6 +56,12 @@ const overviewItems = [
     url: "/feed",
     icon: Rss,
     shortcut: "A",
+  },
+  {
+    title: "Calendar",
+    url: "/calendar",
+    icon: Calendar,
+    shortcut: "C",
   },
 ];
 

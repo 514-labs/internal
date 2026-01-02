@@ -18,6 +18,9 @@ interface ContentLayoutProps {
 
   // Optional class name for main content area
   className?: string;
+
+  // Full width mode - removes max-width constraint
+  fullWidth?: boolean;
 }
 
 export function ContentLayout({
@@ -26,6 +29,7 @@ export function ContentLayout({
   tableOfContents,
   children,
   className,
+  fullWidth = false,
 }: ContentLayoutProps) {
   const { focusMode, setHasSidebars } = useFocusMode();
 
@@ -62,7 +66,7 @@ export function ContentLayout({
 
       {/* Main Content */}
       <main className={cn("flex-1 min-w-0 p-6", className)}>
-        <div className="max-w-4xl mx-auto">{children}</div>
+        <div className={cn(!fullWidth && "max-w-4xl mx-auto")}>{children}</div>
       </main>
 
       {/* Right Sidebar - Table of Contents */}

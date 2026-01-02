@@ -77,3 +77,4 @@ CREATE TRIGGER update_user_integration_tokens_updated_at_trigger
 -- Add comment explaining the table
 COMMENT ON TABLE user_integration_tokens IS 'Stores per-user API tokens for third-party integrations. Each user has their own isolated tokens. CRITICAL: RLS policies enforce that users can only access their own tokens.';
 
+

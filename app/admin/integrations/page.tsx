@@ -46,6 +46,14 @@ interface MercuryStatus {
   message?: string;
 }
 
+interface GoogleCalendarStatus {
+  connected: boolean;
+  expiresAt?: string;
+  scope?: string;
+  hasRefreshToken?: boolean;
+  message?: string;
+}
+
 export default function IntegrationsPage() {
   const { userId } = useAuth();
   const { userMemberships } = useOrganizationList({
@@ -58,6 +66,11 @@ export default function IntegrationsPage() {
   const [linearStatus, setLinearStatus] = useState<LinearStatus | null>(null);
   const [linearLoading, setLinearLoading] = useState(true);
   const [linearDisconnecting, setLinearDisconnecting] = useState(false);
+
+  // Google Calendar state (admin only)
+  const [googleCalendarStatus, setGoogleCalendarStatus] = useState<GoogleCalendarStatus | null>(null);
+  const [googleCalendarLoading, setGoogleCalendarLoading] = useState(true);
+  const [googleCalendarDisconnecting, setGoogleCalendarDisconnecting] = useState(false);
 
   // Rippling state (per-user)
   const [ripplingStatus, setRipplingStatus] = useState<RipplingStatus | null>(
@@ -111,11 +124,18 @@ export default function IntegrationsPage() {
       window.history.replaceState({}, "", window.location.pathname);
     }
 
+    if (successParam === "google_calendar_connected") {
+      setSuccessMessage("Google Calendar integration connected successfully!");
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+
     // Fetch integration statuses
     if (isAdmin) {
       fetchLinearStatus();
+      fetchGoogleCalendarStatus();
     } else {
       setLinearLoading(false);
+      setGoogleCalendarLoading(false);
     }
 
     // Rippling and Mercury are per-user, so fetch for all authenticated users
@@ -141,6 +161,25 @@ export default function IntegrationsPage() {
       setError("Failed to load Linear integration status");
     } finally {
       setLinearLoading(false);
+    }
+  };
+
+  const fetchGoogleCalendarStatus = async () => {
+    try {
+      setGoogleCalendarLoading(true);
+      const response = await fetch("/api/integrations/google-calendar/status");
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch Google Calendar status");
+      }
+
+      const data = await response.json();
+      setGoogleCalendarStatus(data);
+    } catch (err) {
+      console.error("Error fetching Google Calendar status:", err);
+      // Don't set error - it's optional
+    } finally {
+      setGoogleCalendarLoading(false);
     }
   };
 
@@ -184,6 +223,42 @@ export default function IntegrationsPage() {
 
   const handleConnectLinear = () => {
     window.location.href = "/api/integrations/linear/authorize";
+  };
+
+  const handleConnectGoogleCalendar = () => {
+    window.location.href = "/api/integrations/google-calendar/authorize";
+  };
+
+  const handleDisconnectGoogleCalendar = async () => {
+    if (
+      !confirm(
+        "Are you sure you want to disconnect Google Calendar? This will revoke access to your calendar data."
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setGoogleCalendarDisconnecting(true);
+      setError(null);
+
+      const response = await fetch("/api/integrations/google-calendar/disconnect", {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || "Failed to disconnect");
+      }
+
+      setSuccessMessage("Google Calendar integration disconnected successfully");
+      await fetchGoogleCalendarStatus();
+    } catch (err) {
+      console.error("Error disconnecting Google Calendar:", err);
+      setError((err as Error).message);
+    } finally {
+      setGoogleCalendarDisconnecting(false);
+    }
   };
 
   const handleDisconnectLinear = async () => {
@@ -729,6 +804,135 @@ export default function IntegrationsPage() {
             </div>
           )}
         </div>
+
+        {/* Google Calendar Integration (Admin Only) */}
+        {isAdmin && (
+          <div className="border rounded-lg p-6 bg-card shadow-sm mb-6">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <h2 className="text-xl font-semibold mb-2 flex items-center gap-2">
+                  Google Calendar
+                  <span className="text-xs font-normal text-blue-600 dark:text-blue-400 bg-blue-500/10 px-2 py-1 rounded">
+                    Admin
+                  </span>
+                  {googleCalendarLoading ? (
+                    <span className="text-sm font-normal text-muted-foreground">
+                      Loading...
+                    </span>
+                  ) : googleCalendarStatus?.connected ? (
+                    <span className="text-sm font-normal text-green-600 dark:text-green-400 bg-green-500/10 px-2 py-1 rounded">
+                      Connected
+                    </span>
+                  ) : (
+                    <span className="text-sm font-normal text-muted-foreground bg-muted px-2 py-1 rounded">
+                      Not Connected
+                    </span>
+                  )}
+                </h2>
+                <p className="text-muted-foreground mb-2">
+                  Display company calendar events on the Calendar page.
+                </p>
+                <div className="flex flex-wrap gap-2 text-xs mb-2">
+                  <span className="px-2 py-1 bg-blue-500/10 text-blue-600 rounded font-medium">
+                    Read-only
+                  </span>
+                  <span className="text-muted-foreground">
+                    View events from a shared company calendar
+                  </span>
+                </div>
+
+                {googleCalendarStatus?.connected && (
+                  <div className="text-sm text-muted-foreground space-y-1 mb-4">
+                    {googleCalendarStatus.expiresAt && (
+                      <p>
+                        <strong>Token expires:</strong>{" "}
+                        {new Date(googleCalendarStatus.expiresAt).toLocaleString()}
+                      </p>
+                    )}
+                    {googleCalendarStatus.hasRefreshToken && (
+                      <p className="text-green-600 dark:text-green-400">
+                        ✓ Automatic token refresh enabled
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="ml-4">
+                {googleCalendarStatus?.connected ? (
+                  <Button
+                    onClick={handleDisconnectGoogleCalendar}
+                    disabled={googleCalendarDisconnecting}
+                    variant="outline"
+                  >
+                    {googleCalendarDisconnecting ? "Disconnecting..." : "Disconnect"}
+                  </Button>
+                ) : (
+                  <Button onClick={handleConnectGoogleCalendar} disabled={googleCalendarLoading}>
+                    Connect Google Calendar
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {/* Setup Instructions */}
+            {!googleCalendarStatus?.connected && !googleCalendarLoading && (
+              <div className="mt-6 pt-6 border-t">
+                <h3 className="font-semibold mb-2">Setup Instructions</h3>
+                <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
+                  <li>
+                    Create a Google Cloud project at{" "}
+                    <a
+                      href="https://console.cloud.google.com/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary underline"
+                    >
+                      console.cloud.google.com
+                    </a>
+                  </li>
+                  <li>Enable the Google Calendar API</li>
+                  <li>
+                    Create OAuth 2.0 credentials (Web application type)
+                  </li>
+                  <li>
+                    Add your redirect URI:{" "}
+                    <code className="bg-muted px-1 rounded">
+                      {typeof window !== "undefined" ? window.location.origin : ""}/api/integrations/google-calendar/callback
+                    </code>
+                  </li>
+                  <li>
+                    Set environment variables:
+                    <ul className="list-disc list-inside ml-4 mt-1">
+                      <li>
+                        <code className="bg-muted px-1 rounded">
+                          GOOGLE_CALENDAR_CLIENT_ID
+                        </code>
+                      </li>
+                      <li>
+                        <code className="bg-muted px-1 rounded">
+                          GOOGLE_CALENDAR_CLIENT_SECRET
+                        </code>
+                      </li>
+                      <li>
+                        <code className="bg-muted px-1 rounded">
+                          GOOGLE_CALENDAR_REDIRECT_URI
+                        </code>
+                      </li>
+                      <li>
+                        <code className="bg-muted px-1 rounded">
+                          GOOGLE_CALENDAR_ID
+                        </code>{" "}
+                        (optional, defaults to &quot;primary&quot;)
+                      </li>
+                    </ul>
+                  </li>
+                  <li>Click &quot;Connect Google Calendar&quot; above to authorize</li>
+                </ol>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Linear Integration (Admin Only) */}
         {isAdmin && (

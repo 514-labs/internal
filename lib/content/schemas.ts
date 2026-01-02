@@ -21,7 +21,7 @@ export type BaseContentFrontmatter = z.infer<typeof baseContentSchema>;
  */
 export const handbookSchema = baseContentSchema.extend({
   category: z
-    .enum(["onboarding", "policies", "culture", "benefits", "general"])
+    .enum(["onboarding", "policies", "culture", "benefits", "operations", "general"])
     .optional(),
   audience: z.array(z.string()).optional(), // e.g., ["new-hires", "managers"]
 });

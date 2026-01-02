@@ -157,3 +157,4 @@ export async function fetchAggregatedMetric(
   throw new Error(`Unknown aggregated metric source: ${source}`);
 }
 
+
