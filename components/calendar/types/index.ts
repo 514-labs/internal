@@ -104,7 +104,7 @@ export interface CalendarViewHeaderViewOption {
 
 // Month interface for navigation
 export interface Month {
-  value: number;
+  value: string;
   label: string;
 }
 

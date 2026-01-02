@@ -9,15 +9,15 @@ audience: [all]
 calendar:
   enabled: true
   events:
-    - id: weekly-goals-review
-      title: Weekly Goals Review
+    - id: monday-morning-kickoff
+      title: Monday Morning Kickoff
       recurrence: weekly
       dayOfWeek: monday
       time: "09:00"
       duration: 30
-      description: Review OKR progress and flag blockers
+      description: Review the plan for the week ahead
       attendees: [all-hands]
-      type: goals
+      type: planning
     - id: weekly-work-sync
       title: Weekly Work Sync
       recurrence: weekly
@@ -27,6 +27,24 @@ calendar:
       description: Review active projects and initiatives
       attendees: [all-hands]
       type: work
+    - id: friday-work-review
+      title: Friday Work Review
+      recurrence: weekly
+      dayOfWeek: friday
+      time: "15:30"
+      duration: 30
+      description: Review work completed during the week
+      attendees: [all-hands]
+      type: work
+    - id: friday-goals-review
+      title: Friday Goals Review
+      recurrence: weekly
+      dayOfWeek: friday
+      time: "16:00"
+      duration: 30
+      description: Review goal progress toward quarterly and yearly objectives
+      attendees: [all-hands]
+      type: goals
     - id: monthly-strategic-review
       title: Monthly Strategic Review
       recurrence: monthly
@@ -64,6 +82,84 @@ We believe in radical transparency, minimal meetings, and strong teamwork. Every
 * **Rhythm over randomness** — Predictable cadences reduce coordination costs and create natural forcing functions.
 * **Short and focused** — Most meetings are 30 minutes or less. If it needs more time, it's probably a working session, not a sync.
 * **Team outcomes > individual output** — We optimize for shared understanding, shared ownership, and helping each other ship.
+
+---
+
+## Monday Morning Kickoff
+
+<table>
+  <tbody>
+    <tr><td>When</td><td>Mondays, 9:00 AM</td></tr>
+    <tr><td>Duration</td><td>30 minutes</td></tr>
+    <tr><td>Attendees</td><td>All hands</td></tr>
+    <tr><td>Purpose</td><td>Review the plan for the week ahead and align on priorities</td></tr>
+  </tbody>
+</table>
+
+**Format:**
+
+* **Week overview (10 min)** — Review major milestones, deadlines, and commitments for the week.
+* **Priority alignment (10 min)** — Confirm the top 2–3 things that must happen this week.
+* **Calendar & availability (5 min)** — Flag PTO, external meetings, or anything that affects the team's capacity.
+* **Quick asks (5 min)** — Surface anything needed to start the week strong.
+
+**Preparation:**
+
+* Review your own calendar and Linear backlog before the meeting.
+* Come ready to share your top priority for the week.
+
+---
+
+## Friday Work Review
+
+<table>
+  <tbody>
+    <tr><td>When</td><td>Fridays, 3:30 PM</td></tr>
+    <tr><td>Duration</td><td>30 minutes</td></tr>
+    <tr><td>Attendees</td><td>All hands</td></tr>
+    <tr><td>Purpose</td><td>Review work completed during the week and celebrate what shipped</td></tr>
+  </tbody>
+</table>
+
+**Format:**
+
+* **Shipped this week (15 min)** — Walk through what was completed: merged PRs, launched features, closed projects, published docs.
+* **Demo spotlight (10 min)** — One team member shows something they shipped (live demo or quick walkthrough).
+* **Learnings & surprises (5 min)** — What did we learn? Anything unexpected?
+
+**Preparation:**
+
+* Update your Linear issues and close anything that shipped.
+* If you shipped something demo-worthy, volunteer for the spotlight.
+
+---
+
+## Friday Goals Review
+
+<table>
+  <tbody>
+    <tr><td>When</td><td>Fridays, 4:00 PM</td></tr>
+    <tr><td>Duration</td><td>30 minutes</td></tr>
+    <tr><td>Attendees</td><td>All hands</td></tr>
+    <tr><td>Purpose</td><td>Review goal progress and track toward quarterly/yearly objectives</td></tr>
+  </tbody>
+</table>
+
+**Format:**
+
+* **OKR dashboard review (10 min)** — Walk through current key result metrics and progress.
+* **Quarterly check-in (10 min)** — How are we tracking toward this quarter's objectives? Any trajectory concerns?
+* **Yearly alignment (5 min)** — Connect this week's progress to our annual goals.
+* **Wins & recognition (5 min)** — Celebrate meaningful progress and call out contributions.
+
+**Preparation:**
+
+* Key result owners update their metrics before the meeting.
+* Come ready to share one thing that moved the needle this week.
+
+**Why Friday?**
+
+Ending the week with goals in mind creates a natural reflection point. It helps us close the loop on what we committed to Monday and sets up next week's priorities.
 
 ---
 
