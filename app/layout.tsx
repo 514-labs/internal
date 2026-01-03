@@ -19,6 +19,10 @@ import { Separator } from "@/components/ui/separator";
 import { QueryProvider } from "@/components/query-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { FocusModeProvider } from "@/components/layouts";
+import { HypertuneProvider } from "@/generated/hypertune.react";
+import getHypertune from "@/lib/hypertune";
+import { VercelFlagValues } from "@/generated/hypertune.vercel";
+import { VercelToolbar } from "@vercel/toolbar/next";
 
 declare global {
   interface Window {
@@ -44,11 +48,15 @@ export const metadata: Metadata = {
   description: "Internal 514 Dashboard",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const hypertune = await getHypertune();
+  const dehydratedState = hypertune.dehydrate();
+  const rootArgs = hypertune.getRootArgs();
+
   return (
     <ClerkProvider
       appearance={{
@@ -66,13 +74,20 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
+          <HypertuneProvider
+            createSourceOptions={{
+              token: process.env.NEXT_PUBLIC_HYPERTUNE_TOKEN!,
+            }}
+            dehydratedState={dehydratedState}
+            rootArgs={rootArgs}
           >
-            <QueryProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <QueryProvider>
               <SignedOut>
                 <div className="min-h-screen flex flex-col">
                   <header className="w-full p-4 border-b border-gray-200 dark:border-gray-800">
@@ -135,6 +150,9 @@ export default function RootLayout({
               <Analytics />
             </QueryProvider>
           </ThemeProvider>
+          <VercelFlagValues flagValues={hypertune.get()} />
+          {process.env.NODE_ENV === "development" && <VercelToolbar />}
+        </HypertuneProvider>
         </body>
       </html>
     </ClerkProvider>

@@ -15,7 +15,7 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import {
   LayoutDashboard,
   TrendingUp,
@@ -36,6 +36,7 @@ import {
   Rss,
   Calendar,
 } from "lucide-react";
+import { useHypertune } from "@/generated/hypertune.react";
 
 // Top-level items (before Performance group)
 const overviewItems = [
@@ -172,9 +173,22 @@ const adminItems = [
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const hypertune = useHypertune();
+  const isExperimental = hypertune.experimental({ fallback: false });
+
+  // Filter overview items based on feature flags
+  const filteredOverviewItems = useMemo(() => {
+    return overviewItems.filter((item) => {
+      // Feed requires experimental flag
+      if (item.url === "/feed") {
+        return isExperimental;
+      }
+      return true;
+    });
+  }, [isExperimental]);
 
   const allItems = [
-    ...overviewItems,
+    ...filteredOverviewItems,
     ...performanceItems,
     ...executionItems,
     ...knowledgeItems,
@@ -257,7 +271,7 @@ export function AppSidebar() {
         {/* Overview */}
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarMenu>{overviewItems.map(renderMenuItem)}</SidebarMenu>
+            <SidebarMenu>{filteredOverviewItems.map(renderMenuItem)}</SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
