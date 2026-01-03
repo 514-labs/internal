@@ -1,8 +1,16 @@
+import { redirect } from "next/navigation";
 import { getContentCollection } from "@/lib/content";
 import { ContentList, ContentNavigation } from "@/components/content";
 import { ContentLayout } from "@/components/layouts";
+import { experimentalFlag } from "@/flags";
 
 export default async function DecisionsPage() {
+  const isExperimental = await experimentalFlag();
+
+  if (!isExperimental) {
+    redirect("/");
+  }
+
   const collection = await getContentCollection("decisions");
 
   return (

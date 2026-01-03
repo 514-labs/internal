@@ -21,7 +21,6 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { FocusModeProvider } from "@/components/layouts";
 import { HypertuneProvider } from "@/generated/hypertune.react";
 import getHypertune from "@/lib/hypertune";
-import { VercelFlagValues } from "@/generated/hypertune.vercel";
 import { VercelToolbar } from "@vercel/toolbar/next";
 
 declare global {
@@ -150,7 +149,6 @@ export default async function RootLayout({
               <Analytics />
             </QueryProvider>
           </ThemeProvider>
-          <VercelFlagValues flagValues={hypertune.get()} />
           {process.env.NODE_ENV === "development" && <VercelToolbar />}
         </HypertuneProvider>
         </body>
