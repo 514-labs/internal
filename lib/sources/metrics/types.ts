@@ -54,3 +54,4 @@ export type MercuryMetricType = "revenue" | "cashBalance" | "mrr";
  */
 export type HubSpotMetricType = "deals" | "contacts" | "pipelineValue";
 
+

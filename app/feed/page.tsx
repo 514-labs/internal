@@ -1,4 +1,5 @@
 import { Rss } from "lucide-react";
+import { redirect } from "next/navigation";
 import { ContentLayout } from "@/components/layouts";
 import {
   Empty,
@@ -7,8 +8,15 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
+import { experimentalFlag } from "@/flags";
 
-export default function FeedPage() {
+export default async function FeedPage() {
+  const isExperimental = await experimentalFlag();
+
+  if (!isExperimental) {
+    redirect("/");
+  }
+
   return (
     <ContentLayout>
       <div className="mb-8">

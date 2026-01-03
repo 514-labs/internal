@@ -15,7 +15,7 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import {
   LayoutDashboard,
   TrendingUp,
@@ -34,7 +34,9 @@ import {
   Package,
   Wrench,
   Rss,
+  Calendar,
 } from "lucide-react";
+import { useHypertune } from "@/generated/hypertune.react";
 
 // Top-level items (before Performance group)
 const overviewItems = [
@@ -55,6 +57,12 @@ const overviewItems = [
     url: "/feed",
     icon: Rss,
     shortcut: "A",
+  },
+  {
+    title: "Calendar",
+    url: "/calendar",
+    icon: Calendar,
+    shortcut: "C",
   },
 ];
 
@@ -165,13 +173,51 @@ const adminItems = [
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const hypertune = useHypertune();
+  const isExperimental = hypertune.experimental({ fallback: false });
+
+  // Routes that require experimental flag
+  const experimentalRoutes = [
+    "/feed",
+    "/trends",
+    "/services",
+    "/decisions",
+    "/playbooks",
+    "/lemon-prizes",
+  ];
+
+  // Filter items based on feature flags
+  const filterExperimental = <T extends { url: string }>(items: T[]) =>
+    items.filter((item) => {
+      if (experimentalRoutes.includes(item.url)) {
+        return isExperimental;
+      }
+      return true;
+    });
+
+  const filteredOverviewItems = useMemo(
+    () => filterExperimental(overviewItems),
+    [isExperimental]
+  );
+  const filteredPerformanceItems = useMemo(
+    () => filterExperimental(performanceItems),
+    [isExperimental]
+  );
+  const filteredKnowledgeItems = useMemo(
+    () => filterExperimental(knowledgeItems),
+    [isExperimental]
+  );
+  const filteredFunItems = useMemo(
+    () => filterExperimental(funItems),
+    [isExperimental]
+  );
 
   const allItems = [
-    ...overviewItems,
-    ...performanceItems,
+    ...filteredOverviewItems,
+    ...filteredPerformanceItems,
     ...executionItems,
-    ...knowledgeItems,
-    ...funItems,
+    ...filteredKnowledgeItems,
+    ...filteredFunItems,
     ...adminItems,
   ];
 
@@ -250,7 +296,7 @@ export function AppSidebar() {
         {/* Overview */}
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarMenu>{overviewItems.map(renderMenuItem)}</SidebarMenu>
+            <SidebarMenu>{filteredOverviewItems.map(renderMenuItem)}</SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
@@ -258,7 +304,9 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel>Performance</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>{performanceItems.map(renderMenuItem)}</SidebarMenu>
+            <SidebarMenu>
+              {filteredPerformanceItems.map(renderMenuItem)}
+            </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
@@ -274,17 +322,21 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel>Knowledge</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>{knowledgeItems.map(renderMenuItem)}</SidebarMenu>
+            <SidebarMenu>
+              {filteredKnowledgeItems.map(renderMenuItem)}
+            </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Fun */}
-        <SidebarGroup>
-          <SidebarGroupLabel>Fun</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>{funItems.map(renderMenuItem)}</SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {/* Fun - only show if there are items */}
+        {filteredFunItems.length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Fun</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>{filteredFunItems.map(renderMenuItem)}</SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
 
         {/* Admin */}
         <SidebarGroup>

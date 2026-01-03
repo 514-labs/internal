@@ -128,3 +128,4 @@ export interface MercuryTransaction extends Entity {
  */
 export type { HubSpotDeal, HubSpotContact, HubSpotCompany } from "../connectors/hubspot/client";
 
+

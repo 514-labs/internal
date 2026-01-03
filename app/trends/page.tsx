@@ -1,4 +1,5 @@
 import { TrendingUp } from "lucide-react";
+import { redirect } from "next/navigation";
 import { DashboardLayout } from "@/components/layouts";
 import {
   Empty,
@@ -7,8 +8,15 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
+import { experimentalFlag } from "@/flags";
 
-export default function TrendsPage() {
+export default async function TrendsPage() {
+  const isExperimental = await experimentalFlag();
+
+  if (!isExperimental) {
+    redirect("/");
+  }
+
   return (
     <DashboardLayout>
       <div className="mb-8">
@@ -32,4 +40,3 @@ export default function TrendsPage() {
     </DashboardLayout>
   );
 }
-
